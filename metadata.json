@@ -1,0 +1,6 @@
+{
+  "name": "NEON AI CITY - 3D Smart Cyberpunk Metropolis",
+  "description": "Interactive 3D futuristic neon smart city built with Three.js, featuring cyberpunk districts, dynamic lighting, river bridges, and reserved MOHIT DEVELOPER HUB.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
