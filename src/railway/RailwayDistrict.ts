@@ -33,7 +33,7 @@ export function createRailwayDistrict(
   // 1. GRAND CENTRAL TERMINAL DATA
   const stationData: BuildingData = {
     id: 'rail-central-terminal',
-    name: 'Central Hyper-Transit & Maglev Grand Terminal',
+    name: 'Central Grand Metropolitan Railway Terminal',
     districtId: 'railway',
     districtName: 'Railway/Transport District',
     category: 'Transit Terminal',
@@ -41,11 +41,11 @@ export function createRailwayDistrict(
     floors: 4,
     position: [0, 0, centerZ + 35],
     dimensions: [86, 38, 48],
-    powerUsage: '26.4 MW (Superconducting Maglev Line)',
-    occupancy: '98% (54,000 Commuters / Hour)',
-    networkStatus: 'Inter-City Quantum Dispatch Online',
-    description: 'Monumental central maglev transit terminal featuring 4 high-speed superconducting tracks, multi-level passenger concourses, overhead sky-bridges, and an autonomous air & rail traffic control spire.',
-    features: ['4 High-Speed Maglev Tracks', 'Glass Arched Terminal Canopy', 'Pedestrian Crossover Bridges', 'Radar Control Spire'],
+    powerUsage: '18.4 MW (Heavy Rail Electrification)',
+    occupancy: '96% (48,000 Commuters / Hour)',
+    networkStatus: 'Inter-City Dispatch Online',
+    description: 'Monumental central passenger rail terminal featuring 4 heavy electrified tracks, multi-level grand passenger concourses, architectural steel canopy arches, and elevated pedestrian skywalks.',
+    features: ['4 Electrified Railway Tracks', 'Architectural Steel Canopy Arches', 'Pedestrian Crossover Skywalks', 'Rail Traffic Operations Tower'],
   };
   buildingsData.push(stationData);
 
@@ -55,34 +55,34 @@ export function createRailwayDistrict(
 
   // Concourse Main Hall
   const hallGeo = new THREE.BoxGeometry(86, 18, 44);
-  const hallMesh = new THREE.Mesh(hallGeo, materials.metalDark);
+  const hallMesh = new THREE.Mesh(hallGeo, materials.concrete);
   hallMesh.position.y = 9;
   hallMesh.castShadow = true;
   stationGroup.add(hallMesh);
 
   // Glass Front Atrium & Entrance
   const atriumGeo = new THREE.BoxGeometry(78, 14, 4);
-  const atrium = new THREE.Mesh(atriumGeo, materials.glassCyan);
+  const atrium = new THREE.Mesh(atriumGeo, materials.glassDark);
   atrium.position.set(0, 7, 22.1);
   stationGroup.add(atrium);
 
-  // Illuminated Terminal Sign
+  // Illuminated Terminal Architectural Sign
   const signCanvas = document.createElement('canvas');
   signCanvas.width = 1024;
   signCanvas.height = 192;
   const sCtx = signCanvas.getContext('2d')!;
-  sCtx.fillStyle = '#020617';
+  sCtx.fillStyle = '#0f172a';
   sCtx.fillRect(0, 0, 1024, 192);
-  sCtx.strokeStyle = '#00f0ff';
-  sCtx.lineWidth = 8;
+  sCtx.strokeStyle = '#475569';
+  sCtx.lineWidth = 6;
   sCtx.strokeRect(6, 6, 1012, 180);
-  sCtx.font = 'bold 54px "Chakra Petch", monospace';
+  sCtx.font = 'bold 50px "Plus Jakarta Sans", sans-serif';
   sCtx.fillStyle = '#ffffff';
   sCtx.textAlign = 'center';
-  sCtx.fillText('CENTRAL HYPER-TRANSIT TERMINAL', 512, 85);
-  sCtx.font = 'bold 30px "Chakra Petch", sans-serif';
-  sCtx.fillStyle = '#38bdf8';
-  sCtx.fillText('HIGH-SPEED MAGLEV PLATFORMS 1 - 4', 512, 145);
+  sCtx.fillText('GRAND CENTRAL UNION TERMINAL', 512, 85);
+  sCtx.font = 'bold 28px "Plus Jakarta Sans", sans-serif';
+  sCtx.fillStyle = '#94a3b8';
+  sCtx.fillText('INTERCITY PASSENGER RAIL & RAPID TRANSIT', 512, 145);
 
   const signTex = new THREE.CanvasTexture(signCanvas);
   const signMesh = new THREE.Mesh(
@@ -92,21 +92,21 @@ export function createRailwayDistrict(
   signMesh.position.set(0, 21, 22.3);
   stationGroup.add(signMesh);
 
-  // Arched Roof Canopy Over Platforms
+  // Arched Roof Canopy Over Platforms (Architectural Glass and Steel)
   const canopyWidth = 86;
   const canopyRadius = 45;
   const archGeo = new THREE.CylinderGeometry(canopyRadius, canopyRadius, canopyWidth, 24, 1, true, 0, Math.PI);
   archGeo.rotateZ(Math.PI / 2);
   archGeo.rotateY(Math.PI / 2);
-  const archMesh = new THREE.Mesh(archGeo, materials.glassCyan);
+  const archMesh = new THREE.Mesh(archGeo, materials.glassDark);
   archMesh.position.set(0, 0, -22);
   stationGroup.add(archMesh);
 
-  // Arched Truss Ribs (Glowing Cyan)
+  // Arched Structural Steel Truss Ribs
   for (let x = -38; x <= 38; x += 19) {
-    const ribGeo = new THREE.TorusGeometry(canopyRadius, 0.4, 6, 24, Math.PI);
+    const ribGeo = new THREE.TorusGeometry(canopyRadius, 0.45, 6, 24, Math.PI);
     ribGeo.rotateY(Math.PI / 2);
-    const rib = new THREE.Mesh(ribGeo, materials.neonBlue);
+    const rib = new THREE.Mesh(ribGeo, materials.metalLight);
     rib.position.set(x, 0, -22);
     stationGroup.add(rib);
   }
@@ -201,8 +201,8 @@ export function createRailwayDistrict(
     railR.position.set(0, 0.35, tz + 1.2);
     group.add(railR);
 
-    // Center Superconducting Maglev Rail (Cyan Glow)
-    const maglevRail = new THREE.Mesh(maglevCoreGeo, materials.neonCyan);
+    // Center Steel Conductor Rail
+    const maglevRail = new THREE.Mesh(maglevCoreGeo, materials.metalDark);
     maglevRail.position.set(0, 0.25, tz);
     group.add(maglevRail);
 
@@ -224,6 +224,60 @@ export function createRailwayDistrict(
       points.push(new THREE.Vector3(x, 0.4, tz));
     }
     trackWaypoints.push(points);
+  });
+
+  // 4B. HIGH-SPEED ELECTRIFICATION OVERHEAD CATENARY SYSTEM
+  const gantryXPositions = [-180, -140, -100, -60, 60, 100, 140, 180];
+  const gantrySpanZ = 40; // spanning all 4 tracks
+  const gantryHeight = 7.5;
+  const wireMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8 });
+
+  gantryXPositions.forEach((gx) => {
+    // Twin Support Masts
+    [-gantrySpanZ / 2, gantrySpanZ / 2].forEach((mz) => {
+      const mast = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, gantryHeight, 0.5),
+        materials.metalLight
+      );
+      mast.position.set(gx, gantryHeight / 2, centerZ + mz);
+      mast.castShadow = true;
+      group.add(mast);
+    });
+
+    // Horizontal Overhead Truss Beam
+    const crossBeam = new THREE.Mesh(
+      new THREE.BoxGeometry(0.4, 0.4, gantrySpanZ),
+      materials.metalLight
+    );
+    crossBeam.position.set(gx, gantryHeight, centerZ);
+    group.add(crossBeam);
+
+    // Insulators above each track
+    trackZOffsets.forEach((tz) => {
+      const dropArm = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.08, 1.2, 6),
+        materials.metalDark
+      );
+      dropArm.position.set(gx, gantryHeight - 0.6, tz);
+      group.add(dropArm);
+    });
+  });
+
+  // Longitudinal Catenary Contact Wires spanning all 4 tracks
+  trackZOffsets.forEach((tz) => {
+    const contactWire = new THREE.Mesh(
+      new THREE.BoxGeometry(trackLength, 0.06, 0.06),
+      wireMat
+    );
+    contactWire.position.set(0, gantryHeight - 1.2, tz);
+    group.add(contactWire);
+
+    const messengerWire = new THREE.Mesh(
+      new THREE.BoxGeometry(trackLength, 0.04, 0.04),
+      wireMat
+    );
+    messengerWire.position.set(0, gantryHeight - 0.2, tz);
+    group.add(messengerWire);
   });
 
   // 5. RAISED PASSENGER PLATFORMS
@@ -266,16 +320,16 @@ export function createRailwayDistrict(
       platGroup.add(col);
     }
 
-    // Digital Platform Sign
+    // Digital Platform Sign (Amber LED Passenger Information Display)
     const pSignGeo = new THREE.PlaneGeometry(6, 1.2);
     const pSignCanvas = document.createElement('canvas');
     pSignCanvas.width = 256;
     pSignCanvas.height = 64;
     const psCtx = pSignCanvas.getContext('2d')!;
-    psCtx.fillStyle = '#020617';
+    psCtx.fillStyle = '#0f172a';
     psCtx.fillRect(0, 0, 256, 64);
-    psCtx.font = 'bold 26px "Chakra Petch", monospace';
-    psCtx.fillStyle = '#00f0ff';
+    psCtx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+    psCtx.fillStyle = '#f59e0b';
     psCtx.textAlign = 'center';
     psCtx.fillText(`PLATFORM 0${pIdx + 1} - EXPRESS`, 128, 42);
     const pSignTex = new THREE.CanvasTexture(pSignCanvas);
@@ -292,21 +346,21 @@ export function createRailwayDistrict(
     const pBridgeGroup = new THREE.Group();
     pBridgeGroup.position.set(bx, 6.8, centerZ);
 
-    // Enclosed Walkway Tube
+    // Enclosed Glass Walkway Tube
     const tubeGeo = new THREE.BoxGeometry(5, 3.6, bridgeSpan);
-    const tube = new THREE.Mesh(tubeGeo, materials.glassCyan);
+    const tube = new THREE.Mesh(tubeGeo, materials.glassDark);
     pBridgeGroup.add(tube);
 
-    // Structural Frame
+    // Structural Steel Frame
     const tubeFrame = new THREE.LineSegments(
       new THREE.EdgesGeometry(tubeGeo),
-      materials.neonCyan
+      new THREE.LineBasicMaterial({ color: 0x64748b })
     );
     pBridgeGroup.add(tubeFrame);
 
     // Vertical Access Stairs Shafts at terminal side
     const shaftGeo = new THREE.BoxGeometry(4.5, 6.8, 4.5);
-    const shaft = new THREE.Mesh(shaftGeo, materials.metalDark);
+    const shaft = new THREE.Mesh(shaftGeo, materials.concrete);
     shaft.position.set(0, -3.4, bridgeSpan / 2);
     pBridgeGroup.add(shaft);
 
@@ -331,6 +385,7 @@ export function createRailwayDistrict(
     maglevCoreGeo.dispose();
     sleeperGeo.dispose();
     platGeo.dispose();
+    wireMat.dispose();
   };
 
   return {

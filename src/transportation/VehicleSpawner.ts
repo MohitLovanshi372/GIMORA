@@ -68,7 +68,7 @@ export class VehicleSpawner {
     return ev;
   }
 
-  public spawnCar(subModel?: 'coupe' | 'sedan' | 'motorcycle' | 'taxi' | 'delivery-truck', preferredLane?: RoadLane): Car {
+  public spawnCar(subModel?: 'coupe' | 'sedan' | 'motorcycle' | 'taxi' | 'delivery-truck' | 'supercar' | 'dubai-police', preferredLane?: RoadLane): Car {
     let car: Car;
     if (this.pooledVehicles.length > 0) {
       car = this.pooledVehicles.pop() as Car;
@@ -76,10 +76,12 @@ export class VehicleSpawner {
     } else {
       const rand = Math.random();
       const model = subModel || (
-        rand < 0.15 ? 'motorcycle' :
-        rand < 0.35 ? 'taxi' :
-        rand < 0.50 ? 'delivery-truck' :
-        rand < 0.75 ? 'sedan' : 'coupe'
+        rand < 0.12 ? 'dubai-police' :
+        rand < 0.28 ? 'supercar' :
+        rand < 0.42 ? 'taxi' :
+        rand < 0.55 ? 'motorcycle' :
+        rand < 0.70 ? 'delivery-truck' :
+        rand < 0.85 ? 'sedan' : 'coupe'
       );
       car = new Car(`car_${this.nextVehicleId++}`, model);
       this.group.add(car.mesh);

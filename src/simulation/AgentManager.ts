@@ -218,12 +218,12 @@ export class AgentManager {
   public triggerDowntownFire() {
     const event = this.emergencyAgent.reportIncident({
       type: 'FIRE',
-      title: 'Level-3 Cyber Structure Fire',
+      title: 'Structural High-Rise Fire Alarm',
       severity: 'CRITICAL',
       districtId: 'downtown',
-      districtName: 'Neon Downtown Sector',
+      districtName: 'Metropolitan Downtown District',
       location: { x: -80, y: 15, z: -40 },
-      description: 'Electrical transformer surge on level 18 of Neon Cyber-Tower Alpha.',
+      description: 'Electrical transformer surge on level 18 of Metropolitan Tower Alpha.',
     });
     this.incidentVisuals.addIncident(event);
   }
@@ -231,13 +231,13 @@ export class AgentManager {
   public triggerAvenueAccident() {
     const event = this.emergencyAgent.reportIncident({
       type: 'ACCIDENT',
-      title: 'Autonomous Vehicle Multi-Collison',
+      title: 'Multi-Vehicle Traffic Collision',
       severity: 'HIGH',
       districtId: 'technology',
-      districtName: 'Technology District Avenue',
+      districtName: 'Technology Boulevard',
       location: { x: 75, y: 1, z: -55 },
       roadId: 'road_tech_main',
-      description: 'Sensor packet collision caused two autonomous speeders to stall in central lane.',
+      description: 'Traffic incident between two commercial vehicles obstructing central avenue lane.',
     });
     this.incidentVisuals.addIncident(event);
   }

@@ -5,12 +5,24 @@
 
 import * as THREE from 'three';
 import { CityMaterials } from '../assets/materials';
+import { createProceduralGrassTexture, createCobblestoneParkPathTexture } from '../assets/textures';
+
+export interface SkyDomeUniforms {
+  uZenithColor: { value: THREE.Color };
+  uHorizonColor: { value: THREE.Color };
+  uSunColor: { value: THREE.Color };
+  uSunDirection: { value: THREE.Vector3 };
+  uTime: { value: number };
+  uNightFactor: { value: number };
+}
 
 export interface EnvironmentSystem {
   group: THREE.Group;
   dirLight: THREE.DirectionalLight;
   ambientLight: THREE.AmbientLight;
   districtLights: THREE.PointLight[];
+  skyUniforms: SkyDomeUniforms;
+  starMat: THREE.PointsMaterial;
   update: (time: number) => void;
   dispose: () => void;
 }
@@ -22,22 +34,21 @@ export function createEnvironment(
   const group = new THREE.Group();
   group.name = 'environment_system';
 
-  // 1. NIGHT ATMOSPHERIC FOG
-  const fogColor = new THREE.Color(0x060814);
-  scene.background = fogColor;
-  scene.fog = new THREE.FogExp2(fogColor.getHex(), 0.0016);
+  // 1. REALISTIC METROPOLITAN SKY & ATMOSPHERIC AERIAL PERSPECTIVE FOG
+  const skyColor = new THREE.Color(0xcfdbe8);
+  scene.background = skyColor;
+  scene.fog = new THREE.FogExp2(skyColor.getHex(), 0.0011);
 
-  // 2. PRIMARY ILLUMINATION
-  // Deep indigo ambient light
-  const ambientLight = new THREE.AmbientLight(0x0a1428, 1.25);
+  // 2. PRIMARY ILLUMINATION (Natural Daylight & Soft Atmosphere)
+  const ambientLight = new THREE.AmbientLight(0xdbeafe, 1.85);
   group.add(ambientLight);
 
-  // Cool moonlight directional light with high-resolution soft shadows
-  const dirLight = new THREE.DirectionalLight(0x4070a0, 1.85);
+  // Sunlight directional light with 4K ultra-high-resolution soft shadows
+  const dirLight = new THREE.DirectionalLight(0xfffbeb, 2.85);
   dirLight.position.set(160, 260, 120);
   dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 2048;
-  dirLight.shadow.mapSize.height = 2048;
+  dirLight.shadow.mapSize.width = 4096;
+  dirLight.shadow.mapSize.height = 4096;
   dirLight.shadow.camera.near = 10;
   dirLight.shadow.camera.far = 750;
   const shadowRange = 300;
@@ -45,38 +56,32 @@ export function createEnvironment(
   dirLight.shadow.camera.right = shadowRange;
   dirLight.shadow.camera.top = shadowRange;
   dirLight.shadow.camera.bottom = -shadowRange;
-  dirLight.shadow.bias = -0.0004;
+  dirLight.shadow.bias = -0.0003;
+  dirLight.shadow.normalBias = 0.02;
   group.add(dirLight);
 
-  // Hemisphere ground bounce for rich lower shadow fill
-  const hemiLight = new THREE.HemisphereLight(0x182848, 0x050810, 0.95);
+  // Hemisphere sky-ground bounce for rich natural fill
+  const hemiLight = new THREE.HemisphereLight(0x93c5fd, 0x334155, 1.25);
   group.add(hemiLight);
 
-  // 3. DISTRICT ACCENT POINT LIGHTS
+  // 3. DISTRICT AMBIENT ILLUMINATION (Subtle Warm Architectural Lighting)
   const districtLights: THREE.PointLight[] = [];
   const accentConfigs = [
-    { color: 0x00f0ff, pos: [-110, 25, 0], intensity: 4, dist: 160 },      // Downtown
-    { color: 0x00ffaa, pos: [140, 25, -80], intensity: 4, dist: 150 },     // Technology & Mohit Hub
-    { color: 0xa855f7, pos: [-160, 25, -170], intensity: 3.5, dist: 140 }, // Education
-    { color: 0x06b6d4, pos: [-160, 25, 170], intensity: 3.5, dist: 140 },  // Healthcare
-    { color: 0xf59e0b, pos: [150, 25, 170], intensity: 3.5, dist: 140 },   // Residential
-    { color: 0xff007f, pos: [0, 25, 220], intensity: 4.5, dist: 160 },     // Entertainment
-    { color: 0x3b82f6, pos: [0, 25, -220], intensity: 4, dist: 160 },     // Railway
-    { color: 0x00e5ff, pos: [0, 15, 0], intensity: 3.5, dist: 150 },       // Riverside
+    { color: 0xfef3c7, pos: [-110, 25, 0], intensity: 1.5, dist: 160 },      // Downtown Financial
+    { color: 0xf8fafc, pos: [140, 25, -80], intensity: 1.5, dist: 150 },     // Technology Campus
+    { color: 0xfef3c7, pos: [-160, 25, -170], intensity: 1.2, dist: 140 }, // Education
+    { color: 0xf1f5f9, pos: [-160, 25, 170], intensity: 1.2, dist: 140 },  // Healthcare
+    { color: 0xfde68a, pos: [150, 25, 170], intensity: 1.2, dist: 140 },   // Residential
+    { color: 0xfef08a, pos: [0, 25, 220], intensity: 1.5, dist: 160 },     // Commercial / Retail
+    { color: 0xf1f5f9, pos: [0, 25, -220], intensity: 1.4, dist: 160 },     // Railway Terminal
+    { color: 0x94a3b8, pos: [0, 15, 0], intensity: 1.2, dist: 150 },       // Riverside
   ];
 
   accentConfigs.forEach((cfg) => {
-    const pLight = new THREE.PointLight(cfg.color, cfg.intensity, cfg.dist, 1.4);
+    const pLight = new THREE.PointLight(cfg.color, cfg.intensity, cfg.dist, 1.8);
     pLight.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
     districtLights.push(pLight);
     group.add(pLight);
-
-    const orb = new THREE.Mesh(
-      new THREE.SphereGeometry(1.2, 8, 8),
-      new THREE.MeshBasicMaterial({ color: cfg.color })
-    );
-    orb.position.copy(pLight.position);
-    group.add(orb);
   });
 
   // 4. DISTANT MOUNTAIN SILHOUETTES ON BACKGROUND HORIZON
@@ -154,39 +159,116 @@ export function createEnvironment(
 
   group.add(mountainGroup);
 
-  // 5. HORIZON METROPOLITAN GLOW DOME
-  // Creates the realistic impression of continuous city density stretching beyond district borders
-  const horizonGeo = new THREE.CylinderGeometry(520, 520, 80, 48, 1, true);
-  const horizonMat = new THREE.ShaderMaterial({
-    uniforms: {
-      uColorBottom: { value: new THREE.Color(0x0a1630) },
-      uColorTop: { value: new THREE.Color(0x060814) },
-      uTime: { value: 0 },
-    },
+  // 5. GTA V RAGE-STYLE ATMOSPHERIC SKY & VOLUMETRIC CUMULUS CLOUD DOME
+  const skyDomeGeo = new THREE.SphereGeometry(680, 48, 32);
+  const skyUniforms: SkyDomeUniforms = {
+    uZenithColor: { value: new THREE.Color(0x1d4ed8) },
+    uHorizonColor: { value: new THREE.Color(0xfdba74) },
+    uSunColor: { value: new THREE.Color(0xffedd5) },
+    uSunDirection: { value: new THREE.Vector3(160, 120, 120).normalize() },
+    uTime: { value: 0 },
+    uNightFactor: { value: 0.0 },
+  };
+
+  const skyDomeMat = new THREE.ShaderMaterial({
+    uniforms: skyUniforms as unknown as Record<string, THREE.IUniform>,
     vertexShader: `
-      varying vec2 vUv;
+      varying vec3 vWorldDirection;
       void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        vWorldDirection = normalize(position);
+        gl_Position = projectionMatrix * viewMatrix * worldPos;
       }
     `,
     fragmentShader: `
-      uniform vec3 uColorBottom;
-      uniform vec3 uColorTop;
-      varying vec2 vUv;
+      uniform vec3 uZenithColor;
+      uniform vec3 uHorizonColor;
+      uniform vec3 uSunColor;
+      uniform vec3 uSunDirection;
+      uniform float uTime;
+      uniform float uNightFactor;
+      varying vec3 vWorldDirection;
+
+      // 2D Hash & Value Noise for Volumetric Cumulus Clouds
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(
+          mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), u.x),
+          mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
+          u.y
+        );
+      }
+
+      float fbm(vec2 p) {
+        float v = 0.0;
+        float a = 0.5;
+        mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+        for (int i = 0; i < 5; i++) {
+          v += a * noise(p);
+          p = rot * p * 2.03;
+          a *= 0.5;
+        }
+        return v;
+      }
+
       void main() {
-        float glow = pow(1.0 - vUv.y, 2.2);
-        vec3 col = mix(uColorTop, uColorBottom, glow * 0.7);
-        gl_FragColor = vec4(col, glow * 0.6);
+        vec3 dir = normalize(vWorldDirection);
+        float elevation = max(dir.y, 0.0);
+
+        // 1. Rayleigh Zenith-to-Horizon Atmospheric Gradient
+        float horizonCurve = pow(1.0 - elevation, 2.4);
+        vec3 skyCol = mix(uZenithColor, uHorizonColor, horizonCurve);
+
+        // 2. Mie Solar Scattering & Physical Sun Disc
+        vec3 sunDir = normalize(uSunDirection);
+        float sunDot = max(dot(dir, sunDir), 0.0);
+        float mieHalo = pow(sunDot, 8.0) * 0.45 * (1.0 - uNightFactor * 0.7);
+        float sunCorona = pow(sunDot, 64.0) * 0.9 * (1.0 - uNightFactor * 0.8);
+        float sunDisc = smoothstep(0.9985, 0.9996, sunDot) * (1.0 - uNightFactor * 0.85);
+        skyCol += uSunColor * (mieHalo + sunCorona + sunDisc * 2.5);
+
+        // 3. Volumetric Cumulus Cloud Layer with Sunlit Silver-Gold Rims
+        if (dir.y > 0.04) {
+          vec2 cloudUv = dir.xz / (dir.y + 0.16) * 1.45;
+          cloudUv += vec2(uTime * 0.012, uTime * 0.006);
+
+          float n1 = fbm(cloudUv);
+          float n2 = fbm(cloudUv * 2.1 - vec2(uTime * 0.008, 0.0));
+          float cloudDensity = smoothstep(0.46, 0.76, n1 * 0.7 + n2 * 0.3);
+
+          // Sample offset towards sun for self-shadowing / silver lining
+          float nSun = fbm(cloudUv + sunDir.xz * 0.08);
+          float sunRim = clamp((n1 - nSun) * 3.2 + 0.55, 0.0, 1.0);
+
+          vec3 cloudShadowCol = mix(uZenithColor * 0.65, vec3(0.12, 0.16, 0.24), uNightFactor);
+          vec3 cloudLightCol = mix(uSunColor * 1.12, uHorizonColor * 0.85, 0.35);
+          vec3 cloudCol = mix(cloudShadowCol, cloudLightCol, sunRim);
+
+          // Fade clouds near the horizon for aerial perspective
+          float cloudFade = smoothstep(0.04, 0.22, dir.y);
+          skyCol = mix(skyCol, cloudCol, cloudDensity * cloudFade * (0.78 - uNightFactor * 0.35));
+        }
+
+        // 4. Lower Hemisphere Ground Bounce
+        if (dir.y < 0.0) {
+          skyCol = mix(uHorizonColor, vec3(0.04, 0.06, 0.10), clamp(-dir.y * 4.0, 0.0, 1.0));
+        }
+
+        gl_FragColor = vec4(skyCol, 1.0);
       }
     `,
-    transparent: true,
     side: THREE.BackSide,
     depthWrite: false,
   });
-  const horizonMesh = new THREE.Mesh(horizonGeo, horizonMat);
-  horizonMesh.position.y = 35;
-  group.add(horizonMesh);
+
+  const skyDomeMesh = new THREE.Mesh(skyDomeGeo, skyDomeMat);
+  group.add(skyDomeMesh);
 
   // 6. ATMOSPHERIC NIGHT CLOUD LAYER
   const cloudCount = 18;
@@ -271,67 +353,139 @@ export function createEnvironment(
   const starField = new THREE.Points(starGeo, starMat);
   group.add(starField);
 
-  // 8. BIOLUMINESCENT PARKS & REFLECTING WATER PONDS
+  // 8. LUSH URBAN PARKS & REFLECTING WATER PONDS
+  const grassTex = createProceduralGrassTexture();
+  const pathTex = createCobblestoneParkPathTexture();
+
   const parkGrassMat = new THREE.MeshStandardMaterial({
-    color: 0x051a14,
-    roughness: 0.8,
-    metalness: 0.1,
+    map: grassTex,
+    color: 0x2e6f40,
+    roughness: 0.72,
+    metalness: 0.05,
+    normalMap: materials.maps.concreteNormal,
+    normalScale: new THREE.Vector2(0.25, 0.25),
+  });
+
+  const parkPathMat = new THREE.MeshStandardMaterial({
+    map: pathTex,
+    color: 0x52525b,
+    roughness: 0.65,
+    metalness: 0.12,
+    normalMap: materials.maps.concreteNormal,
+    normalScale: new THREE.Vector2(0.35, 0.35),
   });
 
   // Central Riverside Emerald Park
-  const centralPark = new THREE.Mesh(new THREE.BoxGeometry(45, 0.25, 90), parkGrassMat);
+  const centralPark = new THREE.Mesh(new THREE.BoxGeometry(48, 0.25, 96), parkGrassMat);
   centralPark.position.set(-68, 0.12, 0);
   centralPark.receiveShadow = true;
   group.add(centralPark);
 
+  // Promenade Pedestrian Walkways across Central Park
+  // North-South Promenade
+  const nsPath = new THREE.Mesh(new THREE.PlaneGeometry(5.0, 92).rotateX(-Math.PI / 2), parkPathMat);
+  nsPath.position.set(-68, 0.26, 0);
+  nsPath.receiveShadow = true;
+  group.add(nsPath);
+
+  // East-West Bridge Approach Pathway
+  const ewPath = new THREE.Mesh(new THREE.PlaneGeometry(44, 4.5).rotateX(-Math.PI / 2), parkPathMat);
+  ewPath.position.set(-68, 0.26, 0);
+  ewPath.receiveShadow = true;
+  group.add(ewPath);
+
   // Reflecting Pond with glowing rim
   const pond = new THREE.Mesh(
-    new THREE.CylinderGeometry(8, 8, 0.1, 16),
-    new THREE.MeshStandardMaterial({ color: 0x001524, roughness: 0.1, metalness: 0.9 })
+    new THREE.CylinderGeometry(8.5, 8.5, 0.1, 24),
+    new THREE.MeshStandardMaterial({ color: 0x001524, roughness: 0.05, metalness: 0.95 })
   );
-  pond.position.set(-68, 0.26, 0);
+  pond.position.set(-68, 0.27, 0);
   group.add(pond);
 
   const pondRim = new THREE.Mesh(
-    new THREE.TorusGeometry(8.1, 0.2, 8, 24).rotateX(Math.PI / 2),
-    materials.neonCyan
+    new THREE.TorusGeometry(8.6, 0.25, 8, 32).rotateX(Math.PI / 2),
+    materials.concrete
   );
-  pondRim.position.set(-68, 0.3, 0);
+  pondRim.position.set(-68, 0.32, 0);
   group.add(pondRim);
 
-  // Tech Arboretum Park
+  // Central Tiered Water Fountain
+  const fountainBase = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.8, 1.2, 16), materials.concrete);
+  fountainBase.position.set(-68, 0.8, 0);
+  group.add(fountainBase);
+
+  const waterSprayMat = new THREE.MeshStandardMaterial({
+    color: 0x38bdf8,
+    roughness: 0.1,
+    metalness: 0.85,
+    transparent: true,
+    opacity: 0.7,
+  });
+  const fountainSpray = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.8, 3.8, 12), waterSprayMat);
+  fountainSpray.position.set(-68, 2.7, 0);
+  group.add(fountainSpray);
+
+  // Romantic Arched Footbridge over North Pond Arm
+  const footbridgeGeo = new THREE.BoxGeometry(3.6, 0.35, 11);
+  const footbridge = new THREE.Mesh(footbridgeGeo, materials.concrete);
+  footbridge.position.set(-68, 0.65, 8);
+  footbridge.castShadow = true;
+  group.add(footbridge);
+
+  const bridgeHandrailL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 11), materials.metalDark);
+  bridgeHandrailL.position.set(-68 - 1.7, 1.1, 8);
+  group.add(bridgeHandrailL);
+
+  const bridgeHandrailR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 11), materials.metalDark);
+  bridgeHandrailR.position.set(-68 + 1.7, 1.1, 8);
+  group.add(bridgeHandrailR);
+
+  // Tech Arboretum Park (East Bank)
   const techPark = new THREE.Mesh(new THREE.BoxGeometry(40, 0.25, 55), parkGrassMat);
   techPark.position.set(68, 0.12, -80);
   techPark.receiveShadow = true;
   group.add(techPark);
 
-  // Instanced Bioluminescent Trees
-  const treeCount = 60;
+  // Instanced Trees with Realistic Deciduous and Cherry Foliage
+  const treeCount = 72;
   const trunkGeo = new THREE.CylinderGeometry(0.25, 0.45, 4.5, 6);
   const canopyGeo = new THREE.IcosahedronGeometry(2.2, 1);
-  const instancedTrunks = new THREE.InstancedMesh(trunkGeo, materials.metalDark, treeCount);
-  const instancedCanopyGreen = new THREE.InstancedMesh(canopyGeo, materials.neonEmerald, Math.floor(treeCount / 2));
-  const instancedCanopyCyan = new THREE.InstancedMesh(canopyGeo, materials.neonCyan, Math.floor(treeCount / 2));
+
+  const realTrunkMat = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.85, metalness: 0.05 });
+  const realFoliageDeep = new THREE.MeshStandardMaterial({ color: 0x1b5e20, roughness: 0.75, metalness: 0.05 });
+  const realFoliageBright = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.75, metalness: 0.05 });
+  const realFoliageBlossom = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.8, metalness: 0.05 });
+
+  const instancedTrunks = new THREE.InstancedMesh(trunkGeo, realTrunkMat, treeCount);
+  const instancedCanopyGreen = new THREE.InstancedMesh(canopyGeo, realFoliageDeep, 24);
+  const instancedCanopyCyan = new THREE.InstancedMesh(canopyGeo, realFoliageBright, 24);
+  const instancedCanopySakura = new THREE.InstancedMesh(canopyGeo, realFoliageBlossom, 24);
 
   const dummy = new THREE.Object3D();
   let tIdx = 0;
   let gIdx = 0;
   let cIdx = 0;
+  let sIdx = 0;
 
-  for (let x = -84; x <= -52; x += 10) {
-    for (let z = -38; z <= 38; z += 14) {
-      if (Math.hypot(x - -68, z) > 10 && tIdx < treeCount) {
+  for (let x = -86; x <= -50; x += 9) {
+    for (let z = -40; z <= 40; z += 12) {
+      if (Math.hypot(x - -68, z) > 9.5 && tIdx < treeCount) {
         dummy.position.set(x, 2.25, z);
         dummy.rotation.set(0, Math.random() * Math.PI, 0);
         dummy.updateMatrix();
         instancedTrunks.setMatrixAt(tIdx, dummy.matrix);
 
         dummy.position.set(x, 4.6, z);
+        const sc = 0.8 + Math.random() * 0.4;
+        dummy.scale.set(sc, sc, sc);
         dummy.updateMatrix();
-        if (tIdx % 2 === 0 && gIdx < instancedCanopyGreen.count) {
+
+        if (tIdx % 3 === 0 && gIdx < 24) {
           instancedCanopyGreen.setMatrixAt(gIdx++, dummy.matrix);
-        } else if (cIdx < instancedCanopyCyan.count) {
+        } else if (tIdx % 3 === 1 && cIdx < 24) {
           instancedCanopyCyan.setMatrixAt(cIdx++, dummy.matrix);
+        } else if (sIdx < 24) {
+          instancedCanopySakura.setMatrixAt(sIdx++, dummy.matrix);
         }
         tIdx++;
       }
@@ -341,9 +495,11 @@ export function createEnvironment(
   instancedTrunks.instanceMatrix.needsUpdate = true;
   instancedCanopyGreen.instanceMatrix.needsUpdate = true;
   instancedCanopyCyan.instanceMatrix.needsUpdate = true;
+  instancedCanopySakura.instanceMatrix.needsUpdate = true;
   group.add(instancedTrunks);
   group.add(instancedCanopyGreen);
   group.add(instancedCanopyCyan);
+  group.add(instancedCanopySakura);
 
   scene.add(group);
 
@@ -354,7 +510,7 @@ export function createEnvironment(
     starField.rotation.y = time * 0.005;
     cloudGroup.rotation.y = time * 0.004;
     pondRim.scale.setScalar(1 + Math.sin(time * 2) * 0.015);
-    horizonMat.uniforms.uTime.value = time;
+    skyUniforms.uTime.value = time;
   };
 
   const dispose = () => {
@@ -364,8 +520,8 @@ export function createEnvironment(
     trunkGeo.dispose();
     canopyGeo.dispose();
     mountainMat.dispose();
-    horizonGeo.dispose();
-    horizonMat.dispose();
+    skyDomeGeo.dispose();
+    skyDomeMat.dispose();
     cloudGeo.dispose();
     cloudMat.dispose();
     cloudTex.dispose();
@@ -376,6 +532,8 @@ export function createEnvironment(
     dirLight,
     ambientLight,
     districtLights,
+    skyUniforms,
+    starMat,
     update,
     dispose,
   };

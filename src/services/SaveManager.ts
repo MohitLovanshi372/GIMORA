@@ -61,7 +61,7 @@ export class SaveManager {
     return {
       version: '1.0',
       timestamp: Date.now(),
-      timeOfDay: 23.7,
+      timeOfDay: 14.5,
       currentWeather: 'CLEAR',
       playerPosition: [0, 2.2, 0],
       cameraMode: 'orbit',

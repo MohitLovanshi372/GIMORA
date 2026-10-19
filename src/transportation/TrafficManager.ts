@@ -13,6 +13,7 @@ import { RailwayManager } from './RailwayManager';
 import { PedestrianManager } from './PedestrianManager';
 import { ParkingManager } from './ParkingManager';
 import { TrafficDensityLevel, TransportationMetrics } from '../city/types';
+import { CityPhysicsEngine } from '../city/modules/CityPhysicsEngine';
 
 export class TrafficManager {
   public scene: THREE.Scene;
@@ -53,22 +54,27 @@ export class TrafficManager {
     });
   }
 
+  public setPhysicsEngine(physicsEngine: CityPhysicsEngine) {
+    this.pedestrianManager.setPhysicsEngine(physicsEngine);
+  }
+
   public setDensityLevel(level: TrafficDensityLevel) {
     this.densityLevel = level;
     const target = this.vehicleSpawner.getTargetCountForDensity(level);
     this.vehicleSpawner.maintainPopulation(target);
   }
 
-  public update(delta: number) {
+  public update(delta: number, playerPos?: THREE.Vector3) {
     // 1. Update Traffic Lights
     this.trafficLights.forEach((tl) => tl.update(delta));
 
-    // 2. Update Vehicles
+    // 2. Update Vehicles (yielding to crossing pedestrians)
     const effDelta = delta * this.weatherSpeedMultiplier;
     const vehicles = this.vehicleSpawner.activeVehicles;
+    const pedestrians = this.pedestrianManager.pedestrians;
     for (let i = 0; i < vehicles.length; i++) {
       const v = vehicles[i];
-      v.update(effDelta, this.trafficLights, vehicles);
+      v.update(effDelta, this.trafficLights, vehicles, pedestrians);
 
       // Check if vehicle completed route and recycle
       if (v.state === 'waiting' && v.targetWaypointIndex >= v.waypoints.length) {
@@ -96,8 +102,8 @@ export class TrafficManager {
     // 5. Update Railways & Trains
     this.railwayManager.update(delta);
 
-    // 6. Update Pedestrians
-    this.pedestrianManager.update(delta);
+    // 6. Update Pedestrians (with Traffic Lights, Vehicles, and Player avoidance)
+    this.pedestrianManager.update(delta, this.trafficLights, vehicles, playerPos);
   }
 
   public getMetrics(): TransportationMetrics {

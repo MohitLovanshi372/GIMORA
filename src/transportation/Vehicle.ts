@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { RoadLane } from './RoadNetwork';
 import { TrafficLight } from './TrafficLight';
+import { Pedestrian } from './Pedestrian';
 
 export type VehicleType = 'car' | 'bus' | 'motorcycle' | 'ambulance' | 'police' | 'fire-truck' | 'taxi' | 'delivery-truck';
 
@@ -62,7 +63,8 @@ export abstract class Vehicle {
   public update(
     delta: number,
     trafficLights: Map<string, TrafficLight>,
-    allVehicles: Vehicle[]
+    allVehicles: Vehicle[],
+    pedestrians?: Pedestrian[]
   ) {
     if (!this.active) return;
 
@@ -141,10 +143,30 @@ export abstract class Vehicle {
       }
     }
 
+    // 3b. YIELD TO PEDESTRIANS ACTIVELY CROSSING IN CROSSWALK AHEAD
+    let pedestrianCrossingAhead = false;
+    if (pedestrians && !this.isEmergency) {
+      for (let i = 0; i < pedestrians.length; i++) {
+        const ped = pedestrians[i];
+        if (ped.state !== 'crossing_street') continue;
+        const dx = ped.mesh.position.x - currentPos.x;
+        const dz = ped.mesh.position.z - currentPos.z;
+        const dSq = dx * dx + dz * dz;
+        if (dSq < 196) {
+          const d = Math.sqrt(dSq);
+          const dot = (forwardVec.x * dx + forwardVec.z * dz) / (d + 0.0001);
+          if (dot > 0.72) {
+            pedestrianCrossingAhead = true;
+            break;
+          }
+        }
+      }
+    }
+
     // 4. SPEED ADJUSTMENT & STATE DETERMINATION
     let targetSpeed = this.maxSpeed;
 
-    if (shouldStopForLight || vehicleAheadDist < 8.0) {
+    if (shouldStopForLight || vehicleAheadDist < 8.0 || pedestrianCrossingAhead) {
       targetSpeed = 0;
       this.state = 'stopping';
     } else if (shouldSlowForLight || vehicleAheadDist < 16.0) {

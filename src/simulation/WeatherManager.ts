@@ -97,67 +97,87 @@ export class WeatherManager {
     switch (type) {
       case 'CLEAR':
         this.rainMat.opacity = 0.0;
-        this.materials.asphalt.roughness = 0.85;
-        this.materials.asphalt.metalness = 0.2;
-        this.materials.sidewalk.roughness = 0.8;
+        this.materials.asphalt.roughness = 0.78;
+        this.materials.asphalt.metalness = 0.14;
+        this.materials.asphalt.normalScale.set(0.65, 0.65);
+        this.materials.sidewalk.roughness = 0.82;
+        this.materials.concrete.roughness = 0.80;
         if (fog) {
-          fog.density = 0.0014;
-          fog.color.setHex(0x060814);
+          fog.density = 0.0011;
+          fog.color.setHex(0xcfdbe8);
         }
+        this.scene.background = new THREE.Color(0xcfdbe8);
         break;
 
       case 'CLOUDY':
         this.rainMat.opacity = 0.0;
-        this.materials.asphalt.roughness = 0.8;
-        this.materials.asphalt.metalness = 0.25;
+        this.materials.asphalt.roughness = 0.75;
+        this.materials.asphalt.metalness = 0.18;
+        this.materials.asphalt.normalScale.set(0.6, 0.6);
+        this.materials.sidewalk.roughness = 0.80;
+        this.materials.concrete.roughness = 0.78;
         if (fog) {
-          fog.density = 0.0022;
-          fog.color.setHex(0x080c1e);
+          fog.density = 0.0018;
+          fog.color.setHex(0x94a3b8);
         }
+        this.scene.background = new THREE.Color(0x94a3b8);
         break;
 
       case 'RAIN':
         this.rainMat.opacity = 0.6;
         // Wet road reflections
-        this.materials.asphalt.roughness = 0.15;
-        this.materials.asphalt.metalness = 0.85;
-        this.materials.sidewalk.roughness = 0.25;
+        this.materials.asphalt.roughness = 0.22;
+        this.materials.asphalt.metalness = 0.65;
+        this.materials.asphalt.normalScale.set(0.35, 0.35);
+        this.materials.sidewalk.roughness = 0.35;
+        this.materials.concrete.roughness = 0.40;
         if (fog) {
-          fog.density = 0.003;
-          fog.color.setHex(0x0a1024);
+          fog.density = 0.0026;
+          fog.color.setHex(0x64748b);
         }
+        this.scene.background = new THREE.Color(0x64748b);
         break;
 
       case 'HEAVY_RAIN':
         this.rainMat.opacity = 0.9;
-        this.materials.asphalt.roughness = 0.08;
-        this.materials.asphalt.metalness = 0.92;
-        this.materials.sidewalk.roughness = 0.18;
+        this.materials.asphalt.roughness = 0.15;
+        this.materials.asphalt.metalness = 0.82;
+        this.materials.asphalt.normalScale.set(0.2, 0.2);
+        this.materials.sidewalk.roughness = 0.25;
+        this.materials.concrete.roughness = 0.30;
         if (fog) {
-          fog.density = 0.0042;
-          fog.color.setHex(0x070b18);
+          fog.density = 0.0035;
+          fog.color.setHex(0x475569);
         }
+        this.scene.background = new THREE.Color(0x475569);
         break;
 
       case 'FOG':
         this.rainMat.opacity = 0.0;
-        this.materials.asphalt.roughness = 0.55;
-        this.materials.asphalt.metalness = 0.4;
+        this.materials.asphalt.roughness = 0.60;
+        this.materials.asphalt.metalness = 0.30;
+        this.materials.asphalt.normalScale.set(0.55, 0.55);
+        this.materials.sidewalk.roughness = 0.70;
+        this.materials.concrete.roughness = 0.68;
         if (fog) {
-          fog.density = 0.0048;
-          fog.color.setHex(0x0e172a);
+          fog.density = 0.0042;
+          fog.color.setHex(0x94a3b8);
         }
+        this.scene.background = new THREE.Color(0x94a3b8);
         break;
 
       case 'STORM':
         this.rainMat.opacity = 0.95;
-        this.materials.asphalt.roughness = 0.05;
-        this.materials.asphalt.metalness = 0.95;
-        this.materials.sidewalk.roughness = 0.12;
+        this.materials.asphalt.roughness = 0.12;
+        this.materials.asphalt.metalness = 0.88;
+        this.materials.asphalt.normalScale.set(0.18, 0.18);
+        this.materials.sidewalk.roughness = 0.20;
+        this.materials.concrete.roughness = 0.25;
         if (fog) {
-          fog.density = 0.0038;
-          fog.color.setHex(0x040610);
+          fog.density = 0.0032;
+          fog.color.setHex(0x334155);
         }
+        this.scene.background = new THREE.Color(0x334155);
         break;
     }
   }

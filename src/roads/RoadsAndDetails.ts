@@ -5,7 +5,11 @@
 
 import * as THREE from 'three';
 import { CityMaterials } from '../assets/materials';
-import { createLightPoolDecalTexture, createRoadArrowTexture } from '../assets/textures';
+import {
+  createLightPoolDecalTexture,
+  createRoadArrowTexture,
+  createHighwayGantrySignTexture,
+} from '../assets/textures';
 
 export interface RoadsAndDetailsSystem {
   group: THREE.Group;
@@ -23,10 +27,10 @@ export function createRoadsAndDetails(
 
   const bridgeMeshes: THREE.Group[] = [];
 
-  // 1. GROUND PLANE
-  const groundGeo = new THREE.PlaneGeometry(620, 620);
+  // 1. GROUND PLANE (Vast Metropolitan Expanse)
+  const groundGeo = new THREE.PlaneGeometry(740, 740);
   groundGeo.rotateX(-Math.PI / 2);
-  const groundMesh = new THREE.Mesh(groundGeo, materials.metalDark);
+  const groundMesh = new THREE.Mesh(groundGeo, materials.concrete);
   groundMesh.position.y = -0.05;
   groundMesh.receiveShadow = true;
   group.add(groundMesh);
@@ -66,12 +70,12 @@ export function createRoadsAndDetails(
     rightCurb.receiveShadow = true;
     roadGroup.add(rightCurb);
 
-    // Neon center dashes
+    // Realistic highway reflective white center dashes
     if (hasDivider) {
       const lineCount = Math.floor(length / 8);
       const dashGeo = new THREE.PlaneGeometry(0.35, 4);
       dashGeo.rotateX(-Math.PI / 2);
-      const instancedDashes = new THREE.InstancedMesh(dashGeo, materials.neonCyan, lineCount);
+      const instancedDashes = new THREE.InstancedMesh(dashGeo, materials.neonWhite, lineCount);
       const dummy = new THREE.Object3D();
 
       for (let i = 0; i < lineCount; i++) {
@@ -100,19 +104,21 @@ export function createRoadsAndDetails(
 
   // 2. PRIMARY ROAD NETWORK
   // West Bank North-South Avenues
-  createRoadStrip(-180, 0, 560, 14);
-  createRoadStrip(-100, 0, 560, 16);
-  createRoadStrip(-45, 0, 560, 14);
+  createRoadStrip(-240, 0, 680, 14);
+  createRoadStrip(-180, 0, 680, 14);
+  createRoadStrip(-100, 0, 680, 16);
+  createRoadStrip(-45, 0, 680, 14);
 
   // East Bank North-South Avenues
-  createRoadStrip(45, 0, 560, 14);
-  createRoadStrip(100, 0, 560, 16);
-  createRoadStrip(180, 0, 560, 14);
+  createRoadStrip(45, 0, 680, 14);
+  createRoadStrip(100, 0, 680, 16);
+  createRoadStrip(180, 0, 680, 14);
+  createRoadStrip(240, 0, 680, 14);
 
   // Connecting East-West Streets
-  [-220, -160, -90, 0, 90, 160, 220].forEach((zPos) => {
-    createRoadStrip(-135, zPos, 200, 14, Math.PI / 2);
-    createRoadStrip(135, zPos, 200, 14, Math.PI / 2);
+  [-260, -220, -160, -90, 0, 90, 160, 220, 260].forEach((zPos) => {
+    createRoadStrip(-145, zPos, 220, 14, Math.PI / 2);
+    createRoadStrip(145, zPos, 220, 14, Math.PI / 2);
   });
 
   // 3. ROAD BRIDGES CROSSING THE RIVER
@@ -135,7 +141,7 @@ export function createRoadsAndDetails(
   northBridge.add(line1);
 
   [-bridgeWidth / 2, bridgeWidth / 2].forEach((bz) => {
-    const edge = new THREE.Mesh(edgeGeo, materials.neonCyan);
+    const edge = new THREE.Mesh(edgeGeo, materials.metalDark);
     edge.position.set(0, 0.7, bz);
     northBridge.add(edge);
   });
@@ -147,7 +153,7 @@ export function createRoadsAndDetails(
     pylon.castShadow = true;
     northBridge.add(pylon);
 
-    // Stay cables
+    // Stay cables (High-tensile structural steel)
     [-34, -28, -16, -8, 8, 16, 28, 34].forEach((cableX) => {
       if (Math.abs(cableX - pylonX) > 4) {
         const start = new THREE.Vector3(pylonX, pylonHeight - 4, 0);
@@ -157,7 +163,7 @@ export function createRoadsAndDetails(
         const cableGeo = new THREE.CylinderGeometry(0.08, 0.08, cLen, 4);
         cableGeo.translate(0, cLen / 2, 0);
         cableGeo.rotateX(Math.PI / 2);
-        const cable = new THREE.Mesh(cableGeo, materials.neonCyan);
+        const cable = new THREE.Mesh(cableGeo, materials.metalLight);
         cable.position.copy(start);
         cable.lookAt(end);
         northBridge.add(cable);
@@ -174,18 +180,19 @@ export function createRoadsAndDetails(
   deck2.castShadow = true;
   centralBridge.add(deck2);
 
-  const line2 = new THREE.Mesh(bridgeLineGeo, materials.neonCyan);
+  const line2 = new THREE.Mesh(bridgeLineGeo, materials.neonWhite);
   line2.position.y = 0.62;
   centralBridge.add(line2);
 
-  // Outer neon bridge deck glow strips
-  const deckGlowNorth = new THREE.Mesh(new THREE.BoxGeometry(bridgeSpan, 0.35, 0.35), materials.neonCyan);
-  deckGlowNorth.position.set(0, 0.65, -bridgeWidth / 2);
-  centralBridge.add(deckGlowNorth);
+  // Structural Steel Guardrails on both sides of bridge
+  const guardrailGeo = new THREE.BoxGeometry(bridgeSpan, 0.9, 0.25);
+  const guardrailNorth = new THREE.Mesh(guardrailGeo, materials.metalDark);
+  guardrailNorth.position.set(0, 0.85, -bridgeWidth / 2 + 0.3);
+  centralBridge.add(guardrailNorth);
 
-  const deckGlowSouth = new THREE.Mesh(new THREE.BoxGeometry(bridgeSpan, 0.35, 0.35), materials.neonPink);
-  deckGlowSouth.position.set(0, 0.65, bridgeWidth / 2);
-  centralBridge.add(deckGlowSouth);
+  const guardrailSouth = new THREE.Mesh(guardrailGeo, materials.metalDark);
+  guardrailSouth.position.set(0, 0.85, bridgeWidth / 2 - 0.3);
+  centralBridge.add(guardrailSouth);
 
   [-bridgeWidth / 2 - 0.5, bridgeWidth / 2 + 0.5].forEach((archZ) => {
     const archRadius = 38;
@@ -195,18 +202,13 @@ export function createRoadsAndDetails(
     archMesh.castShadow = true;
     centralBridge.add(archMesh);
 
-    const neonArch = new THREE.Mesh(new THREE.TorusGeometry(archRadius, 0.35, 6, 32, Math.PI), materials.neonCyan);
-    neonArch.position.set(0, -18, archZ);
-    neonArch.rotation.z = Math.PI;
-    centralBridge.add(neonArch);
-
-    // Vertical suspension hanger cables from arch to deck
+    // Vertical suspension hanger cables from steel arch to deck (structural steel)
     for (let hx = -32; hx <= 32; hx += 4) {
       const archH = -18 + Math.sqrt(Math.max(0, archRadius * archRadius - hx * hx));
       const hangerH = archH - 0.6;
       if (hangerH > 0.8) {
-        const suspGeo = new THREE.CylinderGeometry(0.06, 0.06, hangerH, 4);
-        const susp = new THREE.Mesh(suspGeo, materials.neonCyan);
+        const suspGeo = new THREE.CylinderGeometry(0.08, 0.08, hangerH, 6);
+        const susp = new THREE.Mesh(suspGeo, materials.metalLight);
         susp.position.set(hx, 0.6 + hangerH / 2, archZ);
         centralBridge.add(susp);
       }
@@ -215,7 +217,7 @@ export function createRoadsAndDetails(
 
   // Massive River Piers anchored into the riverbed
   [-24, 24].forEach((px) => {
-    const pier = new THREE.Mesh(new THREE.BoxGeometry(4.4, 5.5, bridgeWidth + 4), materials.metalDark);
+    const pier = new THREE.Mesh(new THREE.BoxGeometry(4.4, 5.5, bridgeWidth + 4), materials.concrete);
     pier.position.set(px, -2.2, 0);
     pier.castShadow = true;
     centralBridge.add(pier);
@@ -246,13 +248,222 @@ export function createRoadsAndDetails(
   southBridge.add(line3);
 
   [-24, 0, 24].forEach((px) => {
-    const pier = new THREE.Mesh(new THREE.BoxGeometry(3, 4.2, bridgeWidth + 2), materials.metalDark);
+    const pier = new THREE.Mesh(new THREE.BoxGeometry(3, 4.2, bridgeWidth + 2), materials.concrete);
     pier.position.set(px, -1.8, 0);
     pier.castShadow = true;
     southBridge.add(pier);
   });
   group.add(southBridge);
   bridgeMeshes.push(southBridge);
+
+  // 3b. ELEVATED HIGHWAY FLYOVER & ACCESS RAMPS (Multi-Level Expressway Viaduct)
+  const flyoverGroup = new THREE.Group();
+  flyoverGroup.name = 'highway_flyover_system';
+
+  const flyoverElevation = 9.0;
+  const flyoverLength = 500;
+  const flyoverWidth = 15;
+  const flyoverX = 100;
+
+  // Flyover Structural Concrete Deck
+  const flyoverDeckGeo = new THREE.BoxGeometry(flyoverWidth, 1.4, flyoverLength);
+  const flyoverDeck = new THREE.Mesh(flyoverDeckGeo, materials.concrete);
+  flyoverDeck.position.set(flyoverX, flyoverElevation, 0);
+  flyoverDeck.castShadow = true;
+  flyoverDeck.receiveShadow = true;
+  flyoverGroup.add(flyoverDeck);
+
+  // Flyover Asphalt Road Surface
+  const flyoverAsphaltGeo = new THREE.PlaneGeometry(flyoverWidth - 0.8, flyoverLength);
+  flyoverAsphaltGeo.rotateX(-Math.PI / 2);
+  const flyoverRoad = new THREE.Mesh(flyoverAsphaltGeo, materials.asphalt);
+  flyoverRoad.position.set(flyoverX, flyoverElevation + 0.72, 0);
+  flyoverRoad.receiveShadow = true;
+  flyoverGroup.add(flyoverRoad);
+
+  // Concrete Jersey Barriers on Left and Right Edges
+  const barrierGeo = new THREE.BoxGeometry(0.5, 1.2, flyoverLength);
+  const leftBarrier = new THREE.Mesh(barrierGeo, materials.concrete);
+  leftBarrier.position.set(flyoverX - flyoverWidth / 2 + 0.25, flyoverElevation + 1.2, 0);
+  flyoverGroup.add(leftBarrier);
+
+  const rightBarrier = new THREE.Mesh(barrierGeo, materials.concrete);
+  rightBarrier.position.set(flyoverX + flyoverWidth / 2 - 0.25, flyoverElevation + 1.2, 0);
+  flyoverGroup.add(rightBarrier);
+
+  // Structural Steel Guardrails along flyover outer barriers
+  const guardGeo = new THREE.BoxGeometry(0.18, 0.4, flyoverLength);
+  const leftGuard = new THREE.Mesh(guardGeo, materials.metalDark);
+  leftGuard.position.set(flyoverX - flyoverWidth / 2 + 0.15, flyoverElevation + 1.6, 0);
+  flyoverGroup.add(leftGuard);
+
+  const rightGuard = new THREE.Mesh(guardGeo, materials.metalDark);
+  rightGuard.position.set(flyoverX + flyoverWidth / 2 - 0.15, flyoverElevation + 1.6, 0);
+  flyoverGroup.add(rightGuard);
+
+  // Center Concrete Median Divider Barrier
+  const medianBarrier = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.0, flyoverLength), materials.concrete);
+  medianBarrier.position.set(flyoverX, flyoverElevation + 1.1, 0);
+  flyoverGroup.add(medianBarrier);
+
+  // Double Yellow Line along median
+  const yellowLineGeo = new THREE.PlaneGeometry(0.2, flyoverLength);
+  yellowLineGeo.rotateX(-Math.PI / 2);
+  const medYellowL = new THREE.Mesh(yellowLineGeo, materials.neonAmber);
+  medYellowL.position.set(flyoverX - 0.5, flyoverElevation + 0.73, 0);
+  flyoverGroup.add(medYellowL);
+
+  const medYellowR = new THREE.Mesh(yellowLineGeo, materials.neonAmber);
+  medYellowR.position.set(flyoverX + 0.5, flyoverElevation + 0.73, 0);
+  flyoverGroup.add(medYellowR);
+
+  // Dashed White Highway Lane Divisors (2 lanes each direction)
+  const laneDashCount = Math.floor(flyoverLength / 9);
+  const flyoverDashGeo = new THREE.PlaneGeometry(0.3, 4.5);
+  flyoverDashGeo.rotateX(-Math.PI / 2);
+  const dashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const instancedFlyoverDashes = new THREE.InstancedMesh(flyoverDashGeo, dashMat, laneDashCount * 2);
+  const dummyDash = new THREE.Object3D();
+  let dIdx = 0;
+
+  for (let i = 0; i < laneDashCount; i++) {
+    const zPos = -flyoverLength / 2 + i * 9 + 4.5;
+    // West lane divider (Southbound)
+    dummyDash.position.set(flyoverX - 3.8, flyoverElevation + 0.73, zPos);
+    dummyDash.updateMatrix();
+    instancedFlyoverDashes.setMatrixAt(dIdx++, dummyDash.matrix);
+
+    // East lane divider (Northbound)
+    dummyDash.position.set(flyoverX + 3.8, flyoverElevation + 0.73, zPos);
+    dummyDash.updateMatrix();
+    instancedFlyoverDashes.setMatrixAt(dIdx++, dummyDash.matrix);
+  }
+  instancedFlyoverDashes.instanceMatrix.needsUpdate = true;
+  flyoverGroup.add(instancedFlyoverDashes);
+
+  // Massive Sculptural Hammerhead Concrete Piers supporting the Flyover
+  const pierGeo = new THREE.BoxGeometry(3.0, flyoverElevation, 2.6);
+  const capGeo = new THREE.BoxGeometry(flyoverWidth + 1.2, 1.4, 3.4);
+
+  for (let pz = -220; pz <= 220; pz += 44) {
+    const pier = new THREE.Mesh(pierGeo, materials.concrete);
+    pier.position.set(flyoverX, flyoverElevation / 2, pz);
+    pier.castShadow = true;
+    flyoverGroup.add(pier);
+
+    const cap = new THREE.Mesh(capGeo, materials.concrete);
+    cap.position.set(flyoverX, flyoverElevation - 0.7, pz);
+    cap.castShadow = true;
+    flyoverGroup.add(cap);
+
+    // Under-deck LED road inspection lighting (warm luminaire)
+    const underLight = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 1.2), materials.neonWhite);
+    underLight.position.set(flyoverX, flyoverElevation - 1.4, pz);
+    flyoverGroup.add(underLight);
+  }
+
+  // Flyover Access Ramps:
+  // Ramp 1: On-Ramp ascending from ground level (Z: -240) to flyover (Z: -160)
+  const rampLength = 80;
+  const rampWidth = 6.5;
+  const onRampGeo = new THREE.BoxGeometry(rampWidth, 0.8, rampLength);
+  const onRamp = new THREE.Mesh(onRampGeo, materials.concrete);
+  onRamp.position.set(flyoverX + 11, flyoverElevation / 2, -200);
+  onRamp.rotation.x = Math.atan2(flyoverElevation, rampLength);
+  onRamp.castShadow = true;
+  flyoverGroup.add(onRamp);
+
+  const onRampRoad = new THREE.Mesh(new THREE.PlaneGeometry(rampWidth - 0.4, rampLength), materials.asphalt);
+  onRampRoad.position.set(flyoverX + 11, flyoverElevation / 2 + 0.42, -200);
+  onRampRoad.rotation.x = -Math.PI / 2 + Math.atan2(flyoverElevation, rampLength);
+  flyoverGroup.add(onRampRoad);
+
+  // Ramp 2: Off-Ramp descending from flyover (Z: 140) down to ground level (Z: 220)
+  const offRamp = new THREE.Mesh(onRampGeo, materials.concrete);
+  offRamp.position.set(flyoverX + 11, flyoverElevation / 2, 180);
+  offRamp.rotation.x = -Math.atan2(flyoverElevation, rampLength);
+  offRamp.castShadow = true;
+  flyoverGroup.add(offRamp);
+
+  const offRampRoad = new THREE.Mesh(new THREE.PlaneGeometry(rampWidth - 0.4, rampLength), materials.asphalt);
+  offRampRoad.position.set(flyoverX + 11, flyoverElevation / 2 + 0.42, 180);
+  offRampRoad.rotation.x = -Math.PI / 2 - Math.atan2(flyoverElevation, rampLength);
+  flyoverGroup.add(offRampRoad);
+
+  // 3c. OVERHEAD HIGHWAY GANTRY SIGNBOARDS
+  const gantryConfigs = [
+    {
+      x: flyoverX,
+      y: flyoverElevation + 5.2,
+      z: -120,
+      main: 'SKYPORT AIRPORT / MOHIT HUB',
+      sub: 'EXIT 4B: TECH DISTRICT  1.2 km',
+      route: 'HWY 101 N',
+    },
+    {
+      x: flyoverX,
+      y: flyoverElevation + 5.2,
+      z: 70,
+      main: 'APEX CORP HQ / DOWNTOWN',
+      sub: 'EXIT 2A: CORPORATE OFFICES & TRADING',
+      route: 'HWY 101 S',
+    },
+    {
+      x: flyoverX,
+      y: flyoverElevation + 5.2,
+      z: -10,
+      main: 'CYBER-PULSE MEGAPLEX MALL',
+      sub: 'EXIT 3C: SHOPPING PROMENADE & ATRIUM',
+      route: 'HWY 101 N',
+    },
+    {
+      x: -100,
+      y: 7.2,
+      z: -70,
+      main: 'CENTRAL METRO HIGHWAY',
+      sub: 'MAGLEV TRANSIT & RIVER CRUISE',
+      route: 'EXP 01',
+    },
+    {
+      x: -100,
+      y: 7.2,
+      z: 110,
+      main: 'RIVERSIDE & CENTRAL PARK',
+      sub: 'EXIT 1B: SAKURA PROMENADE & POND',
+      route: 'PKWY 02',
+    },
+  ];
+
+  gantryConfigs.forEach((gCfg) => {
+    const gantry = new THREE.Group();
+    gantry.position.set(gCfg.x, gCfg.y, gCfg.z);
+
+    // Steel overhead truss bridge
+    const trussWidth = 18;
+    const truss = new THREE.Mesh(new THREE.BoxGeometry(trussWidth, 0.8, 0.8), materials.metalLight);
+    gantry.add(truss);
+
+    // Support legs
+    [-trussWidth / 2 + 0.4, trussWidth / 2 - 0.4].forEach((legX) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 5.8, 8), materials.metalDark);
+      leg.position.set(legX, -2.5, 0);
+      gantry.add(leg);
+    });
+
+    // Realistic Signboard Mesh
+    const signTex = createHighwayGantrySignTexture(gCfg.main, gCfg.sub, gCfg.route);
+    const signMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 3.8),
+      new THREE.MeshBasicMaterial({ map: signTex, side: THREE.DoubleSide })
+    );
+    signMesh.position.set(0, 0.2, 0.5);
+    gantry.add(signMesh);
+
+    flyoverGroup.add(gantry);
+  });
+
+  group.add(flyoverGroup);
+  bridgeMeshes.push(flyoverGroup);
 
   // 4. CROSSWALKS AT MAJOR INTERSECTIONS
   const intersectionPoints = [
@@ -345,13 +556,13 @@ export function createRoadsAndDetails(
     group.add(gantry);
   });
 
-  // 6. STREET SIGNS AT CORNERS
+  // 6. STREET SIGNS AT CORNERS (Standard Municipal Green Signage)
   const streetSignConfigs = [
-    { text: 'NEXUS BOULEVARD', x: -100, z: -172 },
-    { text: 'CYBER WAY', x: -100, z: 12 },
-    { text: 'QUANTUM AVENUE', x: 100, z: -172 },
-    { text: 'INNOVATION ROW', x: 100, z: 12 },
-    { text: 'RIVERSIDE PARKWAY', x: -45, z: 12 },
+    { text: 'METROPOLITAN BLVD', x: -100, z: -172 },
+    { text: 'RIVERSIDE DRIVE', x: -100, z: 12 },
+    { text: 'UNIVERSITY AVENUE', x: 100, z: -172 },
+    { text: 'INNOVATION PARKWAY', x: 100, z: 12 },
+    { text: 'HARBOR PARKWAY', x: -45, z: 12 },
     { text: 'ACADEMY DRIVE', x: -180, z: -172 },
   ];
 
@@ -367,15 +578,15 @@ export function createRoadsAndDetails(
     signCanvas.width = 512;
     signCanvas.height = 128;
     const sCtx = signCanvas.getContext('2d')!;
-    sCtx.fillStyle = '#020617';
+    sCtx.fillStyle = '#065f46'; // Standard Municipal Highway Green
     sCtx.fillRect(0, 0, 512, 128);
-    sCtx.strokeStyle = '#00f0ff';
-    sCtx.lineWidth = 6;
-    sCtx.strokeRect(4, 4, 504, 120);
-    sCtx.font = 'bold 36px "Chakra Petch", monospace';
-    sCtx.fillStyle = '#00f0ff';
+    sCtx.strokeStyle = '#ffffff';
+    sCtx.lineWidth = 4;
+    sCtx.strokeRect(6, 6, 500, 116);
+    sCtx.font = 'bold 36px "Plus Jakarta Sans", system-ui, sans-serif';
+    sCtx.fillStyle = '#ffffff';
     sCtx.textAlign = 'center';
-    sCtx.fillText(cfg.text, 256, 75);
+    sCtx.fillText(cfg.text, 256, 76);
 
     const signTex = new THREE.CanvasTexture(signCanvas);
     const signPlate = new THREE.Mesh(
@@ -409,10 +620,16 @@ export function createRoadsAndDetails(
     bench.position.set(0, 0.5, 0);
     shelterGroup.add(bench);
 
-    // Glowing Bus Route Pillar
-    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.2, 0.3), materials.neonCyan);
+    // Bus Route Schedule Pillar
+    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.2, 0.3), materials.metalDark);
     pillar.position.set(2.8, 1.6, 1.1);
     shelterGroup.add(pillar);
+
+    // Schedule panel on pillar
+    const schedGeo = new THREE.PlaneGeometry(0.24, 1.4);
+    const schedMesh = new THREE.Mesh(schedGeo, materials.neonWhite);
+    schedMesh.position.set(2.8, 1.8, 1.26);
+    shelterGroup.add(schedMesh);
 
     group.add(shelterGroup);
   });
@@ -442,7 +659,7 @@ export function createRoadsAndDetails(
       lotGroup.add(stallR);
     }
 
-    // EV Charging Pylons with green neon LEDs
+    // EV Charging Pylons with green status LEDs
     for (let x = -pkg.w / 2 + 3; x <= pkg.w / 2 - 3; x += 6.4) {
       const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.8, 0.4), materials.metalDark);
       pylon.position.set(x, 0.9, -pkg.d / 2 + 1);
@@ -456,7 +673,7 @@ export function createRoadsAndDetails(
     group.add(lotGroup);
   });
 
-  // 9. INSTANCED STREET LIGHTS WITH ROAD LIGHT POOLS
+  // 9. INSTANCED STREET LIGHTS WITH ROAD LIGHT POOLS (Warm High-Efficiency LED Streetlights)
   const streetLightCount = 120;
   const poleGeo = new THREE.CylinderGeometry(0.18, 0.25, 7.5, 6);
   const headGeo = new THREE.BoxGeometry(1.2, 0.25, 0.6);
@@ -464,18 +681,18 @@ export function createRoadsAndDetails(
 
   const poolGeo = new THREE.PlaneGeometry(14, 14);
   poolGeo.rotateX(-Math.PI / 2);
-  const poolTex = createLightPoolDecalTexture('#00f0ff');
+  const poolTex = createLightPoolDecalTexture('#fef3c7');
   const poolMat = new THREE.MeshBasicMaterial({
     map: poolTex,
     transparent: true,
-    opacity: 0.38,
+    opacity: 0.35,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
 
   const instancedPoles = new THREE.InstancedMesh(poleGeo, materials.metalLight, streetLightCount);
   const instancedHeads = new THREE.InstancedMesh(headGeo, materials.metalLight, streetLightCount);
-  const instancedGlows = new THREE.InstancedMesh(headGlowGeo, materials.neonCyan, streetLightCount);
+  const instancedGlows = new THREE.InstancedMesh(headGlowGeo, materials.neonWhite, streetLightCount);
   const instancedPools = new THREE.InstancedMesh(poolGeo, poolMat, streetLightCount);
 
   const dummy = new THREE.Object3D();
@@ -522,11 +739,78 @@ export function createRoadsAndDetails(
   group.add(instancedGlows);
   group.add(instancedPools);
 
+  // 10. GTA V LOS SANTOS PALM TREE BOULEVARDS & STREET FURNITURE
+  const palmPositions: [number, number][] = [];
+  // Waterfront Promenade & Central Grand Boulevard Palm Rows
+  for (let z = -230; z <= 230; z += 24) {
+    if (Math.abs(z) > 12 && Math.abs(z - -160) > 12 && Math.abs(z - 160) > 12) {
+      palmPositions.push([-36, z], [36, z], [-91, z], [91, z]);
+    }
+  }
+
+  const palmCount = palmPositions.length;
+  const palmTrunkGeo = new THREE.CylinderGeometry(0.18, 0.34, 9.5, 7);
+  const palmCrownGeo = new THREE.ConeGeometry(2.8, 1.8, 7);
+  const palmFrondGeo = new THREE.BoxGeometry(3.8, 0.12, 0.65);
+
+  const palmTrunkMat = new THREE.MeshStandardMaterial({
+    color: 0x5c4033,
+    roughness: 0.88,
+    metalness: 0.05,
+    normalMap: materials.maps.concreteNormal,
+  });
+  const palmLeafMat = new THREE.MeshStandardMaterial({
+    color: 0x2d6a3e,
+    roughness: 0.62,
+    metalness: 0.08,
+  });
+
+  const instancedPalmTrunks = new THREE.InstancedMesh(palmTrunkGeo, palmTrunkMat, palmCount);
+  const instancedPalmCrowns = new THREE.InstancedMesh(palmCrownGeo, palmLeafMat, palmCount);
+  const instancedPalmFronds = new THREE.InstancedMesh(palmFrondGeo, palmLeafMat, palmCount * 4);
+  instancedPalmTrunks.castShadow = true;
+  instancedPalmCrowns.castShadow = true;
+
+  let frondIdx = 0;
+  palmPositions.forEach(([px, pz], idx) => {
+    const hScale = 0.88 + ((Math.abs(px + pz) % 5) * 0.06);
+    const tiltX = Math.sin(pz * 0.1) * 0.05;
+    const tiltZ = Math.cos(px * 0.1) * 0.05;
+
+    dummy.position.set(px, (9.5 * hScale) / 2, pz);
+    dummy.rotation.set(tiltX, (idx * 1.1) % Math.PI, tiltZ);
+    dummy.scale.set(1, hScale, 1);
+    dummy.updateMatrix();
+    instancedPalmTrunks.setMatrixAt(idx, dummy.matrix);
+
+    const topY = 9.5 * hScale;
+    dummy.position.set(px + tiltZ * 2.0, topY, pz + tiltX * 2.0);
+    dummy.rotation.set(0, idx * 0.7, 0);
+    dummy.scale.set(1, 1, 1);
+    dummy.updateMatrix();
+    instancedPalmCrowns.setMatrixAt(idx, dummy.matrix);
+
+    // 4 Radiating Arching Frond Crosses per Palm
+    for (let f = 0; f < 4; f++) {
+      dummy.position.set(px + tiltZ * 2.0, topY - 0.2, pz + tiltX * 2.0);
+      dummy.rotation.set(0.22, (f * Math.PI) / 4 + idx * 0.3, 0.18);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      instancedPalmFronds.setMatrixAt(frondIdx++, dummy.matrix);
+    }
+  });
+
+  instancedPalmTrunks.instanceMatrix.needsUpdate = true;
+  instancedPalmCrowns.instanceMatrix.needsUpdate = true;
+  instancedPalmFronds.instanceMatrix.needsUpdate = true;
+  group.add(instancedPalmTrunks);
+  group.add(instancedPalmCrowns);
+  group.add(instancedPalmFronds);
+
   scene.add(group);
 
-  const update = (time: number) => {
-    // Pulse street markings
-    materials.neonCyan.opacity = 0.85 + Math.sin(time * 3) * 0.15;
+  const update = (_time: number) => {
+    // Street details stay solid and realistic
   };
 
   const dispose = () => {
@@ -544,6 +828,11 @@ export function createRoadsAndDetails(
     poleGeo.dispose();
     headGeo.dispose();
     headGlowGeo.dispose();
+    palmTrunkGeo.dispose();
+    palmCrownGeo.dispose();
+    palmFrondGeo.dispose();
+    palmTrunkMat.dispose();
+    palmLeafMat.dispose();
   };
 
   return {

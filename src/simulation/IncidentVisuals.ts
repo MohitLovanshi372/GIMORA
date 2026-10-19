@@ -39,18 +39,18 @@ export class IncidentVisuals {
     const incidentGroup = new THREE.Group();
     incidentGroup.position.set(event.location.x, Math.max(0.5, event.location.y), event.location.z);
 
-    // Pick color scheme
+    // Pick color scheme (Standard Municipal Emergency Services Palette)
     let ringMat = this.ringMatFire;
-    let beaconColor = 0xff2200;
+    let beaconColor = 0xdc2626; // Emergency Fire Red
     if (event.type === 'ACCIDENT') {
       ringMat = this.ringMatAccident;
-      beaconColor = 0xff9900;
+      beaconColor = 0xf59e0b; // Highway Hazard Amber
     } else if (event.type === 'MEDICAL_EMERGENCY') {
       ringMat = this.ringMatMedical;
-      beaconColor = 0x00e5ff;
+      beaconColor = 0x2563eb; // Emergency Medical Blue
     } else if (event.type === 'TRAFFIC_JAM' || event.type === 'ROAD_BLOCK') {
       ringMat = this.ringMatTraffic;
-      beaconColor = 0xff0066;
+      beaconColor = 0xf59e0b; // Safety Traffic Orange/Amber
     }
 
     // 1. Expanding Ground Warning Ring
@@ -60,7 +60,7 @@ export class IncidentVisuals {
     ringMesh.position.y = 0.2;
     incidentGroup.add(ringMesh);
 
-    // 2. Vertical Holographic Cyber Beacon Pillar
+    // 2. Vertical Emergency Perimeter Beacon Pillar
     const pillarGeo = new THREE.CylinderGeometry(0.35, 1.8, 38, 12, 1, true);
     const pillarMat = new THREE.MeshBasicMaterial({
       color: beaconColor,

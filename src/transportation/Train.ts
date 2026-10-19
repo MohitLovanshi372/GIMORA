@@ -17,9 +17,9 @@ export class Train {
   public maxSpeed = 38; // ~137 km/h
   public acceleration = 6;
   public deceleration = 7;
-  public currentStation = 'Central Hyper-Transit Terminal';
-  public nextStation = 'Continental North Hub';
-  public destinationStation = 'Neo-Metropolis East Express';
+  public currentStation = 'Grand Central Union Terminal';
+  public nextStation = 'Northern Regional Hub';
+  public destinationStation = 'Metropolis East Terminal';
   public state: TrainState = 'cruising';
   public dwellTimer = 0;
   public mesh: THREE.Group;
@@ -50,17 +50,27 @@ export class Train {
     const isPass = this.type === 'passenger';
     const isExpress = this.type === 'express';
 
+    // Realistic High-Speed / Commuter Rail Materials
     const trainMat = new THREE.MeshStandardMaterial({
-      color: isExpress ? 0x2e1065 : isPass ? 0x0a192f : 0x1e293b,
-      metalness: 0.9,
-      roughness: 0.15,
+      color: isExpress ? 0xf1f5f9 : isPass ? 0xf8fafc : 0x334155, // Clean white / light silver aerodynamic train body
+      metalness: 0.65,
+      roughness: 0.25,
     });
-    const windowMat = new THREE.MeshBasicMaterial({
-      color: isExpress ? 0xf0abfc : isPass ? 0x00f0ff : 0xffaa00,
+    const stripeMat = new THREE.MeshStandardMaterial({
+      color: isExpress ? 0xdc2626 : isPass ? 0x2563eb : 0x475569, // High-speed red / blue aerodynamic livery stripe
+      metalness: 0.5,
+      roughness: 0.3,
     });
-    const glowColor = isExpress ? 0xa855f7 : 0x00f0ff;
-    const cyanGlowMat = new THREE.MeshBasicMaterial({ color: glowColor });
-    const redGlowMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
+    const windowMat = new THREE.MeshPhysicalMaterial({
+      color: 0x0f172a,
+      emissive: new THREE.Color(0xfef08a),
+      emissiveIntensity: 0.22, // Warm interior passenger cabin illumination
+      roughness: 0.1,
+      metalness: 0.8,
+    });
+    const bogieMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+    const whiteHeadlampMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const redTaillampMat = new THREE.MeshBasicMaterial({ color: 0xdc2626 });
 
     const carLength = 18;
     const carWidth = 3.2;
@@ -81,11 +91,19 @@ export class Train {
       carGroup.add(carBody);
 
       if (isPass || isExpress) {
-        // Streamlined Nose cone on lead cars
+        // Livery Speed Stripe
+        const stripe = new THREE.Mesh(
+          new THREE.BoxGeometry(carLength + 0.05, 0.35, carWidth + 0.05),
+          stripeMat
+        );
+        stripe.position.y = carHeight * 0.45 + 0.3;
+        carGroup.add(stripe);
+
+        // Streamlined Aerodynamic Nose cone on lead cars
         if (i === 0 || i === carCount - 1) {
           const noseSign = i === 0 ? 1 : -1;
           const nose = new THREE.Mesh(
-            new THREE.ConeGeometry(carWidth * 0.5, isExpress ? 6.0 : 4.5, 6),
+            new THREE.ConeGeometry(carWidth * 0.5, isExpress ? 6.0 : 4.5, 8),
             trainMat
           );
           nose.rotateZ(noseSign * (-Math.PI / 2));
@@ -128,23 +146,25 @@ export class Train {
         carGroup.add(container);
       }
 
-      // Neon Underglow strip along superconducting maglev track
-      const underglow = new THREE.Mesh(
-        new THREE.BoxGeometry(carLength, 0.15, carWidth + 0.2),
-        cyanGlowMat
-      );
-      underglow.position.y = 0.35;
-      carGroup.add(underglow);
+      // Realistic Steel Undercarriage / Wheel Bogies
+      [-carLength / 3, carLength / 3].forEach((bx) => {
+        const bogie = new THREE.Mesh(
+          new THREE.BoxGeometry(3.4, 0.35, carWidth - 0.2),
+          bogieMat
+        );
+        bogie.position.set(bx, 0.22, 0);
+        carGroup.add(bogie);
+      });
 
       this.mesh.add(carGroup);
     }
 
-    // Lead Headlights & Taillights
-    const hl = new THREE.Mesh(new THREE.SphereGeometry(0.6, 8, 8), cyanGlowMat);
+    // Lead Projector Headlights & Red Taillights
+    const hl = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), whiteHeadlampMat);
     hl.position.set((carCount * carLength) / 2 + 3.0, 1.8, 0);
     this.mesh.add(hl);
 
-    const tl = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), redGlowMat);
+    const tl = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 8), redTaillampMat);
     tl.position.set(-((carCount * carLength) / 2 + 2.5), 1.8, 0);
     this.mesh.add(tl);
   }

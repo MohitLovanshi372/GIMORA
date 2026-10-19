@@ -25,6 +25,7 @@ import { BuildingActivityManager } from '../simulation/BuildingActivityManager';
 import { CinematicTourManager } from './modules/CinematicTourManager';
 import { WorldChunkManager } from './modules/WorldChunkManager';
 import { PlayerSystem, InteractionPrompt } from './modules/PlayerSystem';
+import { CityPhysicsEngine } from './modules/CityPhysicsEngine';
 import { AssetManager } from '../assets/AssetManager';
 import { missionManager } from '../simulation/MissionManager';
 import { InteriorBuildingType } from '../ui/BuildingInteriorModal';
@@ -32,7 +33,17 @@ import { WeatherType } from './types';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+
+export interface PlayerRadarTelemetry {
+  x: number;
+  z: number;
+  heading: number;
+  speedKmh: number;
+  streetName: string;
+  districtName: string;
+}
 
 export interface CitySceneCallbacks {
   onBuildingSelect: (building: BuildingData | null) => void;
@@ -46,6 +57,8 @@ export class CityScene {
   private renderer!: THREE.WebGLRenderer;
   private composer!: EffectComposer;
   private bloomPass!: UnrealBloomPass;
+  private gtaRAGEPass!: ShaderPass;
+  private envMapRenderTarget: THREE.WebGLRenderTarget | null = null;
   private scene!: THREE.Scene;
   private cameraController!: CameraController;
   private raycaster!: THREE.Raycaster;
@@ -72,6 +85,7 @@ export class CityScene {
   public cinematicTourManager!: CinematicTourManager;
   public worldChunkManager!: WorldChunkManager;
   public playerSystem!: PlayerSystem;
+  public physicsEngine!: CityPhysicsEngine;
   public futureSystemsRegistry!: FutureSystemsRegistry;
 
   private allInteractiveObjects: THREE.Object3D[] = [];
@@ -107,6 +121,57 @@ export class CityScene {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.15;
 
+    // Generate 4K PBR Image-Based Lighting (IBL) Environment Map for Curtain Wall Glass & Metals
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    pmremGenerator.compileCubemapShader();
+    const envScene = new THREE.Scene();
+    const skyDomeGeo = new THREE.SphereGeometry(100, 32, 16);
+    const skyDomeMat = new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      uniforms: {
+        uTopColor: { value: new THREE.Color(0x38bdf8) },
+        uHorizonColor: { value: new THREE.Color(0xfef3c7) },
+        uGroundColor: { value: new THREE.Color(0x1e293b) },
+      },
+      vertexShader: `
+        varying vec3 vWorldPos;
+        void main() {
+          vec4 wp = modelMatrix * vec4(position, 1.0);
+          vWorldPos = wp.xyz;
+          gl_Position = projectionMatrix * viewMatrix * wp;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uTopColor;
+        uniform vec3 uHorizonColor;
+        uniform vec3 uGroundColor;
+        varying vec3 vWorldPos;
+        void main() {
+          float h = normalize(vWorldPos).y;
+          vec3 col = h >= 0.0
+            ? mix(uHorizonColor, uTopColor, pow(h, 0.55))
+            : mix(uHorizonColor, uGroundColor, pow(-h, 0.4));
+          gl_FragColor = vec4(col * 1.35, 1.0);
+        }
+      `,
+    });
+    const skyDome = new THREE.Mesh(skyDomeGeo, skyDomeMat);
+    envScene.add(skyDome);
+
+    // Bright solar specular disc in environment map for realistic curtain-wall glints
+    const sunDisc = new THREE.Mesh(
+      new THREE.SphereGeometry(8, 16, 16),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffffff).multiplyScalar(6) })
+    );
+    sunDisc.position.set(45, 65, 35);
+    envScene.add(sunDisc);
+
+    this.envMapRenderTarget = pmremGenerator.fromScene(envScene, 0.02);
+    this.scene.environment = this.envMapRenderTarget.texture;
+    skyDomeGeo.dispose();
+    skyDomeMat.dispose();
+    pmremGenerator.dispose();
+
     this.container.appendChild(this.renderer.domElement);
 
     // 3. Camera & Controls
@@ -119,11 +184,93 @@ export class CityScene {
 
     this.bloomPass = new UnrealBloomPass(
       new THREE.Vector2(width, height),
-      0.46, // bloom strength: subtle glowing luminescence
-      0.38, // bloom radius: organic spread
-      0.68  // bloom threshold: preserves architectural crispness, glows neon & emissive lights
+      0.34, // bloom strength: GTA V style solar & automotive LED halation
+      0.42, // bloom radius: soft natural atmospheric bloom
+      0.82  // bloom threshold: captures sun disc, car headlights/taillights, and neon signage
     );
     this.composer.addPass(this.bloomPass);
+
+    // 3c. GTA V RAGE Engine Filmic Color Grading, Contrast & Solar Anamorphic Lens Flare Pass
+    const gtaRAGEShader = {
+      uniforms: {
+        tDiffuse: { value: null },
+        uSunScreenPos: { value: new THREE.Vector2(0.5, 0.75) },
+        uSunVisible: { value: 1.0 },
+        uAspect: { value: width / height },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 uSunScreenPos;
+        uniform float uSunVisible;
+        uniform float uAspect;
+        varying vec2 vUv;
+
+        void main() {
+          // Subtle radial lens chromatic dispersion at outer viewport edges
+          vec2 centerOffset = vUv - 0.5;
+          float edgeDist = dot(centerOffset, centerOffset);
+          vec2 caShift = centerOffset * edgeDist * 0.0045;
+
+          float r = texture2D(tDiffuse, vUv + caShift).r;
+          float g = texture2D(tDiffuse, vUv).g;
+          float b = texture2D(tDiffuse, vUv - caShift).b;
+          vec3 col = vec3(r, g, b);
+
+          // GTA V Los Santos Filmic S-Curve Contrast & Warm California Highlight Grading
+          float luma = dot(col, vec3(0.2126, 0.7152, 0.0722));
+          // Vibrance boost (saturates mid-tones while protecting skin/highlight clipping)
+          float satAmount = 1.18;
+          col = mix(vec3(luma), col, satAmount);
+
+          // Warm golden-amber tint in bright highlights + cool slate-blue shadow toe
+          vec3 shadowTint = vec3(0.95, 0.98, 1.04);
+          vec3 highlightTint = vec3(1.05, 1.01, 0.94);
+          col *= mix(shadowTint, highlightTint, smoothstep(0.15, 0.85, luma));
+
+          // Gentle filmic S-curve contrast
+          col = clamp(col, 0.0, 1.0);
+          col = mix(col, smoothstep(0.02, 0.98, col), 0.22);
+
+          // Screen-Space Solar Anamorphic Lens Flare & Ghost Halos (when looking toward sun)
+          if (uSunVisible > 0.01) {
+            vec2 sunDelta = vUv - uSunScreenPos;
+            sunDelta.x *= uAspect;
+            float dSun = length(sunDelta);
+
+            // Warm solar glare & horizontal anamorphic lens streak
+            float sunGlare = exp(-dSun * 4.5) * 0.24;
+            float anamorphic = exp(-abs(sunDelta.y) * 34.0) * exp(-abs(sunDelta.x) * 2.2) * 0.18;
+
+            // Secondary lens ghost rings along center axis
+            vec2 ghostPos1 = vec2(0.5) - (uSunScreenPos - vec2(0.5)) * 0.55;
+            vec2 ghostDelta1 = (vUv - ghostPos1) * vec2(uAspect, 1.0);
+            float ghost1 = smoothstep(0.11, 0.0, abs(length(ghostDelta1) - 0.07)) * 0.06;
+
+            vec2 ghostPos2 = vec2(0.5) - (uSunScreenPos - vec2(0.5)) * 1.15;
+            vec2 ghostDelta2 = (vUv - ghostPos2) * vec2(uAspect, 1.0);
+            float ghost2 = exp(-length(ghostDelta2) * 14.0) * 0.08;
+
+            vec3 flareColor = vec3(1.0, 0.84, 0.52);
+            col += flareColor * (sunGlare + anamorphic + ghost1 + ghost2) * uSunVisible;
+          }
+
+          // Subtle cinematic optical vignette
+          float vig = 1.0 - edgeDist * 0.32;
+          col *= clamp(vig, 0.72, 1.0);
+
+          gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+        }
+      `,
+    };
+    this.gtaRAGEPass = new ShaderPass(gtaRAGEShader);
+    this.composer.addPass(this.gtaRAGEPass);
 
     const outputPass = new OutputPass();
     this.composer.addPass(outputPass);
@@ -146,14 +293,28 @@ export class CityScene {
     this.airportDistrict = createAirportDistrict(this.scene, this.materials);
     this.weatherManager = new WeatherManager(this.scene, this.materials, this.environmentSystem);
     this.cityLifeManager = new CityLifeManager(this.scene, this.environmentSystem, this.buildingsManager.windowMaterials);
-    this.cityLifeManager.registerWindowMaterial(this.materials.glassCyan, 'technology', 0x00f0ff);
+    this.cityLifeManager.registerWindowMaterial(this.materials.glassCyan, 'technology', 0xfef3c7);
     this.cityLifeManager.scanAndRegisterWindowMaterials(this.scene);
     this.economyManager = new CityEconomyManager();
     this.energyManager = new SmartEnergyManager();
     this.buildingActivityManager = new BuildingActivityManager(this.scene, this.materials);
     this.cinematicTourManager = new CinematicTourManager(this.cameraController.camera);
     this.worldChunkManager = new WorldChunkManager(this.scene);
-    this.playerSystem = new PlayerSystem(this.scene, (type) => this.callbacks.onInteractBuilding?.(type));
+
+    // Initialize 3D Spatial Physics & Collision Engine and register all city buildings & landmarks
+    this.physicsEngine = new CityPhysicsEngine();
+    this.physicsEngine.registerBuildingsList(this.buildingsManager.allBuildingsData);
+    this.physicsEngine.registerBuildingsList(this.railwayDistrict.buildingsData);
+    this.physicsEngine.registerBuildingsList(this.riverDistrict.buildingsData);
+    this.physicsEngine.registerBuildingsList(this.airportDistrict.buildingsData);
+
+    this.cameraController.setPhysicsEngine(this.physicsEngine);
+    this.trafficManager.setPhysicsEngine(this.physicsEngine);
+    this.playerSystem = new PlayerSystem(
+      this.scene,
+      (type) => this.callbacks.onInteractBuilding?.(type),
+      this.physicsEngine
+    );
 
     // Gather all clickable objects
     this.allInteractiveObjects = [
@@ -196,6 +357,9 @@ export class CityScene {
     this.renderer.setSize(width, height);
     this.composer.setSize(width, height);
     this.bloomPass.resolution.set(width, height);
+    if (this.gtaRAGEPass) {
+      this.gtaRAGEPass.uniforms.uAspect.value = width / height;
+    }
   };
 
   private onPointerClick = (event: MouseEvent) => {
@@ -280,6 +444,124 @@ export class CityScene {
     this.selectBuilding(this.buildingsManager.mohitHub.interactiveMeshes[0], hub);
   }
 
+  public focusDubaiLandmark(landmarkId: string) {
+    const landmark = this.buildingsManager.allBuildingsData.find(
+      (b) => b.id === landmarkId || b.id.includes(landmarkId) || landmarkId.includes(b.id)
+    );
+    if (landmark) {
+      this.focusBuilding(landmark);
+      const mesh = this.buildingsManager.interactiveMeshes.find(
+        (m) => m.userData?.buildingData?.id === landmark.id
+      );
+      if (mesh) {
+        this.selectBuilding(mesh, landmark);
+      }
+    } else {
+      // Downtown Dubai skyline focus
+      this.cameraController.flyTo(
+        new THREE.Vector3(-105, 60, -45),
+        new THREE.Vector3(-45, 95, 75),
+        1.5
+      );
+    }
+  }
+
+  public focusSingapore() {
+    const mbs = this.buildingsManager.allBuildingsData.find(
+      (b) => b.id === 'singapore-marina-bay-sands'
+    );
+    if (mbs) {
+      this.focusBuilding(mbs);
+      const mesh = this.buildingsManager.interactiveMeshes.find(
+        (m) => m.userData?.buildingData?.id === mbs.id
+      );
+      if (mesh) this.selectBuilding(mesh, mbs);
+    } else {
+      this.cameraController.flyTo(
+        new THREE.Vector3(-185, 90, 160),
+        new THREE.Vector3(-180, 50, 90),
+        1.6
+      );
+    }
+  }
+
+  public focusParis() {
+    const eiffel = this.buildingsManager.allBuildingsData.find(
+      (b) => b.id === 'paris-eiffel-tower'
+    );
+    if (eiffel) {
+      this.focusBuilding(eiffel);
+      const mesh = this.buildingsManager.interactiveMeshes.find(
+        (m) => m.userData?.buildingData?.id === eiffel.id
+      );
+      if (mesh) this.selectBuilding(mesh, eiffel);
+    } else {
+      this.cameraController.flyTo(
+        new THREE.Vector3(-45, 90, -45),
+        new THREE.Vector3(-45, 65, -125),
+        1.6
+      );
+    }
+  }
+
+  public focusAmerica() {
+    const esb = this.buildingsManager.allBuildingsData.find(
+      (b) => b.id === 'america-empire-state-building'
+    );
+    if (esb) {
+      this.focusBuilding(esb);
+      const mesh = this.buildingsManager.interactiveMeshes.find(
+        (m) => m.userData?.buildingData?.id === esb.id
+      );
+      if (mesh) this.selectBuilding(mesh, esb);
+    } else {
+      this.cameraController.flyTo(
+        new THREE.Vector3(75, 120, 25),
+        new THREE.Vector3(65, 80, -85),
+        1.6
+      );
+    }
+  }
+
+  public focusAirport() {
+    const terminal = this.airportDistrict.interactiveMeshes[0];
+    if (terminal?.userData?.buildingData) {
+      this.focusBuilding(terminal.userData.buildingData);
+      this.selectBuilding(terminal, terminal.userData.buildingData);
+    } else {
+      this.cameraController.flyTo(
+        new THREE.Vector3(120, 65, -210),
+        new THREE.Vector3(180, 15, -290),
+        1.6
+      );
+    }
+  }
+
+  public focusRailway() {
+    const terminal = this.railwayDistrict.interactiveMeshes[0];
+    if (terminal?.userData?.buildingData) {
+      this.focusBuilding(terminal.userData.buildingData);
+      this.selectBuilding(terminal, terminal.userData.buildingData);
+    } else {
+      this.cameraController.flyTo(
+        new THREE.Vector3(0, 55, -135),
+        new THREE.Vector3(0, 15, -220),
+        1.6
+      );
+    }
+  }
+
+  public placeCustomModel(model: THREE.Object3D) {
+    const cam = this.cameraController.camera;
+    const spawnPos = new THREE.Vector3(
+      cam.position.x + 10,
+      1,
+      cam.position.z - 15
+    );
+    model.position.copy(spawnPos);
+    this.scene.add(model);
+  }
+
   public setCameraMode(mode: CameraMode) {
     this.cameraController.setMode(mode);
   }
@@ -340,6 +622,56 @@ export class CityScene {
     this.cityLifeManager.togglePause();
   }
 
+  public getPlayerRadarTelemetry(): PlayerRadarTelemetry {
+    const isWalk = this.cameraController.mode === 'first-person' || this.cameraController.mode === 'third-person';
+    const pos = isWalk ? this.playerSystem.position : this.cameraController.camera.position;
+    const x = pos.x;
+    const z = pos.z;
+
+    let heading = 0;
+    if (this.cameraController.mode === 'third-person') {
+      heading = this.playerSystem.rotationY;
+    } else {
+      const dir = new THREE.Vector3();
+      this.cameraController.camera.getWorldDirection(dir);
+      heading = Math.atan2(dir.x, dir.z);
+    }
+
+    // Determine street name based on nearest road corridor
+    let streetName = 'Metropolitan Grand Blvd';
+    if (Math.abs(x) < 38) streetName = 'Vespucci River Bridgeway';
+    else if (Math.abs(z - -220) < 35) streetName = 'Grand Central Rail Corridor';
+    else if (x > 95 && z < -230) streetName = 'Los Santos International Runway';
+    else if (Math.abs(x - -100) < 25) streetName = 'Del Perro Financial Ave';
+    else if (Math.abs(x - 100) < 25) streetName = 'Silicon Innovation Pkwy';
+    else if (Math.abs(x - -180) < 25) streetName = 'Marina Bay Promenade';
+    else if (Math.abs(x - 180) < 25) streetName = 'Rockford Hills Blvd';
+    else if (Math.abs(z) < 25) streetName = 'Central Liberty Concourse';
+    else if (Math.abs(z - 160) < 25) streetName = 'South Harbor Expressway';
+    else if (Math.abs(z - -160) < 25) streetName = 'Champs-Élysées North Ave';
+
+    // Determine district name
+    let districtName = 'Downtown Financial Core';
+    if (x > 90 && z < -230) districtName = 'International Airport (LSIA)';
+    else if (Math.abs(z - -220) < 32) districtName = 'Grand Central Railway';
+    else if (Math.abs(x) < 38) districtName = 'Riverside Waterfront';
+    else if (x < -120 && z > 35 && z < 130) districtName = 'Singapore Marina Bay';
+    else if (x < -25 && x > -115 && z < -95) districtName = 'Paris Champs-Élysées';
+    else if (x > 35 && x < 140 && z < -25 && z > -115) districtName = 'Midtown Manhattan & Tech Hub';
+    else if (x < -120 && z > 130) districtName = 'Medical Center District';
+    else if (x < -120 && z < -130) districtName = 'University Campus';
+    else if (x > 35 && z > 50) districtName = 'Vinewood Residential Hills';
+
+    return {
+      x,
+      z,
+      heading,
+      speedKmh: isWalk ? 18 : 64,
+      streetName,
+      districtName,
+    };
+  }
+
   private animate = () => {
     this.animationFrameId = requestAnimationFrame(this.animate);
 
@@ -370,7 +702,7 @@ export class CityScene {
     this.energyManager.update(delta);
 
     // Traffic & Autonomous Agents
-    this.trafficManager.update(delta);
+    this.trafficManager.update(delta, this.playerSystem.position);
     this.agentManager.update(delta, this.cityLifeManager.getTimeString());
 
     // Player Exploration & Building Interaction Detection
@@ -403,6 +735,31 @@ export class CityScene {
       this.selectionBox.update();
     }
 
+    // Update GTA V Screen-Space Sun Lens Flare & Night Bloom Intensity
+    if (this.gtaRAGEPass && this.environmentSystem) {
+      const sunWorld = this.environmentSystem.dirLight.position.clone().normalize().multiplyScalar(600);
+      const cam = this.cameraController.camera;
+      const camDir = new THREE.Vector3();
+      cam.getWorldDirection(camDir);
+      const toSun = sunWorld.clone().sub(cam.position).normalize();
+      const dotSun = camDir.dot(toSun);
+
+      if (dotSun > 0.15 && !this.cityLifeManager.isNight() && !this.weatherManager.isRaining()) {
+        const projected = sunWorld.project(cam);
+        const sx = (projected.x + 1) * 0.5;
+        const sy = (projected.y + 1) * 0.5;
+        this.gtaRAGEPass.uniforms.uSunScreenPos.value.set(sx, sy);
+        const edgeFade = Math.max(0, 1.0 - Math.hypot(sx - 0.5, sy - 0.5) * 1.45);
+        this.gtaRAGEPass.uniforms.uSunVisible.value = THREE.MathUtils.clamp((dotSun - 0.15) * 1.6 * edgeFade, 0, 1);
+      } else {
+        this.gtaRAGEPass.uniforms.uSunVisible.value = 0.0;
+      }
+
+      // Boost bloom slightly at night or in rain for vivid GTA V neon reflections
+      const isNightOrRain = this.cityLifeManager.isNight() || this.weatherManager.isRaining();
+      this.bloomPass.strength = isNightOrRain ? 0.52 : 0.34;
+    }
+
     this.composer.render();
   };
 
@@ -423,6 +780,10 @@ export class CityScene {
     }
 
     this.composer.dispose();
+    if (this.envMapRenderTarget) {
+      this.envMapRenderTarget.dispose();
+      this.envMapRenderTarget = null;
+    }
 
     this.trafficManager.dispose();
     this.environmentSystem.dispose();

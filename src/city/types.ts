@@ -45,7 +45,9 @@ export type CameraMode =
   | 'river-view'
   | 'bridge-view'
   | 'railway-view'
-  | 'airport-view';
+  | 'airport-view'
+  | 'flyover-view'
+  | 'park-view';
 
 export interface CityEconomyMetrics {
   totalJobs: number;

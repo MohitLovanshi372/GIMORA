@@ -30,18 +30,18 @@ export function createRiverDistrict(
   const riverLength = 650;
   const riverY = -1.8;
 
-  // 1. ADVANCED ANIMATED WATER SURFACE (Photorealistic Cyberpunk River)
+  // 1. ADVANCED ANIMATED WATER SURFACE (Photorealistic Metropolitan River)
   const waterGeometry = new THREE.PlaneGeometry(riverWidth, riverLength, 64, 160);
   waterGeometry.rotateX(-Math.PI / 2);
 
   const waterMaterial = new THREE.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },
-      uColorDeep: { value: new THREE.Color(0x010814) },
-      uColorShallow: { value: new THREE.Color(0x02203c) },
-      uColorNeonCyan: { value: new THREE.Color(0x00f0ff) },
-      uColorNeonPink: { value: new THREE.Color(0xff007f) },
-      uColorNeonAmber: { value: new THREE.Color(0xf59e0b) },
+      uColorDeep: { value: new THREE.Color(0x0c2538) },
+      uColorShallow: { value: new THREE.Color(0x1a4664) },
+      uColorSkyReflection: { value: new THREE.Color(0x93c5fd) },
+      uColorSunHighlight: { value: new THREE.Color(0xfffbeb) },
+      uColorBridgeGlow: { value: new THREE.Color(0xfef3c7) },
       uRainIntensity: { value: 0.0 },
     },
     vertexShader: `
@@ -76,9 +76,9 @@ export function createRiverDistrict(
       uniform float uTime;
       uniform vec3 uColorDeep;
       uniform vec3 uColorShallow;
-      uniform vec3 uColorNeonCyan;
-      uniform vec3 uColorNeonPink;
-      uniform vec3 uColorNeonAmber;
+      uniform vec3 uColorSkyReflection;
+      uniform vec3 uColorSunHighlight;
+      uniform vec3 uColorBridgeGlow;
       uniform float uRainIntensity;
       varying vec2 vUv;
       varying vec3 vWorldPos;
@@ -92,37 +92,35 @@ export function createRiverDistrict(
         // Water base color gradient across river width
         vec3 baseWater = mix(uColorDeep, uColorShallow, sin(vUv.x * 3.14159) * 0.6 + 0.4);
 
-        // Neon City Skyline & Bridge Reflections
-        // Downtown (West / -X) casts Cyan reflections; Entertainment & Bridges cast Magenta and Amber streaks
+        // Natural bridge warmth reflection
         float bridgeGlow1 = smoothstep(25.0, 0.0, abs(vWorldPos.z));        // Central Bridge (Z=0)
         float bridgeGlow2 = smoothstep(25.0, 0.0, abs(vWorldPos.z + 160.0)); // North Bridge (Z=-160)
         float bridgeGlow3 = smoothstep(25.0, 0.0, abs(vWorldPos.z - 160.0)); // South Bridge (Z=160)
         float bridgeReflectionMask = clamp(bridgeGlow1 + bridgeGlow2 + bridgeGlow3, 0.0, 1.0);
 
-        // Dynamic multi-colored water highlights
+        // Dynamic natural water ripples
         float rippleA = sin(vWorldPos.z * 0.4 + uTime * 3.0) * cos(vWorldPos.x * 0.4 - uTime * 2.5);
         float rippleB = sin(vWorldPos.z * 1.4 - uTime * 4.2) * sin(vWorldPos.x * 1.2 + uTime * 3.6);
         float specularGlint = pow(clamp((rippleA + rippleB * 0.5) * 0.5 + 0.5, 0.0, 1.0), 5.0) * 1.2;
 
-        // Color blend based on river position
-        vec3 cityReflection = mix(uColorNeonCyan, uColorNeonPink, sin(vWorldPos.z * 0.015 + uTime * 0.5) * 0.5 + 0.5);
-        cityReflection = mix(cityReflection, uColorNeonAmber, bridgeReflectionMask * 0.65);
+        // Sky and bridge natural color reflections
+        vec3 skyReflection = mix(uColorSkyReflection, uColorBridgeGlow, bridgeReflectionMask * 0.45);
 
         // Embankment shoreline foam / rim illumination
         float edgeDist = abs(vUv.x - 0.5) * 2.0;
-        float shorelineFoam = smoothstep(0.85, 0.98, edgeDist) * 0.65;
+        float shorelineFoam = smoothstep(0.90, 0.99, edgeDist) * 0.45;
 
-        // Specular moonlight highlight
+        // Specular sunlight highlight
         vec3 lightDir = normalize(vec3(160.0, 260.0, 120.0));
         vec3 reflectDir = reflect(-lightDir, vNormal);
-        float moonSpec = pow(max(dot(viewDir, reflectDir), 0.0), 24.0) * 0.7;
+        float sunSpec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0) * 0.85;
 
         // Combine all lighting components
         vec3 finalColor = baseWater +
-                          (cityReflection * specularGlint * (0.6 + fresnel * 0.8)) +
-                          (cityReflection * bridgeReflectionMask * 0.35) +
-                          (uColorNeonCyan * shorelineFoam) +
-                          (vec3(0.9, 0.95, 1.0) * moonSpec);
+                          (skyReflection * specularGlint * (0.5 + fresnel * 0.75)) +
+                          (uColorBridgeGlow * bridgeReflectionMask * 0.15) +
+                          (vec3(0.7, 0.85, 0.95) * shorelineFoam) +
+                          (uColorSunHighlight * sunSpec);
 
         gl_FragColor = vec4(finalColor, 0.96);
       }
@@ -147,7 +145,7 @@ export function createRiverDistrict(
   const wallThickness = 1.6;
   const wallGeo = new THREE.BoxGeometry(wallThickness, wallHeight, riverLength);
 
-  const westWall = new THREE.Mesh(wallGeo, materials.metalDark);
+  const westWall = new THREE.Mesh(wallGeo, materials.concrete);
   westWall.position.set(-halfWidth - wallThickness / 2, -wallHeight / 2 + 0.5, 0);
   westWall.receiveShadow = true;
   group.add(westWall);
@@ -156,15 +154,15 @@ export function createRiverDistrict(
   eastWall.position.set(halfWidth + wallThickness / 2, -wallHeight / 2 + 0.5, 0);
   group.add(eastWall);
 
-  // Glowing Neon Railings along both banks
-  const railingGeo = new THREE.CylinderGeometry(0.18, 0.18, riverLength, 8);
+  // Architectural Stainless Steel Handrails along both banks
+  const railingGeo = new THREE.CylinderGeometry(0.12, 0.12, riverLength, 8);
   railingGeo.rotateX(Math.PI / 2);
 
-  const westRailing = new THREE.Mesh(railingGeo, materials.neonCyan);
+  const westRailing = new THREE.Mesh(railingGeo, materials.metalLight);
   westRailing.position.set(-halfWidth - 0.4, 0.7, 0);
   group.add(westRailing);
 
-  const eastRailing = new THREE.Mesh(railingGeo, materials.neonPink);
+  const eastRailing = new THREE.Mesh(railingGeo, materials.metalLight);
   eastRailing.position.set(halfWidth + 0.4, 0.7, 0);
   group.add(eastRailing);
 
@@ -187,7 +185,7 @@ export function createRiverDistrict(
   // West Bank Bistro: Z = -40
   const bistroData: BuildingData = {
     id: 'river-bistro-pavilion',
-    name: 'Neon Waves Waterfront Bistro & Lounge',
+    name: 'Harbor Terrace Waterfront Bistro',
     districtId: 'riverside',
     districtName: 'Riverside District',
     category: 'Waterfront Venue',
@@ -195,11 +193,11 @@ export function createRiverDistrict(
     floors: 2,
     position: [-42, 0, -40],
     dimensions: [16, 12, 22],
-    powerUsage: '1.8 MW',
-    occupancy: '95% (450 Diners)',
-    networkStatus: 'Public Cyber-Guest Wi-Fi 6G',
-    description: 'Premier waterfront glass dining pavilion featuring outdoor floating terraces, molecular gastronomy, and panoramic sunset river views.',
-    features: ['Floating Deck Dining', 'Heated Outdoor Cabanas', 'Dockside Cocktails'],
+    powerUsage: '1.2 MW',
+    occupancy: '92% (420 Diners)',
+    networkStatus: 'Guest High-Speed Wi-Fi',
+    description: 'Premier waterfront architectural glass dining pavilion featuring outdoor timber dining decks, panoramic sunset river views, and fine dining.',
+    features: ['Timber Deck Waterfront Dining', 'Heated Outdoor Cabanas', 'Riverside Cocktail Lounge'],
   };
   buildingsData.push(bistroData);
 
@@ -208,7 +206,7 @@ export function createRiverDistrict(
 
   const bistroMesh = new THREE.Mesh(
     new THREE.BoxGeometry(16, 12, 22),
-    materials.glassCyan
+    materials.glassDark
   );
   bistroMesh.position.y = 6;
   bistroMesh.castShadow = true;
@@ -220,13 +218,14 @@ export function createRiverDistrict(
   deck.position.set(9, 0.25, 0);
   bistroGroup.add(deck);
 
-  // Outdoor Tables & Neon Umbrellas
+  // Outdoor Tables & Canvas Umbrellas (Clean Cream Canvas)
+  const umbrellaMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.85 });
   for (let i = -6; i <= 6; i += 6) {
     const table = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.9, 12), materials.metalLight);
     table.position.set(9, 0.7, i);
     bistroGroup.add(table);
 
-    const umbrella = new THREE.Mesh(new THREE.ConeGeometry(1.8, 0.8, 8), materials.neonPink);
+    const umbrella = new THREE.Mesh(new THREE.ConeGeometry(1.8, 0.8, 8), umbrellaMat);
     umbrella.position.set(9, 2.2, i);
     bistroGroup.add(umbrella);
   }
@@ -235,10 +234,10 @@ export function createRiverDistrict(
   interactiveMeshes.push(bistroMesh);
   group.add(bistroGroup);
 
-  // East Bank Cyber Cafe: Z = 40
+  // East Bank Cafe: Z = 40
   const cafeData: BuildingData = {
     id: 'river-cyber-cafe',
-    name: 'Aqua-Lumina Cyber Cafe & Marina Docks',
+    name: 'Aqua Marina Harbor Cafe & Yacht Docks',
     districtId: 'riverside',
     districtName: 'Riverside District',
     category: 'Waterfront Venue',
@@ -246,11 +245,11 @@ export function createRiverDistrict(
     floors: 2,
     position: [42, 0, 40],
     dimensions: [14, 10, 20],
-    powerUsage: '1.4 MW',
-    occupancy: '90% (320 Patrons)',
-    networkStatus: 'High-Speed Neural Cafe Grid',
-    description: 'Chic riverside coffee house with dock access for water-taxis and holographic ambient jazz.',
-    features: ['Direct Boat Slip Access', 'Espresso Roastery', 'Holographic Sunset Patio'],
+    powerUsage: '1.1 MW',
+    occupancy: '88% (290 Patrons)',
+    networkStatus: 'Municipal Harbor Wireless',
+    description: 'Waterfront artisan coffee lounge and yacht club with private boarding docks and sunlit glass terraces.',
+    features: ['Direct Boat Slip Access', 'Espresso Roastery Bar', 'Panoramic River Terrace'],
   };
   buildingsData.push(cafeData);
 
@@ -283,12 +282,12 @@ export function createRiverDistrict(
     dockGroup.add(gangway);
 
     // Floating Pontoon
-    const pontoon = new THREE.Mesh(new THREE.BoxGeometry(8, 0.6, 18), materials.metalDark);
+    const pontoon = new THREE.Mesh(new THREE.BoxGeometry(8, 0.6, 18), materials.concrete);
     pontoon.position.set(cfg.dir * 9, 0, 0);
     dockGroup.add(pontoon);
 
-    // Glowing Dock Edge Strips
-    const dockEdge = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.15, 18.2), materials.neonCyan);
+    // Dock Timber Edge Fender
+    const dockEdge = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.2, 18.2), materials.metalDark);
     dockEdge.position.set(cfg.dir * 9, 0.32, 0);
     dockGroup.add(dockEdge);
 
@@ -299,30 +298,35 @@ export function createRiverDistrict(
       dockGroup.add(bollard);
     });
 
-    // Parked Electric Hover-Skiff / Water Taxi
+    // Parked Motor Launch / Water Taxi (Realistic Marine Yacht Paint)
     const skiff = new THREE.Group();
     skiff.position.set(cfg.dir * 10, 0.2, 0);
-    const hull = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.2, 7.5), materials.glassDark);
+    const hullMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.7 });
+    const cabinMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.1 });
+    const hull = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.2, 7.5), hullMat);
     hull.position.y = 0.6;
     skiff.add(hull);
-    const canopy = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.1, 4.2), materials.glassCyan);
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.1, 4.2), cabinMat);
     canopy.position.set(0, 1.6, 0);
     skiff.add(canopy);
-    const lightStrip = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.15, 7.6), materials.neonCyan);
-    lightStrip.position.y = 0.6;
-    skiff.add(lightStrip);
+    const winMesh = new THREE.Mesh(new THREE.BoxGeometry(2.82, 0.6, 3.8), materials.glassDark);
+    winMesh.position.set(0, 1.6, 0);
+    skiff.add(winMesh);
 
     dockGroup.add(skiff);
     group.add(dockGroup);
   });
 
-  // 4. INSTANCED RIVERSIDE WEEPING WILLOWS & TREES
+  // 4. INSTANCED RIVERSIDE WEEPING WILLOWS & SHADE TREES
   const treeCount = 40;
   const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 4.8, 6);
   const foliageGeo = new THREE.IcosahedronGeometry(2.4, 1);
 
-  const instancedTrunks = new THREE.InstancedMesh(trunkGeo, materials.metalDark, treeCount);
-  const instancedFoliage = new THREE.InstancedMesh(foliageGeo, materials.neonCyan, treeCount);
+  const realTrunkMat = new THREE.MeshStandardMaterial({ color: 0x3e2723, roughness: 0.85, metalness: 0.05 });
+  const realWillowFoliage = new THREE.MeshStandardMaterial({ color: 0x2d6a32, roughness: 0.75, metalness: 0.05 });
+
+  const instancedTrunks = new THREE.InstancedMesh(trunkGeo, realTrunkMat, treeCount);
+  const instancedFoliage = new THREE.InstancedMesh(foliageGeo, realWillowFoliage, treeCount);
 
   const dummy = new THREE.Object3D();
   let tIdx = 0;
@@ -359,7 +363,7 @@ export function createRiverDistrict(
   group.add(instancedTrunks);
   group.add(instancedFoliage);
 
-  // 5. ACTIVE CRUISING RIVER WATER TAXIS
+  // 5. ACTIVE CRUISING RIVER WATER TAXIS & TOUR FERRIES
   const riverBoatGroup = new THREE.Group();
   riverBoatGroup.name = 'cruising_river_boats';
 
@@ -373,34 +377,44 @@ export function createRiverDistrict(
 
   const activeBoats: CruisingBoat[] = [];
   const boatConfigs = [
-    { z: -150, lateralOffset: -12, speed: 18, direction: 1, color: 0x00f0ff },
-    { z: 50, lateralOffset: 12, speed: 15, direction: -1, color: 0xa855f7 },
-    { z: 180, lateralOffset: -6, speed: 20, direction: 1, color: 0x00ffcc },
+    { z: -150, lateralOffset: -12, speed: 18, direction: 1, hullColor: 0x1e3a8a }, // Navy Blue Tour Ferry
+    { z: 50, lateralOffset: 12, speed: 15, direction: -1, hullColor: 0x0f172a },   // Obsidian Harbor Cruiser
+    { z: 180, lateralOffset: -6, speed: 20, direction: 1, hullColor: 0xb91c1c },   // Red Crest Water Taxi
   ];
 
-  boatConfigs.forEach((cfg, idx) => {
+  boatConfigs.forEach((cfg) => {
     const boat = new THREE.Group();
     boat.position.set(cfg.lateralOffset, riverY + 0.35, cfg.z);
 
-    const hull = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.1, 8.5), materials.glassDark);
+    const bHullMat = new THREE.MeshStandardMaterial({ color: cfg.hullColor, roughness: 0.3, metalness: 0.6 });
+    const bSuperstructureMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.1 });
+
+    const hull = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.1, 8.5), bHullMat);
     hull.position.y = 0.55;
     boat.add(hull);
 
-    const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.2, 4.8), materials.glassCyan);
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.2, 4.8), bSuperstructureMat);
     cabin.position.set(0, 1.6, -0.4);
     boat.add(cabin);
 
-    const prow = new THREE.Mesh(new THREE.ConeGeometry(1.8, 2.8, 4), materials.glassDark);
+    const prow = new THREE.Mesh(new THREE.ConeGeometry(1.8, 2.8, 4), bHullMat);
     prow.rotateX(Math.PI / 2);
     prow.position.set(0, 0.55, -4.8);
     boat.add(prow);
 
-    const glowTrim = new THREE.Mesh(
-      new THREE.BoxGeometry(3.8, 0.15, 8.8),
-      new THREE.MeshBasicMaterial({ color: cfg.color })
-    );
-    glowTrim.position.y = 0.6;
-    boat.add(glowTrim);
+    // Marine Window band
+    const boatWindows = new THREE.Mesh(new THREE.BoxGeometry(2.82, 0.55, 4.2), materials.glassDark);
+    boatWindows.position.set(0, 1.65, -0.4);
+    boat.add(boatWindows);
+
+    // Marine Navigation Lights (Red Port, Green Starboard)
+    const navLightPort = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), materials.neonRed);
+    navLightPort.position.set(-1.42, 1.3, -3.2);
+    boat.add(navLightPort);
+
+    const navLightStarboard = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), materials.neonEmerald);
+    navLightStarboard.position.set(1.42, 1.3, -3.2);
+    boat.add(navLightStarboard);
 
     riverBoatGroup.add(boat);
     activeBoats.push({

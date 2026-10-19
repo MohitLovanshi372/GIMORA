@@ -15,31 +15,46 @@ export function createCityParks(scene: THREE.Scene): ParksSystem {
   const group = new THREE.Group();
   group.name = 'parks_system';
 
-  // Shared Materials
+  // Shared Realistic Park Materials
   const parkGrassMat = new THREE.MeshStandardMaterial({
-    color: 0x051a14,
-    roughness: 0.8,
-    metalness: 0.1,
+    color: 0x2e6b2c, // Lush manicured lawn green
+    roughness: 0.85,
+    metalness: 0.05,
   });
 
   const pondMat = new THREE.MeshStandardMaterial({
-    color: 0x001524,
-    roughness: 0.1,
-    metalness: 0.9,
+    color: 0x0f3443, // Natural clear freshwater pond
+    roughness: 0.15,
+    metalness: 0.85,
   });
 
-  const pondBorderMat = new THREE.MeshBasicMaterial({
-    color: 0x00ffcc,
+  const pondBorderMat = new THREE.MeshStandardMaterial({
+    color: 0x475569, // Chiseled slate / granite curbing
+    roughness: 0.7,
+    metalness: 0.15,
   });
 
   const trunkMat = new THREE.MeshStandardMaterial({
-    color: 0x111827,
-    roughness: 0.8,
+    color: 0x4a3525, // Natural bark wood
+    roughness: 0.9,
+    metalness: 0.05,
   });
 
-  const neonGreenMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
-  const neonCyanMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
-  const neonVioletMat = new THREE.MeshBasicMaterial({ color: 0x8b5cf6 });
+  const leafGreenMat = new THREE.MeshStandardMaterial({
+    color: 0x2d6a2e, // Deep emerald foliage
+    roughness: 0.75,
+    metalness: 0.05,
+  });
+  const leafLimeMat = new THREE.MeshStandardMaterial({
+    color: 0x417d38, // Fresh summer canopy
+    roughness: 0.75,
+    metalness: 0.05,
+  });
+  const leafAutumnMat = new THREE.MeshStandardMaterial({
+    color: 0x365e2b, // Mature canopy green
+    roughness: 0.75,
+    metalness: 0.05,
+  });
 
   // 1. Central Riverside Emerald Park (West Bank, near Central Bridge)
   const centralParkGeo = new THREE.BoxGeometry(45, 0.25, 90);
@@ -75,15 +90,14 @@ export function createCityParks(scene: THREE.Scene): ParksSystem {
   eduPark.receiveShadow = true;
   group.add(eduPark);
 
-  // 4. Instanced Bioluminescent Trees
-  // We place around 70 cyber trees distributed across park zones and roadside verges
+  // 4. Instanced Natural Trees (Oak, Maple & Pine species)
   const treeCount = 70;
   const trunkGeo = new THREE.CylinderGeometry(0.25, 0.45, 4.5, 6);
   const canopyGeo = new THREE.IcosahedronGeometry(2.2, 1);
 
   const instancedTrunks = new THREE.InstancedMesh(trunkGeo, trunkMat, treeCount);
-  const instancedCanopyGreen = new THREE.InstancedMesh(canopyGeo, neonGreenMat, Math.floor(treeCount / 2));
-  const instancedCanopyCyan = new THREE.InstancedMesh(canopyGeo, neonCyanMat, Math.floor(treeCount / 2));
+  const instancedCanopyGreen = new THREE.InstancedMesh(canopyGeo, leafGreenMat, Math.floor(treeCount / 2));
+  const instancedCanopyLime = new THREE.InstancedMesh(canopyGeo, leafLimeMat, Math.floor(treeCount / 2));
 
   const dummy = new THREE.Object3D();
   let tIdx = 0;
@@ -109,7 +123,7 @@ export function createCityParks(scene: THREE.Scene): ParksSystem {
     }
   }
 
-  // Around Education Bio-Dome
+  // Around Education Park
   for (let x = -84; x <= -52; x += 11) {
     for (let z = -182; z <= -138; z += 12) {
       treeLocations.push([x, z]);
@@ -126,31 +140,30 @@ export function createCityParks(scene: THREE.Scene): ParksSystem {
 
     // Foliage canopy
     dummy.position.set(tx, 4.6, tz);
-    const scale = 0.8 + Math.random() * 0.4;
-    dummy.scale.set(scale, scale, scale);
+    const scale = 0.85 + Math.random() * 0.45;
+    dummy.scale.set(scale, scale * 1.1, scale);
     dummy.updateMatrix();
 
     if (tIdx % 2 === 0 && gIdx < instancedCanopyGreen.count) {
       instancedCanopyGreen.setMatrixAt(gIdx++, dummy.matrix);
-    } else if (cIdx < instancedCanopyCyan.count) {
-      instancedCanopyCyan.setMatrixAt(cIdx++, dummy.matrix);
+    } else if (cIdx < instancedCanopyLime.count) {
+      instancedCanopyLime.setMatrixAt(cIdx++, dummy.matrix);
     }
     tIdx++;
   });
 
   instancedTrunks.instanceMatrix.needsUpdate = true;
   instancedCanopyGreen.instanceMatrix.needsUpdate = true;
-  instancedCanopyCyan.instanceMatrix.needsUpdate = true;
+  instancedCanopyLime.instanceMatrix.needsUpdate = true;
 
   group.add(instancedTrunks);
   group.add(instancedCanopyGreen);
-  group.add(instancedCanopyCyan);
+  group.add(instancedCanopyLime);
 
   scene.add(group);
 
-  const update = (time: number) => {
-    // Gentle pulse on glowing pond rim
-    pondRim.scale.setScalar(1 + Math.sin(time * 2) * 0.015);
+  const update = (_time: number) => {
+    // Realistic steady environment
   };
 
   const dispose = () => {
@@ -166,9 +179,9 @@ export function createCityParks(scene: THREE.Scene): ParksSystem {
     trunkGeo.dispose();
     canopyGeo.dispose();
     trunkMat.dispose();
-    neonGreenMat.dispose();
-    neonCyanMat.dispose();
-    neonVioletMat.dispose();
+    leafGreenMat.dispose();
+    leafLimeMat.dispose();
+    leafAutumnMat.dispose();
   };
 
   return {

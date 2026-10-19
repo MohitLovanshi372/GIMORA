@@ -13,11 +13,11 @@ const busWindowGeo = new THREE.BoxGeometry(2.82, 0.9, 8.5);
 const busRoofGeo = new THREE.BoxGeometry(2.7, 0.4, 10.2);
 const busSignGeo = new THREE.PlaneGeometry(2.2, 0.6);
 
-const busBodyMat = new THREE.MeshStandardMaterial({ color: 0x071527, roughness: 0.3, metalness: 0.8 });
-const busWindowMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.75 });
-const busAccentMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
-const busSignMat = new THREE.MeshBasicMaterial({ color: 0x00ffaa });
-const doorStrobeMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+const busBodyMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.3, metalness: 0.6 });
+const busWindowMat = new THREE.MeshPhysicalMaterial({ color: 0x0f172a, roughness: 0.15, transmission: 0.6, transparent: true, opacity: 0.88 });
+const busAccentMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.4, metalness: 0.5 });
+const busSignMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b }); // Amber LED destination board
+const doorStrobeMat = new THREE.MeshBasicMaterial({ color: 0xeab308 });
 
 export class Bus extends Vehicle {
   public routeId: string;
@@ -100,7 +100,8 @@ export class Bus extends Vehicle {
   public override update(
     delta: number,
     trafficLights: Map<string, TrafficLight>,
-    allVehicles: Vehicle[]
+    allVehicles: Vehicle[],
+    pedestrians?: any[]
   ) {
     if (!this.active) return;
 
@@ -139,7 +140,7 @@ export class Bus extends Vehicle {
       }
     }
 
-    super.update(delta, trafficLights, allVehicles);
+    super.update(delta, trafficLights, allVehicles, pedestrians);
   }
 
   public dispose() {

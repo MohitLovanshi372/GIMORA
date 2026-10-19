@@ -70,7 +70,7 @@ export const AIInteractionPanel: React.FC<AIInteractionPanelProps> = ({
     },
     EMERGENCY: {
       situation: 'Structural emergency incident beacon detected in Technology District.',
-      decision: 'Dispatch Cyber-Ambulance Squad 3 with priority signal preemption.',
+      decision: 'Dispatch Emergency Paramedic Ambulance Squad 3 with priority signal preemption.',
       reason: 'Minimize emergency arrival latency to under 90 seconds.',
       affectedArea: 'Tech District Avenue 1 & Mohit Developer Hub Plaza',
       action: 'Broadcast Code Red corridor directive; lock opposing signals to RED.',

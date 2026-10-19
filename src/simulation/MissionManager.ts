@@ -45,7 +45,7 @@ export const PRESET_MISSIONS: CityMission[] = [
     id: 'mission-accident-downtown',
     title: 'Downtown Avenue Collision Response',
     type: 'EMERGENCY_RESPONSE',
-    description: 'A cyber-autonomous vehicle collision has obstructed East Avenue. Reach the scene, inspect vehicle telemetry, coordinate emergency green corridor, and clear the roadway.',
+    description: 'A multi-vehicle traffic collision has obstructed East Avenue. Reach the scene, coordinate emergency response, establish a priority corridor, and clear the roadway.',
     districtId: 'downtown',
     rewardCredits: 3500,
     aiTrustBonus: 6,
@@ -143,9 +143,9 @@ export const PRESET_MISSIONS: CityMission[] = [
   },
   {
     id: 'mission-grid-blackout',
-    title: 'Entertainment Sector Power Restoration',
+    title: 'Commercial Sector Power Restoration',
     type: 'EVENT_MANAGEMENT',
-    description: 'Substation overload in Entertainment District. Switch auxiliary geothermal power and restart neon grid luminaires.',
+    description: 'Substation overload in Commercial District. Switch auxiliary grid feed and restart municipal street luminaires.',
     districtId: 'entertainment',
     rewardCredits: 5000,
     aiTrustBonus: 10,
@@ -154,7 +154,7 @@ export const PRESET_MISSIONS: CityMission[] = [
     objectives: [
       {
         id: 'obj-1',
-        description: 'Reach the Entertainment District Neon Boulevard',
+        description: 'Reach the Commercial District Central Boulevard',
         completed: false,
         targetPosition: [-160, 2, -180],
         requiredDistance: 45,

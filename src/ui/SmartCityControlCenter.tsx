@@ -120,7 +120,7 @@ export const SmartCityControlCenter: React.FC<SmartCityControlCenterProps> = ({
   const weatherOptions: { type: WeatherType; label: string; icon: string }[] = [
     { type: 'CLEAR', label: 'Clear Sky', icon: '☀' },
     { type: 'CLOUDY', label: 'Overcast', icon: '☁' },
-    { type: 'RAIN', label: 'Neon Rain', icon: '🌧' },
+    { type: 'RAIN', label: 'Metropolitan Rain', icon: '🌧' },
     { type: 'HEAVY_RAIN', label: 'Torrential', icon: '⛈' },
     { type: 'FOG', label: 'Atmospheric Fog', icon: '🌫' },
     { type: 'STORM', label: 'Lightning Storm', icon: '⚡' },
@@ -612,9 +612,9 @@ export const SmartCityControlCenter: React.FC<SmartCityControlCenterProps> = ({
                   <div>
                     <div className="flex items-center gap-1.5 text-red-300 text-xs font-bold">
                       <Flame className="w-4 h-4 text-red-400 group-hover:scale-110 transition" />
-                      <span>Downtown Cyber Tower Fire</span>
+                      <span>Downtown High-Rise Tower Fire</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Dispatches Fire Engine + Green corridor</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Dispatches Fire Engine + Priority corridor</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-red-400" />
                 </button>
@@ -648,7 +648,7 @@ export const SmartCityControlCenter: React.FC<SmartCityControlCenterProps> = ({
                       <Siren className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition" />
                       <span>Mohit Hub Perimeter Medical</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Dispatches Rapid Response Cyber-Ambulance</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Dispatches Rapid Response Paramedic Ambulance</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-cyan-400" />
                 </button>

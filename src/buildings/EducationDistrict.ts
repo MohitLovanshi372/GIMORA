@@ -58,8 +58,11 @@ export function createEducationDistrict(
     emissiveMap: eduWinTex,
     emissive: new THREE.Color(0x3b82f6),
     emissiveIntensity: 1.8,
-    roughness: 0.3,
-    metalness: 0.7,
+    roughness: 0.26,
+    metalness: 0.74,
+    normalMap: materials.maps.facadeNormal,
+    normalScale: new THREE.Vector2(0.55, 0.55),
+    envMapIntensity: 1.4,
   });
   uniBaseMat.userData = { isWindowMaterial: true, district: 'education', baseColor: 0x3b82f6 };
   const uniBase = new THREE.Mesh(new THREE.BoxGeometry(32, 40, 28), uniBaseMat);
@@ -71,12 +74,15 @@ export function createEducationDistrict(
   const uniTowerMat = new THREE.MeshStandardMaterial({
     map: eduWinTex,
     emissiveMap: eduWinTex,
-    emissive: new THREE.Color(0x3b82f6),
-    emissiveIntensity: 1.8,
-    roughness: 0.2,
-    metalness: 0.8,
+    emissive: new THREE.Color(0xfef3c7),
+    emissiveIntensity: 0.2,
+    roughness: 0.25,
+    metalness: 0.6,
+    normalMap: materials.maps.facadeNormal,
+    normalScale: new THREE.Vector2(0.6, 0.6),
+    envMapIntensity: 1.5,
   });
-  uniTowerMat.userData = { isWindowMaterial: true, district: 'education', baseColor: 0x3b82f6 };
+  uniTowerMat.userData = { isWindowMaterial: true, district: 'education', baseColor: 0xfef3c7 };
   const uniTower = new THREE.Mesh(new THREE.BoxGeometry(16, 48, 16), uniTowerMat);
   uniTower.position.y = 64;
   uniTower.castShadow = true;
@@ -90,7 +96,8 @@ export function createEducationDistrict(
   uniSpire.position.y = 100;
   uniGroup.add(uniSpire);
 
-  const clockBeacon = new THREE.Mesh(new THREE.SphereGeometry(1.2, 8, 8), materials.neonPurple);
+  // Traditional Warm Backlit University Clock Orb
+  const clockBeacon = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 12), materials.neonWhite);
   clockBeacon.position.y = 112;
   uniGroup.add(clockBeacon);
 
@@ -126,8 +133,11 @@ export function createEducationDistrict(
     emissiveMap: engWinTex,
     emissive: new THREE.Color(0x3b82f6),
     emissiveIntensity: 1.8,
-    roughness: 0.3,
-    metalness: 0.85,
+    roughness: 0.24,
+    metalness: 0.88,
+    normalMap: materials.maps.facadeNormal,
+    normalScale: new THREE.Vector2(0.6, 0.6),
+    envMapIntensity: 1.5,
   });
   engCoreMat.userData = { isWindowMaterial: true, district: 'education', baseColor: 0x3b82f6 };
   const engCore = new THREE.Mesh(new THREE.BoxGeometry(18, 78, 18), engCoreMat);
@@ -170,8 +180,8 @@ export function createEducationDistrict(
     powerUsage: '3.8 MW (Solar Roof)',
     occupancy: '98% (3,800 Students)',
     networkStatus: 'Safe Educational Sandbox 100%',
-    description: 'Stepped bio-terrace academy for primary and secondary cybernetic education with panoramic solar canopies.',
-    features: ['Bio-Terraced Playgrounds', 'Solar Shading Louvers', 'Immersive Hologram Pods'],
+    description: 'Stepped terrace academy for primary and secondary education with panoramic solar canopies.',
+    features: ['Terraced Playgrounds', 'Solar Shading Louvers', 'Interactive Science Pods'],
   };
   buildingsData.push(schoolData);
 
@@ -198,10 +208,10 @@ export function createEducationDistrict(
   interactiveMeshes.push(schoolMesh);
   group.add(schoolGroup);
 
-  // 4. QUANTUM DIGITAL LIBRARY
+  // 4. METROPOLITAN UNIVERSITY LIBRARY
   const libData: BuildingData = {
     id: 'edu-digital-library',
-    name: 'Quantum Digital Library & Planetary Archives',
+    name: 'Metropolitan University Library & Archives',
     districtId: 'education',
     districtName: 'Education District',
     category: 'Digital Library',
@@ -209,11 +219,11 @@ export function createEducationDistrict(
     floors: 12,
     position: [-170, 0, -220],
     dimensions: [34, 52, 34],
-    powerUsage: '8.2 MW (Crystal Optical Storage)',
+    powerUsage: '8.2 MW',
     occupancy: '89% (5,200 Researchers & Visitors)',
-    networkStatus: 'Immutable Crystal Data Bus 100 Gbps',
-    description: 'A monument of planetary knowledge featuring a grand geodesic reading dome surrounded by optical data pylons.',
-    features: ['Geodesic Cyber Dome', 'Concentric Holographic Rings', 'Optical Crystal Vaults'],
+    networkStatus: 'Campus High-Speed Fiber 100 Gbps',
+    description: 'A monument of academic knowledge featuring a grand geodesic glass reading dome framed by structural dark steel trusses.',
+    features: ['Geodesic Glass Reading Atrium', 'Rare Manuscripts Archives', 'Digital Research Vaults'],
   };
   buildingsData.push(libData);
 
@@ -229,22 +239,23 @@ export function createEducationDistrict(
   libPodium.castShadow = true;
   libGroup.add(libPodium);
 
-  // Geodesic Glass Dome
+  // Geodesic Glass Reading Dome
   const domeGeo = new THREE.IcosahedronGeometry(15, 2);
-  const domeMesh = new THREE.Mesh(domeGeo, materials.glassCyan);
+  const domeMesh = new THREE.Mesh(domeGeo, materials.glassDark);
   domeMesh.position.y = 16;
   libGroup.add(domeMesh);
 
-  // Concentric Glowing Orbit Rings
-  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(17, 0.4, 8, 32), materials.neonPurple);
-  ring1.position.y = 22;
-  ring1.rotation.x = Math.PI / 4;
-  libGroup.add(ring1);
+  // Architectural Structural Dome Ribs (Dark Steel Space Frame)
+  const ribGeo = new THREE.TorusGeometry(15.2, 0.25, 8, 32);
+  const rib1 = new THREE.Mesh(ribGeo, materials.metalDark);
+  rib1.position.y = 16;
+  rib1.rotation.x = Math.PI / 2;
+  libGroup.add(rib1);
 
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(19, 0.4, 8, 32), materials.neonCyan);
-  ring2.position.y = 22;
-  ring2.rotation.y = Math.PI / 3;
-  libGroup.add(ring2);
+  const rib2 = new THREE.Mesh(ribGeo, materials.metalDark);
+  rib2.position.y = 16;
+  rib2.rotation.y = Math.PI / 2;
+  libGroup.add(rib2);
 
   libPodium.userData = { buildingData: libData };
   interactiveMeshes.push(libPodium);
@@ -278,8 +289,11 @@ export function createEducationDistrict(
     emissiveMap: labWinTex,
     emissive: new THREE.Color(0x3b82f6),
     emissiveIntensity: 1.8,
-    metalness: 0.8,
-    roughness: 0.2,
+    metalness: 0.84,
+    roughness: 0.18,
+    normalMap: materials.maps.facadeNormal,
+    normalScale: new THREE.Vector2(0.6, 0.6),
+    envMapIntensity: 1.5,
   });
   labMat.userData = { isWindowMaterial: true, district: 'education', baseColor: 0x3b82f6 };
 
@@ -309,10 +323,10 @@ export function createEducationDistrict(
   interactiveMeshes.push(towerA);
   group.add(resGroup);
 
-  // 6. STUDENT CYBER-HOSTEL
+  // 6. STUDENT RESIDENCE HALL
   const hostelData: BuildingData = {
     id: 'edu-student-hostel',
-    name: 'Aurora Student Cyber-Hostel Complex',
+    name: 'Aurora Student Residence Hall Complex',
     districtId: 'education',
     districtName: 'Education District',
     category: 'Student Hostel',
@@ -323,8 +337,8 @@ export function createEducationDistrict(
     powerUsage: '5.2 MW',
     occupancy: '99% (4,100 Residents)',
     networkStatus: 'Campus Fiber Network 100%',
-    description: 'High-density modular housing block with cantilevered study balconies, shared social atriums, and gym pods.',
-    features: ['Staggered Balconies', 'Automated Laundry Chutes', 'Campus Pod Dining'],
+    description: 'High-density modern residential community with study lounges, shared social atriums, and student amenities.',
+    features: ['Staggered Balconies', 'Study Lounges', 'Campus Dining Commons'],
   };
   buildingsData.push(hostelData);
 
@@ -369,9 +383,8 @@ export function createEducationDistrict(
 
   scene.add(group);
 
-  const update = (time: number) => {
-    ring1.rotation.z = time * 0.4;
-    ring2.rotation.x = time * 0.5;
+  const update = (_time: number) => {
+    // Realistic static architectural structures
   };
 
   const dispose = () => {

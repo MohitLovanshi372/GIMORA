@@ -161,13 +161,6 @@ export function createFallbackBuilding(name: string, colorHex: number = 0x0ea5e9
   tower.castShadow = true;
   group.add(tower);
 
-  const neonEdges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(tower.geometry),
-    new THREE.LineBasicMaterial({ color: 0x00f0ff })
-  );
-  neonEdges.position.y = 37.5;
-  group.add(neonEdges);
-
   return group;
 }
 
@@ -177,8 +170,8 @@ export const ASSET_REGISTRY: Record<string, AssetDefinition> = {
     id: 'sports-car',
     category: 'vehicles',
     path: 'vehicles/sports-car.glb',
-    name: 'Cyberpunk Sports Coupe',
-    description: 'High-speed aerodyne electric sports vehicle',
+    name: 'Metropolitan Sports Coupe',
+    description: 'High-speed electric sports vehicle',
     scale: 1.0,
     proceduralFallback: createFallbackSportsCar,
   },
@@ -263,8 +256,8 @@ export const ASSET_REGISTRY: Record<string, AssetDefinition> = {
     id: 'university-academy',
     category: 'buildings',
     path: 'buildings/university.glb',
-    name: 'Neo-Metropolis Quantum University',
-    description: 'Advanced research and cybernetics research academy',
+    name: 'Neo-Metropolis University',
+    description: 'Premier university and academic research academy',
     scale: 1.0,
     proceduralFallback: () => createFallbackBuilding('University', 0x4f46e5),
   },

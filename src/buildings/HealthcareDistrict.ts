@@ -55,22 +55,25 @@ export function createHealthcareDistrict(
   const hospMat = new THREE.MeshStandardMaterial({
     map: healthWinTex,
     emissiveMap: healthWinTex,
-    emissive: new THREE.Color(0x06b6d4),
-    emissiveIntensity: 1.8,
-    roughness: 0.25,
-    metalness: 0.8,
+    emissive: new THREE.Color(0xfef08a),
+    emissiveIntensity: 0.2,
+    roughness: 0.22,
+    metalness: 0.85,
+    normalMap: materials.maps.facadeNormal,
+    normalScale: new THREE.Vector2(0.6, 0.6),
+    envMapIntensity: 1.5,
   });
-  hospMat.userData = { isWindowMaterial: true, district: 'healthcare', baseColor: 0x06b6d4 };
+  hospMat.userData = { isWindowMaterial: true, district: 'healthcare', baseColor: 0xfef08a };
   const hospMesh = new THREE.Mesh(new THREE.BoxGeometry(28, 122, 28), hospMat);
   hospMesh.position.y = 61;
   hospMesh.castShadow = true;
   hospGroup.add(hospMesh);
 
-  // Rooftop Medical Cross Sign (Cyan)
+  // Rooftop Medical Cross Sign (Realistic Emergency Red Cross)
   const crossGroup = new THREE.Group();
   crossGroup.position.set(0, 125, 14.2);
-  const crossV = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8, 0.4), materials.neonCyan);
-  const crossH = new THREE.Mesh(new THREE.BoxGeometry(8, 2.4, 0.4), materials.neonCyan);
+  const crossV = new THREE.Mesh(new THREE.BoxGeometry(2.4, 8, 0.4), materials.neonRed);
+  const crossH = new THREE.Mesh(new THREE.BoxGeometry(8, 2.4, 0.4), materials.neonRed);
   crossGroup.add(crossV);
   crossGroup.add(crossH);
   hospGroup.add(crossGroup);
@@ -106,8 +109,11 @@ export function createHealthcareDistrict(
     emissiveMap: healthWinTex,
     emissive: new THREE.Color(0x06b6d4),
     emissiveIntensity: 1.8,
-    roughness: 0.3,
-    metalness: 0.7,
+    roughness: 0.24,
+    metalness: 0.82,
+    normalMap: materials.maps.facadeNormal,
+    normalScale: new THREE.Vector2(0.55, 0.55),
+    envMapIntensity: 1.4,
   });
   emMat.userData = { isWindowMaterial: true, district: 'healthcare', baseColor: 0x06b6d4 };
   const emMesh = new THREE.Mesh(new THREE.BoxGeometry(34, 36, 26), emMat);
@@ -189,7 +195,7 @@ export function createHealthcareDistrict(
     });
   });
 
-  // Ambulances (3 Cyber-Ambulances parked in bays)
+  // Ambulances (3 Paramedic Ambulances parked in staging bays)
   for (let i = 0; i < 3; i++) {
     const amb = new THREE.Group();
     amb.position.set(-7 + i * 7, 0, 0);
@@ -222,24 +228,24 @@ export function createHealthcareDistrict(
   heliDeck.position.y = 24.4;
   heliGroup.add(heliDeck);
 
-  // Glowing Cyan Landing Ring
-  const heliRing = new THREE.Mesh(new THREE.TorusGeometry(deckRadius, 0.25, 8, 32), materials.neonCyan);
+  // Aviation Yellow Landing Ring
+  const heliRing = new THREE.Mesh(new THREE.TorusGeometry(deckRadius, 0.25, 8, 32), materials.neonAmber);
   heliRing.position.y = 24.85;
   heliRing.rotation.x = Math.PI / 2;
   heliGroup.add(heliRing);
 
-  // "H" Marking
-  const hLine1 = new THREE.Mesh(new THREE.PlaneGeometry(1, 6), materials.neonAmber);
+  // Crisp White "H" Marking
+  const hLine1 = new THREE.Mesh(new THREE.PlaneGeometry(1, 6), materials.neonWhite);
   hLine1.rotateX(-Math.PI / 2);
   hLine1.position.set(-2, 24.86, 0);
   heliGroup.add(hLine1);
 
-  const hLine2 = new THREE.Mesh(new THREE.PlaneGeometry(1, 6), materials.neonAmber);
+  const hLine2 = new THREE.Mesh(new THREE.PlaneGeometry(1, 6), materials.neonWhite);
   hLine2.rotateX(-Math.PI / 2);
   hLine2.position.set(2, 24.86, 0);
   heliGroup.add(hLine2);
 
-  const hCross = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 1), materials.neonAmber);
+  const hCross = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 1), materials.neonWhite);
   hCross.rotateX(-Math.PI / 2);
   hCross.position.set(0, 24.86, 0);
   heliGroup.add(hCross);
@@ -249,7 +255,7 @@ export function createHealthcareDistrict(
   // 6. MEDICAL RESEARCH CITADEL
   const medResData: BuildingData = {
     id: 'health-medical-research',
-    name: 'Genomics & Neural Medical Research Citadel',
+    name: 'Genomics & Biomedical Research Citadel',
     districtId: 'healthcare',
     districtName: 'Healthcare District',
     category: 'Medical Research',
@@ -259,9 +265,9 @@ export function createHealthcareDistrict(
     dimensions: [26, 84, 26],
     powerUsage: '12.6 MW',
     occupancy: '90% (4,100 Scientists)',
-    networkStatus: 'Bio-Secure Neural Mesh 100%',
-    description: 'High-containment genomic engineering center advancing cybernetic organ synthesis, genetic repair, and longevity therapies.',
-    features: ['DNA Double-Helix Plaza', 'Containment Level-4 Labs', 'Synthetic Organ Bio-Printers'],
+    networkStatus: 'Bio-Secure High-Speed Network 100%',
+    description: 'Premier biomedical and genomics research center advancing cellular biology, translational medicine, and clinical therapeutics.',
+    features: ['DNA Double-Helix Plaza', 'Containment Level-4 Labs', 'Biomedical Cleanrooms'],
   };
   buildingsData.push(medResData);
 

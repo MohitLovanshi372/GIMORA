@@ -6,12 +6,13 @@
 import React from 'react';
 import { BuildingData } from '../city/types';
 import { Layers, Zap, Users, Wifi, Compass, X, Sparkles, CheckCircle2, Box } from 'lucide-react';
+import { InteriorBuildingType } from './BuildingInteriorModal';
 
 interface BuildingInspectorProps {
   building: BuildingData;
   onClose: () => void;
   onFocus: (building: BuildingData) => void;
-  onEnterInterior?: (type: 'mohit-hub' | 'railway' | 'hospital' | 'university' | 'mall') => void;
+  onEnterInterior?: (type: InteriorBuildingType) => void;
 }
 
 export const BuildingInspector: React.FC<BuildingInspectorProps> = ({
@@ -23,14 +24,17 @@ export const BuildingInspector: React.FC<BuildingInspectorProps> = ({
   const isMohitHub = building.id === 'mohit-developer-hub-hq';
   const hasInterior =
     isMohitHub ||
+    building.category === 'Skyscraper' ||
     building.category === 'Transit Terminal' ||
     building.category === 'Transit Hub' ||
     building.category === 'Smart Hospital' ||
     building.category === 'University' ||
     building.category === 'Entertainment Megaplex';
 
-  const getInteriorType = (): 'mohit-hub' | 'railway' | 'hospital' | 'university' | 'mall' => {
+  const getInteriorType = (): InteriorBuildingType => {
     if (isMohitHub) return 'mohit-hub';
+    if (building.districtId === 'airport' || building.id.includes('airport') || building.id.includes('skyport')) return 'airport';
+    if (building.category === 'Skyscraper') return 'corporate-office';
     if (building.category === 'Transit Terminal' || building.category === 'Transit Hub') return 'railway';
     if (building.category === 'Smart Hospital') return 'hospital';
     if (building.category === 'University') return 'university';
@@ -113,7 +117,7 @@ export const BuildingInspector: React.FC<BuildingInspectorProps> = ({
 
           <div className="flex flex-col gap-0.5">
             <span className="text-slate-400 flex items-center gap-1.5">
-              <Wifi className="w-3.5 h-3.5 text-emerald-400" /> Cyber Network
+              <Wifi className="w-3.5 h-3.5 text-emerald-400" /> Network Connectivity
             </span>
             <span className="text-slate-100 font-mono font-medium truncate">
               {building.networkStatus}

@@ -7,20 +7,28 @@ import React, { useState } from 'react';
 import {
   Building2,
   X,
-  Layers,
   Sparkles,
   Cpu,
   Server,
   Code,
   Compass,
-  ExternalLink,
-  ChevronRight,
-  Shield,
-  Activity,
-  Zap,
+  Briefcase,
+  Monitor,
+  ShoppingBag,
+  Users,
+  Tag,
+  TrendingUp,
 } from 'lucide-react';
 
-export type InteriorBuildingType = 'mohit-hub' | 'railway' | 'hospital' | 'university' | 'mall' | 'city-hall';
+export type InteriorBuildingType =
+  | 'mohit-hub'
+  | 'corporate-office'
+  | 'mall'
+  | 'airport'
+  | 'railway'
+  | 'hospital'
+  | 'university'
+  | 'city-hall';
 
 interface BuildingInteriorModalProps {
   buildingType: InteriorBuildingType;
@@ -34,6 +42,7 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
   onSelectBuilding,
 }) => {
   const [selectedFloor, setSelectedFloor] = useState<number>(0);
+  const [selectedShopId, setSelectedShopId] = useState<string>('neobionix');
 
   const buildingTitles: Record<InteriorBuildingType, { name: string; subtitle: string; floorsCount: number }> = {
     'mohit-hub': {
@@ -41,34 +50,224 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
       subtitle: 'AI • SOFTWARE • INNOVATION HQ',
       floorsCount: 6,
     },
+    'corporate-office': {
+      name: 'APEX INTERNATIONAL FINANCIAL TOWER',
+      subtitle: 'Global Investment Banking, Capital Markets & Executive Suites',
+      floorsCount: 3,
+    },
     railway: {
-      name: 'CENTRAL HYPER-TRANSIT TERMINAL',
-      subtitle: 'Maglev Nexus & Continental Concourse',
+      name: 'METROPOLIS CENTRAL UNION STATION',
+      subtitle: 'High-Speed Rail Concourse & Regional Transit Terminal',
       floorsCount: 3,
     },
     hospital: {
-      name: 'NEO-GENESIS SMART HOSPITAL',
-      subtitle: 'Emergency Pavilion & Nanomedicine Center',
+      name: 'METROPOLITAN GENERAL HOSPITAL & MEDICAL CENTER',
+      subtitle: 'Emergency Pavilion, Surgical Suites & Diagnostic Research',
       floorsCount: 4,
     },
     university: {
-      name: 'NEO-METROPOLIS UNIVERSITY',
-      subtitle: 'Quantum Research & Cybernetic Academy',
+      name: 'METROPOLIS UNIVERSITY & RESEARCH CAMPUS',
+      subtitle: 'School of Engineering, Sciences & Academic Library Quad',
       floorsCount: 4,
     },
     mall: {
-      name: 'CYBER-PULSE MEGAPLEX ATRIUM',
-      subtitle: 'Holographic Retail & Entertainment Hub',
+      name: 'GRAND METROPOLITAN SHOPPING GALLERIA',
+      subtitle: '5 Premier Retail Boutiques, Dining Atrium & Customer Services',
+      floorsCount: 3,
+    },
+    airport: {
+      name: 'SKYPORT INTERNATIONAL AIRPORT TERMINAL',
+      subtitle: 'Passenger Concourse, Air Traffic Logistics & International Gates',
       floorsCount: 3,
     },
     'city-hall': {
-      name: 'NEON METROPOLIS CITY HALL',
-      subtitle: 'Autonomous Civic Council & Digital Governance',
+      name: 'METROPOLIS CIVIC CENTER & CITY HALL',
+      subtitle: 'Municipal Council Chambers, Public Services & Urban Planning',
       floorsCount: 4,
     },
   };
 
-  const currentInfo = buildingTitles[buildingType];
+  const currentInfo = buildingTitles[buildingType] || buildingTitles['corporate-office'];
+
+  // Corporate Office Employees List
+  const corporateEmployees = [
+    {
+      name: 'Aria Chen',
+      id: 'EMP-1042',
+      role: 'Chief AI Architect',
+      dept: 'Core Neural Systems',
+      status: 'Active',
+      statusColor: 'emerald',
+      task: 'Fine-tuning distributed swarm intelligence models across downtown nodes',
+      avatar: 'AC',
+    },
+    {
+      name: 'Marcus Vance',
+      id: 'EMP-1089',
+      role: 'Principal Systems SRE',
+      dept: 'Infrastructure & Edge',
+      status: 'In Meeting',
+      statusColor: 'amber',
+      task: 'Multi-datacenter optical bus auto-balancing review',
+      avatar: 'MV',
+    },
+    {
+      name: 'Elena Rostova',
+      id: 'EMP-1104',
+      role: 'Lead Quantum Cryptographer',
+      dept: 'Data Security',
+      status: 'Active',
+      statusColor: 'emerald',
+      task: 'Validating post-quantum encryption keys for banking transactions',
+      avatar: 'ER',
+    },
+    {
+      name: 'Devon Kincaid',
+      id: 'EMP-1128',
+      role: 'Product Strategy Director',
+      dept: 'Autonomous Ventures',
+      status: 'In Meeting',
+      statusColor: 'amber',
+      task: 'Quarterly roadmap sync with Metropolitan City Governance council',
+      avatar: 'DK',
+    },
+    {
+      name: 'Sora Takahashi',
+      id: 'EMP-1156',
+      role: 'Robotics Firmware Lead',
+      dept: 'Hardware Engineering',
+      status: 'Deep Focus',
+      statusColor: 'cyan',
+      task: 'Benchmarking collision avoidance firmware for aerocars and drones',
+      avatar: 'ST',
+    },
+    {
+      name: 'Maya Lin',
+      id: 'EMP-1192',
+      role: 'Senior Spatial UI/UX Lead',
+      dept: 'Design Systems',
+      status: 'Active',
+      statusColor: 'emerald',
+      task: 'Prototyping volumetric holographic dashboard telemetry for HUD',
+      avatar: 'ML',
+    },
+    {
+      name: 'Zackary Cross',
+      id: 'EMP-1205',
+      role: 'Chief Information Security Officer',
+      dept: 'InfoSec Operations',
+      status: 'Active',
+      statusColor: 'emerald',
+      task: 'Monitoring network security infrastructure and firewall clusters',
+      avatar: 'ZC',
+    },
+    {
+      name: 'Dr. Tariq Al-Mansoor',
+      id: 'EMP-1230',
+      role: 'Machine Learning Researcher',
+      dept: 'Quantum AI Labs',
+      status: 'Deep Focus',
+      statusColor: 'cyan',
+      task: 'Sparse transformer attention scaling for metropolitan weather forecast',
+      avatar: 'TA',
+    },
+  ];
+
+  // Mall Shops & Employees (Premier Contemporary Retail Galleria)
+  const mallShops = [
+    {
+      id: 'neobionix',
+      name: 'Apex Precision Optics & Camera Lab',
+      category: 'Professional Photography & Imaging',
+      tagline: 'High-End Mirrorless Cameras, Cinema Lenses & Studio Lighting',
+      rating: '4.9 ★',
+      badge: 'Authorized Pro Dealer',
+      badgeColor: 'blue',
+      items: [
+        { name: 'Apex Prime 85mm f/1.2 Cinema Lens', price: '$2,450' },
+        { name: 'Titanium Carbon Fiber Pro Tripod Kit', price: '$680' },
+        { name: 'Studio Bi-Color LED Panel 300W', price: '$850' },
+      ],
+      employees: [
+        { name: 'Cassian Drake', id: 'STAFF-4091', role: 'Chief Imaging Specialist', task: 'Calibrating medium-format sensor on client camera' },
+        { name: 'Nia Sterling', id: 'STAFF-4092', role: 'Studio Lighting Consultant', task: 'Demonstrating softbox diffuser setups in testing bay' },
+      ],
+    },
+    {
+      id: 'nexus',
+      name: 'Nexus Electronics & Computing Store',
+      category: 'Computing, Mobile & Smart Audio',
+      tagline: 'Workstation Laptops, Hi-Res Audio & Smart Workspace Tech',
+      rating: '4.8 ★',
+      badge: 'Official Store',
+      badgeColor: 'blue',
+      items: [
+        { name: 'Nexus ProBook Studio 16" (OLED 120Hz)', price: '$2,800' },
+        { name: 'Planar Magnetic Studio Headphones', price: '$750' },
+        { name: 'Thunderbolt 4 Enterprise Docking Station', price: '$340' },
+      ],
+      employees: [
+        { name: 'Kenji Sato', id: 'STAFF-5104', role: 'Solutions Architect', task: 'Setting up dual 4K workstation displays for architect client' },
+        { name: 'Lila Moreno', id: 'STAFF-5105', role: 'Customer Experience Lead', task: 'Configuring color-accurate monitor profiles' },
+      ],
+    },
+    {
+      id: 'chroma',
+      name: 'Atelier Moderne Luxury Fashion & Apparel',
+      category: 'Contemporary Designer Apparel & Footwear',
+      tagline: 'Italian Wool Overcoats, Bespoke Tailoring & Fine Leather',
+      rating: '4.9 ★',
+      badge: 'Haute Horlogerie',
+      badgeColor: 'amber',
+      items: [
+        { name: 'Cashmere-Blend Tailored Overcoat', price: '$1,650' },
+        { name: 'Handcrafted Tuscan Leather Chelsea Boots', price: '$580' },
+        { name: 'Minimalist Titanium Automatic Chronograph', price: '$2,400' },
+      ],
+      employees: [
+        { name: 'Valentina Rossi', id: 'STAFF-3210', role: 'Lead Fashion Stylist', task: 'Arranging the autumn luxury collection showcase' },
+        { name: 'Dexter Cole', id: 'STAFF-3211', role: 'Bespoke Tailoring Associate', task: 'Taking measurements for custom two-piece wool suit' },
+      ],
+    },
+    {
+      id: 'ramen',
+      name: 'Artisan Espresso Bar & Specialty Bistro',
+      category: 'Gourmet Specialty Coffee & Patisserie',
+      tagline: 'Single-Origin Ethiopian Pour-Overs & Fresh Bakery Delights',
+      rating: '5.0 ★',
+      badge: 'Award Winner',
+      badgeColor: 'amber',
+      items: [
+        { name: 'Signature Hand-Poured Geisha Pour-Over', price: '$9.50' },
+        { name: 'Avocado & Smoked Salmon Brioche Toast', price: '$14.00' },
+        { name: 'Valrhona Dark Chocolate Hazelnut Croissant', price: '$6.50' },
+      ],
+      employees: [
+        { name: 'Hiroshi Tanaka', id: 'STAFF-8120', role: 'Head Roaster & Barista Champion', task: 'Profiling micro-lot roast batches on cast-iron roaster' },
+        { name: 'Claire Dubois', id: 'STAFF-8121', role: 'Pastry Chef', task: 'Laminating butter layers for artisanal morning croissants' },
+      ],
+    },
+    {
+      id: 'skyforge',
+      name: 'Skyline Travel Goods & Drone Studio',
+      category: 'Luggage, Travel Essentials & Imaging Drones',
+      tagline: 'Anodized Aluminum Carry-Ons & 4K Foldable Drones',
+      rating: '4.7 ★',
+      badge: 'Verified Dealer',
+      badgeColor: 'emerald',
+      items: [
+        { name: 'Aviation Anodized Aluminum Carry-On', price: '$720' },
+        { name: 'Falcon 4K HDR Foldable Travel Drone', price: '$1,150' },
+        { name: 'Weather-Resistant Ballistic Nylon Backpack', price: '$260' },
+      ],
+      employees: [
+        { name: 'Tyler Reed', id: 'STAFF-6240', role: 'Aviation Tech Specialist', task: 'Demonstrating gimbal stabilization and obstacle avoidance' },
+        { name: 'Zoe Brooks', id: 'STAFF-6241', role: 'Travel Gear Specialist', task: 'Assisting passenger with TSA-compliant luggage sizing' },
+      ],
+    },
+  ];
+
+  const currentShop = mallShops.find((s) => s.id === selectedShopId) || mallShops[0];
 
   return (
     <div
@@ -99,7 +298,18 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
           <div className="flex items-center gap-2">
             {/* Quick Switcher */}
             <div className="hidden sm:flex items-center gap-1 bg-slate-900/90 p-1 rounded-lg border border-slate-800 text-xs">
-              {(['mohit-hub', 'railway', 'hospital', 'university', 'mall', 'city-hall'] as const).map((b) => (
+              {(
+                [
+                  'mohit-hub',
+                  'corporate-office',
+                  'mall',
+                  'airport',
+                  'railway',
+                  'hospital',
+                  'university',
+                  'city-hall',
+                ] as const
+              ).map((b) => (
                 <button
                   key={b}
                   onClick={() => {
@@ -112,7 +322,17 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  {b === 'mohit-hub' ? 'Mohit Hub' : b === 'city-hall' ? 'City Hall' : b.toUpperCase()}
+                  {b === 'mohit-hub'
+                    ? 'Mohit Hub'
+                    : b === 'corporate-office'
+                    ? 'Corporate HQ'
+                    : b === 'mall'
+                    ? 'Mall'
+                    : b === 'airport'
+                    ? 'Airport'
+                    : b === 'city-hall'
+                    ? 'City Hall'
+                    : b.toUpperCase()}
                 </button>
               ))}
             </div>
@@ -129,6 +349,339 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* CORPORATE OFFICE INTERIOR */}
+          {buildingType === 'corporate-office' && (
+            <div className="space-y-6">
+              {/* Floor Tabs */}
+              <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/90 rounded-xl border border-cyan-500/20 text-xs font-mono">
+                {[
+                  { floor: 0, label: 'L42: Collaborative Engineering Pods & Desks' },
+                  { floor: 1, label: 'L48: Executive Boardroom & Holo-Suite' },
+                  { floor: 2, label: 'L52: Neural Trading & Financial Intelligence' },
+                ].map((item) => (
+                  <button
+                    key={item.floor}
+                    onClick={() => setSelectedFloor(item.floor)}
+                    className={`px-3 py-1.5 rounded-lg transition font-medium ${
+                      selectedFloor === item.floor
+                        ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* FLOOR 0: Open Collaborative Tech Floor with Live Employees */}
+              {selectedFloor === 0 && (
+                <div className="space-y-5">
+                  <div className="p-4 rounded-xl bg-slate-900/70 border border-cyan-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 text-cyan-400 mb-1">
+                        <Monitor className="w-4 h-4" />
+                        <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                          Level 42: Open Engineering Pods & Collaborative Desks
+                        </h3>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                        High-efficiency open-plan corporate workspace featuring 240 dual-monitor ergonomic workstations, floor-to-ceiling panoramic glass facing the city skyline, collaborative huddle pods, and high-bandwidth optical interconnects.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2 shrink-0">
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/80 border border-slate-800 text-center font-mono">
+                        <span className="text-[10px] text-slate-400 block">Occupancy</span>
+                        <span className="text-emerald-400 font-bold text-sm">96% (240/250)</span>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/80 border border-slate-800 text-center font-mono">
+                        <span className="text-[10px] text-slate-400 block">Bandwidth</span>
+                        <span className="text-cyan-400 font-bold text-sm">100 Gbps</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Employees On Duty Roster */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
+                        <Users className="w-4 h-4 text-cyan-400" />
+                        <span className="font-semibold text-white">Active Corporate Personnel on Floor:</span>
+                      </div>
+                      <span className="text-[11px] font-mono text-slate-400">8 Senior Technologists Live</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {corporateEmployees.map((emp) => (
+                        <div
+                          key={emp.id}
+                          className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 transition flex items-start gap-3"
+                        >
+                          <div className="relative shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-600/30 to-blue-600/40 border border-cyan-500/30 flex items-center justify-center font-mono font-bold text-xs text-cyan-300">
+                              {emp.avatar}
+                            </div>
+                            <span
+                              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 ${
+                                emp.statusColor === 'emerald'
+                                  ? 'bg-emerald-400'
+                                  : emp.statusColor === 'amber'
+                                  ? 'bg-amber-400'
+                                  : 'bg-cyan-400'
+                              }`}
+                            />
+                          </div>
+
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <h4 className="text-xs font-bold text-slate-100 truncate">{emp.name}</h4>
+                              <span className="text-[10px] font-mono text-slate-500">{emp.id}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-[11px] font-mono">
+                              <span className="text-cyan-400 truncate">{emp.role}</span>
+                              <span
+                                className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
+                                  emp.statusColor === 'emerald'
+                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                    : emp.statusColor === 'amber'
+                                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                    : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                                }`}
+                              >
+                                {emp.status}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 leading-tight truncate">
+                              ⚡ {emp.task}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* FLOOR 1: Executive Boardroom */}
+              {selectedFloor === 1 && (
+                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
+                  <div className="flex items-center gap-2 text-purple-400">
+                    <Briefcase className="w-5 h-5" />
+                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                      Level 48: Executive Boardroom & Strategy Suite
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    A grand 24-seat conference suite encased in smart acoustic privacy glass. Features a centerpiece digital architectural model of Metropolis Central displaying real-time traffic flux, power distribution, and commercial metrics for executive review.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Current Session</span>
+                      <span className="text-cyan-300 font-bold text-xs">Metropolitan Cloud Scaling</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Security Clearance</span>
+                      <span className="text-emerald-300 font-bold text-xs">Level 5 Biometric</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Remote Telepresence</span>
+                      <span className="text-purple-300 font-bold text-xs">6 Encrypted Holo-Feeds</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* FLOOR 2: Neural Trading Floor */}
+              {selectedFloor === 2 && (
+                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <TrendingUp className="w-5 h-5" />
+                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                      Level 52: Neural Computation & Financial Trading Floor
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Multi-tier trading pits executing high-frequency autonomous algorithms across global commodity and energy markets. Surrounded by a 360-degree LED stock ticker ribbon and sub-millisecond execution engines.
+                  </p>
+                  <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                    <span className="text-cyan-400 font-bold">METRO-TECH $842.50 (+4.8%)</span>
+                    <span className="text-emerald-400 font-bold">QUANTUM-SYS $1,240.10 (+8.2%)</span>
+                    <span className="text-blue-400 font-bold">URBAN-TRANSIT $420.30 (+1.9%)</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* METROPOLITAN GALLERIA MALL INTERIOR */}
+          {buildingType === 'mall' && (
+            <div className="space-y-6">
+              {/* Floor Tabs */}
+              <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/90 rounded-xl border border-cyan-500/20 text-xs font-mono">
+                {[
+                  { floor: 0, label: 'L1: Ground Retail Promenade (5 Boutiques)' },
+                  { floor: 1, label: 'L2: Zero-G Arcade & VR Mezzanine' },
+                  { floor: 2, label: 'L3: Celestial Rooftop Sky-Bistro' },
+                ].map((item) => (
+                  <button
+                    key={item.floor}
+                    onClick={() => setSelectedFloor(item.floor)}
+                    className={`px-3 py-1.5 rounded-lg transition font-medium ${
+                      selectedFloor === item.floor
+                        ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* FLOOR 0: Retail Promenade with 5 Distinct Shops */}
+              {selectedFloor === 0 && (
+                <div className="space-y-5">
+                  {/* Mall Telemetry Banner */}
+                  <div className="p-4 rounded-xl bg-slate-900/70 border border-cyan-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 text-cyan-400 mb-1">
+                        <ShoppingBag className="w-4 h-4" />
+                        <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                          Grand Metropolitan Shopping Galleria: Retail Directory
+                        </h3>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        A multi-level premier shopping galleria showcasing flagship luxury boutiques for professional photography, workstation computing, designer fashion, specialty artisan coffee, and travel goods.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2 shrink-0">
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/80 border border-slate-800 text-center font-mono">
+                        <span className="text-[10px] text-slate-400 block">Live Visitors</span>
+                        <span className="text-emerald-400 font-bold text-sm">1,420 Shoppers</span>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/80 border border-slate-800 text-center font-mono">
+                        <span className="text-[10px] text-slate-400 block">Retail Staff</span>
+                        <span className="text-cyan-400 font-bold text-sm">48 On Duty</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Shop Selector Buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    {mallShops.map((shop) => (
+                      <button
+                        key={shop.id}
+                        onClick={() => setSelectedShopId(shop.id)}
+                        className={`px-3 py-2 rounded-xl text-xs font-mono transition text-left flex items-center gap-2 border ${
+                          selectedShopId === shop.id
+                            ? 'bg-cyan-500/20 text-cyan-200 border-cyan-500/50 shadow-sm shadow-cyan-500/20 font-bold'
+                            : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
+                        }`}
+                      >
+                        <Tag className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>{shop.name.split('&')[0]}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Active Shop Details Card */}
+                  <div className="p-5 rounded-xl bg-slate-900/80 border border-cyan-500/30 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-base font-bold font-['Chakra_Petch'] text-cyan-300">
+                            {currentShop.name}
+                          </h4>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                            {currentShop.badge}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 font-mono mt-0.5">{currentShop.tagline}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-amber-400 font-mono">{currentShop.rating}</span>
+                        <span className="text-xs text-slate-500 font-mono">• {currentShop.category}</span>
+                      </div>
+                    </div>
+
+                    {/* Featured Shop Catalog */}
+                    <div>
+                      <h5 className="text-xs font-mono font-semibold text-slate-300 mb-2">Featured Products Catalog:</h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {currentShop.items.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3 rounded-lg bg-slate-950/70 border border-slate-800 flex items-center justify-between"
+                          >
+                            <span className="text-xs text-slate-200 truncate pr-2">{item.name}</span>
+                            <span className="text-xs font-bold font-mono text-emerald-400 whitespace-nowrap">
+                              {item.price}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Staff On Duty for this Shop */}
+                    <div>
+                      <h5 className="text-xs font-mono font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Assigned Shop Employees on Shift:</span>
+                      </h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {currentShop.employees.map((emp, eIdx) => (
+                          <div
+                            key={eIdx}
+                            className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 flex items-start gap-2.5"
+                          >
+                            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center font-mono font-bold text-xs text-cyan-300 shrink-0">
+                              {emp.name.split(' ').map((n) => n[0]).join('')}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-white truncate">{emp.name}</span>
+                                <span className="text-[10px] font-mono text-slate-500">{emp.id}</span>
+                              </div>
+                              <span className="text-[11px] font-mono text-cyan-400 block">{emp.role}</span>
+                              <span className="text-[11px] text-slate-400 block mt-0.5 leading-tight">
+                                🛠 Current Task: {emp.task}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* FLOOR 1: Zero-G Arcade */}
+              {selectedFloor === 1 && (
+                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
+                  <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
+                    Level 2: Zero-Gravity VR Arcade & Holographic Arena
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Featuring 16 magnetic suspension battle pods, 360-degree holographic music dance floors, retro-synth coin-op cabinets, and competitive esports leagues with 240 live spectators.
+                  </p>
+                </div>
+              )}
+
+              {/* FLOOR 2: Sky Bistro */}
+              {selectedFloor === 2 && (
+                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
+                  <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
+                    Level 3: Celestial Rooftop Sky-Bistro & Terrace
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Open-air cocktail lounges, cantilevered glass dining balconies extending over the central boulevard, and live ambient synth performances overlooking the river bridges.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* MOHIT DEVELOPER HUB INTERIOR */}
           {buildingType === 'mohit-hub' && (
             <div className="space-y-6">
@@ -140,210 +693,64 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
                   { floor: 2, label: 'L3: AI Laboratory' },
                   { floor: 3, label: 'L4: Cloud Data Center' },
                   { floor: 4, label: 'L5: Innovation Lab' },
-                  { floor: 5, label: 'Rooftop: AI Command' },
+                  { floor: 5, label: 'R: Rooftop AI Command' },
                 ].map((item) => (
                   <button
                     key={item.floor}
                     onClick={() => setSelectedFloor(item.floor)}
-                    className={`px-3 py-2 rounded-lg transition flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-lg transition font-medium ${
                       selectedFloor === item.floor
-                        ? 'bg-gradient-to-r from-cyan-500/30 to-emerald-500/20 text-cyan-200 border border-cyan-400/50 font-bold shadow-md shadow-cyan-950/40'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                     }`}
                   >
-                    <Layers className="w-3.5 h-3.5" />
-                    <span>{item.label}</span>
+                    {item.label}
                   </button>
                 ))}
               </div>
 
-              {/* FLOOR 0: Reception & Project Showcase Wall */}
+              {/* FLOOR 0: Reception */}
               {selectedFloor === 0 && (
-                <div className="space-y-6 animate-fadeIn">
-                  <div className="p-4 rounded-xl bg-slate-900/60 border border-cyan-500/20 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div>
-                      <span className="text-xs font-mono text-cyan-400 font-semibold uppercase tracking-wider">
-                        Ground Floor • Main Atrium
-                      </span>
-                      <h3 className="text-base font-bold text-white font-['Chakra_Petch'] mt-0.5">
-                        Holographic Reception & Project Showcase Wall
-                      </h3>
-                      <p className="text-xs text-slate-300 mt-1 max-w-xl">
-                        Welcome to MOHIT DEVELOPER HUB. The ground pavilion showcases real flagship software engineering initiatives, agritech solutions, and geospatial intelligence platforms.
-                      </p>
-                    </div>
-                    <div className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center gap-2 shrink-0">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>Holographic Map Active</span>
-                    </div>
+                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
+                  <div className="flex items-center gap-2 text-cyan-400">
+                    <Sparkles className="w-5 h-5" />
+                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                      Ground Level: Grand Reception & Open-Source Showcase Atrium
+                    </h3>
                   </div>
-
-                  {/* PROJECT SHOWCASE WALL */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-mono text-cyan-300 uppercase tracking-wider flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-emerald-400" />
-                        Featured Project Showcase Wall
-                      </h4>
-                      <span className="text-[11px] text-slate-400 font-mono">4 Production Modules Live</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Project 1: Kisan Procurement Mitra */}
-                      <div className="p-4 rounded-xl bg-slate-900/80 border border-emerald-500/30 hover:border-emerald-500/60 transition space-y-2.5 group">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold">
-                              AGRITECH AI
-                            </span>
-                            <h5 className="text-sm font-bold text-white mt-1 group-hover:text-emerald-300 transition">
-                              Kisan Procurement Mitra
-                            </h5>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-mono">v2.4 Live</span>
-                        </div>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          Intelligent agricultural procurement & mandi analytics engine empowering farmers with dynamic price prediction, harvest scheduling, and transparent direct-to-market dispatch.
-                        </p>
-                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-emerald-400">
-                          <span>Tech: AI • React • Cloud Run</span>
-                          <span className="flex items-center gap-1 group-hover:underline">
-                            Inspect Specs <ChevronRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Project 2: Smart Property Finder */}
-                      <div className="p-4 rounded-xl bg-slate-900/80 border border-cyan-500/30 hover:border-cyan-500/60 transition space-y-2.5 group">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-semibold">
-                              GEOSPATIAL PROPTECH
-                            </span>
-                            <h5 className="text-sm font-bold text-white mt-1 group-hover:text-cyan-300 transition">
-                              Smart Property Finder
-                            </h5>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-mono">v3.1 Live</span>
-                        </div>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          Next-generation real estate & urban planning platform with 3D neighborhood zoning visualization, price trend forecasting, and instant algorithmic property matching.
-                        </p>
-                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-cyan-400">
-                          <span>Tech: Three.js • Maps SDK • Node</span>
-                          <span className="flex items-center gap-1 group-hover:underline">
-                            Inspect Specs <ChevronRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Project 3: Weather Information Dashboard */}
-                      <div className="p-4 rounded-xl bg-slate-900/80 border border-blue-500/30 hover:border-blue-500/60 transition space-y-2.5 group">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/20 text-blue-300 border border-blue-500/40 font-semibold">
-                              METEOROLOGICAL AI
-                            </span>
-                            <h5 className="text-sm font-bold text-white mt-1 group-hover:text-blue-300 transition">
-                              Weather Information Dashboard
-                            </h5>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-mono">v4.0 Live</span>
-                        </div>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          High-frequency atmospheric radar & Doppler telemetry suite providing real-time precipitation mapping, severe storm trajectory warnings, and micro-climate simulations.
-                        </p>
-                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-blue-400">
-                          <span>Tech: Open-Meteo • Charts • WebGL</span>
-                          <span className="flex items-center gap-1 group-hover:underline">
-                            Inspect Specs <ChevronRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Project 4: Developer Portfolio & Hub Engine */}
-                      <div className="p-4 rounded-xl bg-slate-900/80 border border-purple-500/30 hover:border-purple-500/60 transition space-y-2.5 group">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/40 font-semibold">
-                              PORTFOLIO & ARCHITECTURE
-                            </span>
-                            <h5 className="text-sm font-bold text-white mt-1 group-hover:text-purple-300 transition">
-                              Mohit Lovanshi Developer Portfolio
-                            </h5>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-mono">Continuous</span>
-                        </div>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          Full-stack software engineering showcase presenting scalable cloud microservices, reactive UI applications, WebGL visual computing, and open-source contributions.
-                        </p>
-                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-purple-400">
-                          <span>Tech: TypeScript • React • Node</span>
-                          <span className="flex items-center gap-1 group-hover:underline">
-                            Inspect Specs <ChevronRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Welcome to the monumental headquarters of MOHIT DEVELOPER HUB. Features a triple-height glass atrium, contemporary software exhibits, interactive code repositories, and an executive concierge desk.
+                  </p>
                 </div>
               )}
 
-              {/* FLOOR 1: Software Development Lab */}
+              {/* FLOOR 1: Software Lab */}
               {selectedFloor === 1 && (
                 <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
                   <div className="flex items-center gap-2 text-cyan-400">
                     <Code className="w-5 h-5" />
                     <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Floor 2: Software Development Lab
+                      Floor 2: Collaborative Developer Suites & Workstations
                     </h3>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Collaborative open-concept developer engineering pods equipped with curved dual-8K OLED displays, holographic code debuggers, high-speed fiber local networks, and automated CI/CD continuous deployment test harnesses.
+                    Curved dual 8K display workstations, dedicated zero-latency fiber links, acoustic privacy pods, and coffee lounges where developers engineer next-generation city protocols.
                   </p>
-                  <div className="grid grid-cols-3 gap-3 text-xs font-mono">
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Workstations</span>
-                      <span className="text-cyan-300 font-bold text-sm">180 Active Pods</span>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Daily Commits</span>
-                      <span className="text-emerald-300 font-bold text-sm">2,480 Automated</span>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Test Coverage</span>
-                      <span className="text-cyan-300 font-bold text-sm">99.4% Verified</span>
-                    </div>
-                  </div>
                 </div>
               )}
 
-              {/* FLOOR 2: AI Laboratory */}
+              {/* FLOOR 2: AI Lab */}
               {selectedFloor === 2 && (
                 <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
                   <div className="flex items-center gap-2 text-emerald-400">
                     <Cpu className="w-5 h-5" />
                     <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Floor 3: Artificial Intelligence Laboratory
+                      Floor 3: Advanced AI Training & Quantum Compute Lab
                     </h3>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     Houses high-throughput neural tensor accelerators, fine-tuning large multimodal foundation models, training real-time vision algorithms for autonomous city traffic, and quantum weight simulators.
                   </p>
-                  <div className="grid grid-cols-3 gap-3 text-xs font-mono">
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Compute Power</span>
-                      <span className="text-emerald-300 font-bold text-sm">480 PFLOPS Tensor</span>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Active Models</span>
-                      <span className="text-cyan-300 font-bold text-sm">14 Swarm Agents</span>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Inference Latency</span>
-                      <span className="text-emerald-300 font-bold text-sm">2.4ms Realtime</span>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -357,22 +764,8 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
                     </h3>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Liquid-nitrogen immersion cooling tanks and optical backbones supporting multi-terabit low-latency routing across the entire metropolis, redundant power buses, and disaster-proof encrypted storage vaults.
+                    Liquid-nitrogen immersion cooling tanks and optical backbones supporting multi-terabit low-latency routing across the entire metropolis.
                   </p>
-                  <div className="grid grid-cols-3 gap-3 text-xs font-mono">
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Immersion Temp</span>
-                      <span className="text-blue-300 font-bold text-sm">-18°C Cryo-Loop</span>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Network Bandwidth</span>
-                      <span className="text-cyan-300 font-bold text-sm">100 Tbps Terabit</span>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                      <span className="text-slate-400 block text-[10px]">Uptime SLA</span>
-                      <span className="text-emerald-300 font-bold text-sm">99.9999% Tier-5</span>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -386,7 +779,7 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
                     </h3>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Experimental proving grounds for next-generation automated drones, hover-craft navigation algorithms, cybernetic prosthetics prototyping, and clean fusion cell testing.
+                    Experimental proving grounds for next-generation automated drones, hover-craft navigation algorithms, and clean fusion cell testing.
                   </p>
                 </div>
               )}
@@ -401,14 +794,173 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
                     </h3>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    At 142 meters above ground level, the rooftop commands a 360-degree panoramic skyline view of Neon AI City, river bridges, and continental railway tracks. Features an automated VTOL aerocar helipad deck and primary high-power communications antenna array.
+                    At 142 meters above ground level, the rooftop commands a 360-degree panoramic skyline view of Metropolis Central, river bridges, and continental railway tracks.
                   </p>
                 </div>
               )}
             </div>
           )}
 
-          {/* OTHER BUILDING INTERIORS (Railway, Hospital, University, Mall) */}
+          {/* SKYPORT METRO AIRPORT TERMINAL INTERIOR */}
+          {buildingType === 'airport' && (
+            <div className="space-y-6">
+              {/* Floor Tabs */}
+              <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/90 rounded-xl border border-cyan-500/20 text-xs font-mono">
+                {[
+                  { floor: 0, label: 'L1: Sub-Orbital Flight Gates & Departure Lounge' },
+                  { floor: 1, label: 'L2: First-Class Celestial Sky-Lounge & Duty Free' },
+                  { floor: 2, label: 'L3: Air Traffic Control & Radar Operations' },
+                ].map((item) => (
+                  <button
+                    key={item.floor}
+                    onClick={() => setSelectedFloor(item.floor)}
+                    className={`px-3 py-1.5 rounded-lg transition font-medium ${
+                      selectedFloor === item.floor
+                        ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {selectedFloor === 0 && (
+                <div className="space-y-4 p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                    <div>
+                      <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
+                        Sub-Orbital Boarding Concourse & Live Departure Gates
+                      </h3>
+                      <p className="text-xs text-slate-400 font-mono mt-0.5">
+                        High-speed sub-orbital shuttles and regional VTOL aerocars with biometric fast boarding.
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold">
+                        Airspace Clear (Runway 09L/27R)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Flight Departures Board */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs font-mono text-left">
+                      <thead>
+                        <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
+                          <th className="pb-2">Flight</th>
+                          <th className="pb-2">Destination</th>
+                          <th className="pb-2">Gate</th>
+                          <th className="pb-2">Vessel</th>
+                          <th className="pb-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                        <tr>
+                          <td className="py-2.5 font-bold text-cyan-400">SKY-402</td>
+                          <td>Tokyo Haneda International</td>
+                          <td>Gate 01</td>
+                          <td>Boeing 787-9 Dreamliner</td>
+                          <td><span className="text-emerald-400 font-semibold">BOARDING</span></td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-cyan-400">LON-914</td>
+                          <td>London Heathrow Airport</td>
+                          <td>Gate 03</td>
+                          <td>Airbus A350-1000</td>
+                          <td><span className="text-cyan-400 font-semibold">ON SCHEDULE</span></td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-cyan-400">EUR-208</td>
+                          <td>Frankfurt International</td>
+                          <td>Gate 02</td>
+                          <td>Boeing 777-300ER</td>
+                          <td><span className="text-amber-400 font-semibold">FINAL CALL</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Flight Crew On Shift */}
+                  <div className="pt-2">
+                    <h4 className="text-xs font-mono font-semibold text-slate-300 mb-2">Active Flight Personnel on Shift:</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                      <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 flex items-start gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center font-bold text-cyan-300">
+                          CP
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-bold">Capt. Elena Rostov</span>
+                            <span className="text-[10px] text-slate-500">PILOT-802</span>
+                          </div>
+                          <span className="text-cyan-400 text-[11px] block">Chief Sub-Orbital Commander</span>
+                          <span className="text-slate-400 text-[11px] block mt-0.5">Pre-flight checks for Mach-4.2 departure to Neo-Tokyo</span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 flex items-start gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center font-bold text-blue-300">
+                          TC
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-bold">Dante Vance</span>
+                            <span className="text-[10px] text-slate-500">ATC-109</span>
+                          </div>
+                          <span className="text-blue-400 text-[11px] block">Lead Radar Controller</span>
+                          <span className="text-slate-400 text-[11px] block mt-0.5">Sequencing supersonic approach vector on Runway 09L</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedFloor === 1 && (
+                <div className="space-y-4 p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20">
+                  <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
+                    First-Class Celestial Sky-Lounge & Duty-Free
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Panoramic zero-gravity observation deck looking over the illuminated 320m runway and mountain horizon. Features acoustic relaxation pods, priority sub-orbital customs clearance, and duty-free chronometer boutiques.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Aero-Lounge Capacity</span>
+                      <span className="text-cyan-300 font-bold">240 VIP Passengers</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Duty-Free Boutique</span>
+                      <span className="text-emerald-300 font-bold">Quantum Chronometers</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
+                      <span className="text-slate-400 block text-[10px]">Fast-Track Biometrics</span>
+                      <span className="text-purple-300 font-bold">&lt; 15 sec Clearance</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedFloor === 2 && (
+                <div className="space-y-4 p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20">
+                  <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
+                    Level 3: Air Traffic Control Radar Operations Hub
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Surrounded by 360-degree glass overlooking the flight apron and the entire metropolis. Real-time telemetry coordinates automated arrival strobes, sub-orbital trajectories, and drone delivery flight corridors across all districts.
+                  </p>
+                  <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                    <span className="text-cyan-400 font-bold">AIRSPACE SECTOR 4: GREEN</span>
+                    <span className="text-emerald-400 font-bold">WIND: 12 KNOTS HEADWIND (270°)</span>
+                    <span className="text-blue-400 font-bold">RADAR SWEEP: 360° REFRESH 0.8s</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* OTHER BUILDING INTERIORS (Railway, Hospital, University, City Hall) */}
           {buildingType === 'railway' && (
             <div className="space-y-4 p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20">
               <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
@@ -446,41 +998,16 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
               <p className="text-xs text-slate-300 leading-relaxed">
                 State-of-the-art 24/7 autonomous emergency center featuring 6 surgical robotics suites, automated rapid ambulance bays with priority signal routing, and rooftop helicopter/VTOL medical landing pad.
               </p>
-              <div className="grid grid-cols-3 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Emergency Readiness</span>
-                  <span className="text-emerald-300 font-bold text-sm">100% Operational</span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Ambulance Fleet</span>
-                  <span className="text-cyan-300 font-bold text-sm">12 Cyber Units</span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Trauma Response</span>
-                  <span className="text-emerald-300 font-bold text-sm">&lt; 90 Seconds</span>
-                </div>
-              </div>
             </div>
           )}
 
           {buildingType === 'university' && (
             <div className="space-y-4 p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20">
               <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
-                Neo-Metropolis Central University & Quantum Library
+                Neo-Metropolis Central University & Quantum Labs
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 Academic heart of the education biome. Features high-capacity lecture amphitheaters with live holographic projections, a digital archive housing billions of scientific documents, and student collaborative robotics labs.
-              </p>
-            </div>
-          )}
-
-          {buildingType === 'mall' && (
-            <div className="space-y-4 p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20">
-              <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
-                Cyber-Pulse Megaplex Atrium & Retail Sky-Plaza
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                A multi-story shopping and entertainment megaplex with interactive holographic boutique storefronts, indoor cybernetic waterfalls, rooftop dining bistros, and zero-gravity arcade chambers.
               </p>
             </div>
           )}
@@ -493,7 +1020,7 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
                     Executive Municipal Biome
                   </span>
                   <h3 className="text-base font-bold text-white font-['Chakra_Petch']">
-                    Neon Metropolis City Hall & Civic Council Chambers
+                    Metropolis City Hall & Civic Council Chambers
                   </h3>
                 </div>
                 <div className="px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono">
@@ -503,24 +1030,6 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
               <p className="text-xs text-slate-300 leading-relaxed">
                 The central seat of urban administration where the autonomous City Manager AI coordinates with elected district commissioners. Houses the Central Citizen Registry, the Open Municipal Data Vault, and the High Civic Council amphitheater.
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Legislative Chamber</span>
-                  <span className="text-cyan-300 font-bold">120 Civic Delegates</span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">AI Oversight Pod</span>
-                  <span className="text-emerald-300 font-bold">Direct Grid Sync</span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Citizen Services</span>
-                  <span className="text-cyan-300 font-bold">24/7 Digital Concierge</span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                  <span className="text-slate-400 block text-[10px]">Public Petitions</span>
-                  <span className="text-amber-300 font-bold">1,420 Active / Hour</span>
-                </div>
-              </div>
             </div>
           )}
         </div>

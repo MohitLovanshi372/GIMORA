@@ -5,15 +5,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { CityScene } from './city/CityScene';
+import { CityScene, PlayerRadarTelemetry } from './city/CityScene';
 import { BuildingData, CameraMode, CityMetrics, DistrictId, TrafficDensityLevel, TransportationMetrics } from './city/types';
 import { HUD } from './ui/HUD';
 import { BuildingInspector } from './ui/BuildingInspector';
-import { ControlsGuide } from './ui/ControlsGuide';
-import { TransportationDashboard } from './ui/TransportationDashboard';
-import { AIAgentDashboard } from './ui/AIAgentDashboard';
-import { SmartCityControlCenter } from './ui/SmartCityControlCenter';
 import { BuildingInteriorModal, InteriorBuildingType } from './ui/BuildingInteriorModal';
+import { DubaiModelStudioModal } from './ui/DubaiModelStudioModal';
+import { NavDistrictId } from './ui/DistrictNav';
 import { AgentManagerSnapshot } from './simulation/AgentManager';
 import { CityDirective } from './simulation/AgentTypes';
 import { CityEvent } from './simulation/CityState';
@@ -25,7 +23,7 @@ export default function App() {
 
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingData | null>(null);
   const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
-  const [activeDistrict, setActiveDistrict] = useState<DistrictId | 'mohit-hub' | null>(null);
+  const [activeDistrict, setActiveDistrict] = useState<NavDistrictId | null>(null);
   const [webGlSupported, setWebGlSupported] = useState(true);
 
   // Modals & Panels State
@@ -33,13 +31,22 @@ export default function App() {
   const [controlCenterTab, setControlCenterTab] = useState<'map' | 'overview' | 'time_weather' | 'energy' | 'camera' | 'events'>('map');
   const [interiorModalType, setInteriorModalType] = useState<InteriorBuildingType | null>(null);
   const [isAgentDashboardOpen, setIsAgentDashboardOpen] = useState(true);
+  const [isDubaiStudioOpen, setIsDubaiStudioOpen] = useState(false);
 
   // Time & Weather State
   const [currentWeather, setCurrentWeather] = useState<WeatherType>('CLEAR');
-  const [timeOfDay, setTimeOfDay] = useState(23.7);
-  const [timeString, setTimeString] = useState('23:42:18');
-  const [timeSpeed, setTimeSpeed] = useState(1);
+  const [timeOfDay, setTimeOfDay] = useState(17.35);
+  const [timeString, setTimeString] = useState('17:21:00');
+  const [timeSpeed, setTimeSpeed] = useState(0.4);
   const [isTimePaused, setIsTimePaused] = useState(false);
+  const [radarTelemetry, setRadarTelemetry] = useState<PlayerRadarTelemetry>({
+    x: 0,
+    z: 80,
+    heading: 0,
+    speedKmh: 64,
+    streetName: 'Metropolitan Grand Blvd',
+    districtName: 'Downtown Financial Core',
+  });
 
   // Economy & Energy Live State
   const [economyMetrics, setEconomyMetrics] = useState<CityEconomyMetrics>({
@@ -75,18 +82,18 @@ export default function App() {
 
   // Live simulated city metrics
   const [metrics] = useState<CityMetrics>({
-    cityName: 'NEON AI CITY',
+    cityName: 'GRAND METROPOLIS',
     population: 4821900,
-    time: '23:42:18',
+    time: '14:12:00',
     weather: {
-      condition: 'Acid Rain',
-      temperature: '18°C',
-      fogDensity: '38%',
-      airQuality: 'AQI 42 (Clean)',
+      condition: 'Clear Sky',
+      temperature: '24°C',
+      fogDensity: '12%',
+      airQuality: 'AQI 28 (Good)',
     },
-    trafficStatus: 'Optimal (Flow 94.2%)',
-    aiStatus: 'Autonomous Grid Stable',
-    energyGrid: 'Geothermal + Fusion 100%',
+    trafficStatus: 'Fluid Flow (96.4%)',
+    aiStatus: 'Smart Grid Balanced',
+    energyGrid: 'Clean Grid 100%',
   });
 
   // AI Agent Manager Telemetry Snapshot
@@ -142,8 +149,9 @@ export default function App() {
         setTimeOfDay(citySceneRef.current.cityLifeManager.timeOfDay);
         setEconomyMetrics(citySceneRef.current.economyManager.getSnapshot());
         setEnergyMetrics(citySceneRef.current.energyManager.getSnapshot());
+        setRadarTelemetry(citySceneRef.current.getPlayerRadarTelemetry());
       }
-    }, 350);
+    }, 180);
 
     return () => {
       clearInterval(metricsInterval);
@@ -163,6 +171,48 @@ export default function App() {
     setActiveDistrict('mohit-hub');
     if (citySceneRef.current) {
       citySceneRef.current.focusMohitHub();
+    }
+  };
+
+  const handleSelectDubai = () => {
+    setActiveDistrict('dubai');
+    if (citySceneRef.current) {
+      citySceneRef.current.focusDubaiLandmark('dubai-burj-khalifa');
+    }
+  };
+
+  const handleSelectSingapore = () => {
+    setActiveDistrict('singapore');
+    if (citySceneRef.current) {
+      citySceneRef.current.focusSingapore();
+    }
+  };
+
+  const handleSelectParis = () => {
+    setActiveDistrict('paris');
+    if (citySceneRef.current) {
+      citySceneRef.current.focusParis();
+    }
+  };
+
+  const handleSelectAmerica = () => {
+    setActiveDistrict('america');
+    if (citySceneRef.current) {
+      citySceneRef.current.focusAmerica();
+    }
+  };
+
+  const handleSelectAirport = () => {
+    setActiveDistrict('airport' as any);
+    if (citySceneRef.current) {
+      citySceneRef.current.focusAirport();
+    }
+  };
+
+  const handleSelectRailway = () => {
+    setActiveDistrict('railway' as any);
+    if (citySceneRef.current) {
+      citySceneRef.current.focusRailway();
     }
   };
 
@@ -289,15 +339,21 @@ export default function App() {
         setInteriorModalType('hospital');
       } else if (selectedBuilding.id.includes('university') || selectedBuilding.id.includes('academy')) {
         setInteriorModalType('university');
-      } else if (selectedBuilding.id.includes('mall') || selectedBuilding.id.includes('plaza')) {
+      } else if (selectedBuilding.id.includes('mall') || selectedBuilding.id.includes('plaza') || selectedBuilding.id.includes('megaplex')) {
         setInteriorModalType('mall');
+      } else if (selectedBuilding.id.includes('airport') || selectedBuilding.id.includes('skyport')) {
+        setInteriorModalType('airport');
+      } else if (selectedBuilding.id.includes('apex') || selectedBuilding.id.includes('corporate') || selectedBuilding.category === 'Skyscraper') {
+        setInteriorModalType('corporate-office');
       } else if (selectedBuilding.id.includes('hall') || selectedBuilding.id.includes('civic')) {
         setInteriorModalType('city-hall');
+      } else if (selectedBuilding.category === 'Transit Terminal') {
+        setInteriorModalType('railway');
       } else {
-        setInteriorModalType('mohit-hub');
+        setInteriorModalType('corporate-office');
       }
     } else {
-      setInteriorModalType('mohit-hub');
+      setInteriorModalType('corporate-office');
     }
   };
 
@@ -367,7 +423,7 @@ export default function App() {
       {/* 3D WebGL Canvas Viewport */}
       <div ref={containerRef} className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" />
 
-      {/* Futuristic HUD Overlay */}
+      {/* Clean HUD Overlay */}
       <HUD
         metrics={{
           ...metrics,
@@ -379,73 +435,22 @@ export default function App() {
         }}
         cameraMode={cameraMode}
         activeDistrict={activeDistrict}
+        radarTelemetry={radarTelemetry}
+        timeOfDay={timeOfDay}
+        currentWeather={currentWeather}
         onSetCameraMode={handleSetCameraMode}
         onSelectDistrict={handleSelectDistrict}
         onSelectMohitHub={handleSelectMohitHub}
-        onOpenControlCenter={() => {
-          setControlCenterTab('overview');
-          setIsControlCenterOpen(true);
-        }}
+        onSelectDubai={handleSelectDubai}
+        onSelectSingapore={handleSelectSingapore}
+        onSelectParis={handleSelectParis}
+        onSelectAmerica={handleSelectAmerica}
+        onSelectAirport={handleSelectAirport}
+        onSelectRailway={handleSelectRailway}
+        onOpenDubaiStudio={() => setIsDubaiStudioOpen(true)}
         onStartFlyover={handleStartFlyover}
-        onExploreCity={handleExploreCity}
-        onToggleAIControl={handleToggleAIControl}
-        onOpenCityMap={handleOpenCityMap}
-        onOpenEvents={handleOpenEvents}
-        onFollowVehicles={handleFollowVehicles}
-        onOpenBuildings={handleOpenBuildings}
-        onOpenTimeControl={handleOpenTimeControl}
-      />
-
-      {/* Transportation Control Dashboard */}
-      <TransportationDashboard
-        metrics={transportMetrics}
-        cameraMode={cameraMode}
-        onSetDensity={handleSetDensity}
-        onFollowVehicle={handleFollowVehicle}
-        onFollowTrain={handleFollowTrain}
-        onResetCamera={handleResetCamera}
-      />
-
-      {/* AI Autonomous Agent Hierarchy & Command Matrix */}
-      <AIAgentDashboard
-        snapshot={agentSnapshot}
-        isOpen={isAgentDashboardOpen}
-        onToggleOpen={handleToggleAIControl}
-        onSelectDirective={handleSelectDirective}
-        onTriggerFire={handleTriggerFire}
-        onTriggerAccident={handleTriggerAccident}
-        onTriggerMedical={handleTriggerMedical}
-        onTriggerSummit={handleTriggerSummit}
-        onLocateIncident={handleLocateIncident}
-      />
-
-      {/* Smart City Full Command Center & Interactive Map */}
-      <SmartCityControlCenter
-        isOpen={isControlCenterOpen}
-        onClose={() => setIsControlCenterOpen(false)}
-        initialTab={controlCenterTab}
-        timeString={timeString}
-        timeOfDay={timeOfDay}
-        timeSpeed={timeSpeed}
-        isPaused={isTimePaused}
-        onSetTime={handleSetTime}
-        onSetSpeed={handleSetTimeSpeed}
-        onTogglePause={handleToggleTimePause}
-        currentWeather={currentWeather}
+        onSetTimeOfDay={handleSetTime}
         onSetWeather={handleSetWeather}
-        economyMetrics={economyMetrics}
-        energyMetrics={energyMetrics}
-        agentSnapshot={agentSnapshot}
-        cameraMode={cameraMode}
-        onSetCameraMode={handleSetCameraMode}
-        onSelectDistrict={handleSelectDistrict}
-        onStartFlyover={handleStartFlyover}
-        onOpenInterior={handleOpenInterior}
-        onTriggerFire={handleTriggerFire}
-        onTriggerAccident={handleTriggerAccident}
-        onTriggerMedical={handleTriggerMedical}
-        onTriggerSummit={handleTriggerSummit}
-        onTriggerBlackout={handleTriggerBlackout}
       />
 
       {/* Building Inspector Panel */}
@@ -467,8 +472,17 @@ export default function App() {
         />
       )}
 
-      {/* Controls & Navigation Guide */}
-      <ControlsGuide cameraMode={cameraMode} />
+      {/* Dubai 3D Landmarks & High-Resolution GLB Model Studio */}
+      <DubaiModelStudioModal
+        isOpen={isDubaiStudioOpen}
+        onClose={() => setIsDubaiStudioOpen(false)}
+        onFlyToLandmark={(landmarkId) => {
+          citySceneRef.current?.focusDubaiLandmark(landmarkId);
+        }}
+        onPlaceModelInCity={(model) => {
+          citySceneRef.current?.placeCustomModel(model);
+        }}
+      />
     </main>
   );
 }

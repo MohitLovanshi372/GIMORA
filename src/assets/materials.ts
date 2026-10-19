@@ -11,6 +11,9 @@ import {
   createProceduralConcreteRoughnessMap,
   createProceduralGlassNormalMap,
   createProceduralFacadeNormalMap,
+  createProceduralFacadeRoughnessMap,
+  createProceduralStoneMasonryPodiumTexture,
+  createProceduralStoneMasonryNormalMap,
 } from './textures';
 
 export interface CitySharedMaps {
@@ -20,12 +23,16 @@ export interface CitySharedMaps {
   concreteRoughness: THREE.CanvasTexture;
   glassNormal: THREE.CanvasTexture;
   facadeNormal: THREE.CanvasTexture;
+  facadeRoughness: THREE.CanvasTexture;
+  stoneMasonryAlbedo: THREE.CanvasTexture;
+  stoneMasonryNormal: THREE.CanvasTexture;
 }
 
 export interface CityMaterials {
   asphalt: THREE.MeshStandardMaterial;
   sidewalk: THREE.MeshStandardMaterial;
   concrete: THREE.MeshStandardMaterial;
+  podiumStone: THREE.MeshStandardMaterial;
   metalDark: THREE.MeshStandardMaterial;
   metalLight: THREE.MeshStandardMaterial;
   glassDark: THREE.MeshPhysicalMaterial;
@@ -61,6 +68,12 @@ export function createCityMaterials(): CityMaterials {
   const facadeNormal = createProceduralFacadeNormalMap(8, 32);
   facadeNormal.repeat.set(2, 6);
 
+  const facadeRoughness = createProceduralFacadeRoughnessMap(8, 32);
+  facadeRoughness.repeat.set(2, 6);
+
+  const stoneMasonryAlbedo = createProceduralStoneMasonryPodiumTexture();
+  const stoneMasonryNormal = createProceduralStoneMasonryNormalMap();
+
   const maps: CitySharedMaps = {
     asphaltNormal,
     asphaltRoughness,
@@ -68,99 +81,114 @@ export function createCityMaterials(): CityMaterials {
     concreteRoughness,
     glassNormal,
     facadeNormal,
+    facadeRoughness,
+    stoneMasonryAlbedo,
+    stoneMasonryNormal,
   };
 
-  // 2. High-Fidelity PBR Materials
-  // A. Asphalt (Wet reflective night asphalt with micro-gravel normal & wet puddle roughness)
+  // 2. High-Fidelity PBR Materials for Modern Realistic Metropolis
+  // A. Asphalt (Realistic bitumen road surface with fine micro-gravel normal & natural roughness)
   const asphalt = new THREE.MeshStandardMaterial({
-    color: 0x090d16,
-    roughness: 0.35,
-    metalness: 0.45,
+    color: 0x1e2632,
+    roughness: 0.78,
+    metalness: 0.14,
     normalMap: asphaltNormal,
-    normalScale: new THREE.Vector2(0.85, 0.85),
+    normalScale: new THREE.Vector2(0.65, 0.65),
     roughnessMap: asphaltRoughness,
-    envMapIntensity: 1.6,
+    envMapIntensity: 0.7,
   });
 
-  // B. Sidewalk (Paved concrete slabs with fine aggregate normal & expansion joints)
+  // B. Sidewalk (Paved light grey concrete slabs with fine aggregate normal & expansion joints)
   const sidewalk = new THREE.MeshStandardMaterial({
-    color: 0x141b28,
-    roughness: 0.72,
-    metalness: 0.14,
+    color: 0x475569,
+    roughness: 0.82,
+    metalness: 0.08,
     normalMap: concreteNormal,
-    normalScale: new THREE.Vector2(0.65, 0.65),
+    normalScale: new THREE.Vector2(0.55, 0.55),
     roughnessMap: concreteRoughness,
-    envMapIntensity: 0.8,
+    envMapIntensity: 0.5,
   });
 
   // C. Concrete (Architectural structural concrete for foundations, piers, curbs & overpasses)
   const concrete = new THREE.MeshStandardMaterial({
-    color: 0x182232,
-    roughness: 0.68,
-    metalness: 0.18,
+    color: 0x526071,
+    roughness: 0.80,
+    metalness: 0.10,
     normalMap: concreteNormal,
-    normalScale: new THREE.Vector2(0.75, 0.75),
+    normalScale: new THREE.Vector2(0.6, 0.6),
     roughnessMap: concreteRoughness,
-    envMapIntensity: 0.85,
+    envMapIntensity: 0.55,
   });
 
-  // D. Dark Metallic Structure (Titanium framing, rooftop crowns, gantry beams)
+  // C2. Architectural Rusticated Ashlar Stone Masonry (Street-level skyscraper podiums & colonnades)
+  const podiumStone = new THREE.MeshStandardMaterial({
+    color: 0xe2e8f0,
+    map: stoneMasonryAlbedo,
+    normalMap: stoneMasonryNormal,
+    normalScale: new THREE.Vector2(0.85, 0.85),
+    roughnessMap: concreteRoughness,
+    roughness: 0.74,
+    metalness: 0.12,
+    envMapIntensity: 0.75,
+  });
+
+  // D. Dark Metallic Structure (Anodized dark steel framing, rooftop crowns, gantry beams)
   const metalDark = new THREE.MeshStandardMaterial({
-    color: 0x0b1120,
-    metalness: 0.92,
-    roughness: 0.22,
-    normalMap: concreteNormal,
-    normalScale: new THREE.Vector2(0.14, 0.14),
-    envMapIntensity: 1.4,
-  });
-
-  // E. Light Metallic Structure (Silver alloy, antenna masts, HVAC ducting)
-  const metalLight = new THREE.MeshStandardMaterial({
-    color: 0x2e3d52,
-    metalness: 0.88,
-    roughness: 0.20,
+    color: 0x1e293b,
+    metalness: 0.85,
+    roughness: 0.28,
     normalMap: concreteNormal,
     normalScale: new THREE.Vector2(0.12, 0.12),
-    envMapIntensity: 1.3,
+    envMapIntensity: 1.2,
   });
 
-  // F. Dark Architectural Glass (Observation lounges, executive tint, sky-bridges)
+  // E. Light Metallic Structure (Brushed aluminum alloy, architectural louvers, antenna masts, HVAC ducting)
+  const metalLight = new THREE.MeshStandardMaterial({
+    color: 0x94a3b8,
+    metalness: 0.82,
+    roughness: 0.25,
+    normalMap: concreteNormal,
+    normalScale: new THREE.Vector2(0.1, 0.1),
+    envMapIntensity: 1.25,
+  });
+
+  // F. Dark Architectural Glass (Reflective low-E tinted curtain wall glass)
   const glassDark = new THREE.MeshPhysicalMaterial({
-    color: 0x020815,
-    metalness: 0.85,
-    roughness: 0.06,
-    transparent: true,
-    opacity: 0.90,
-    reflectivity: 0.98,
-    ior: 1.54,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.03,
-    normalMap: glassNormal,
-    normalScale: new THREE.Vector2(0.28, 0.28),
-    envMapIntensity: 2.0,
-  });
-
-  // G. Cyber Cyan Glass (MOHIT Hub facade, quantum laboratories, holographic towers)
-  const glassCyan = new THREE.MeshPhysicalMaterial({
-    color: 0x00283c,
-    metalness: 0.25,
+    color: 0x0f172a,
+    metalness: 0.90,
     roughness: 0.08,
     transparent: true,
-    opacity: 0.72,
-    transmission: 0.55,
-    reflectivity: 0.98,
-    ior: 1.52,
+    opacity: 0.92,
+    reflectivity: 0.95,
+    ior: 1.54,
     clearcoat: 1.0,
     clearcoatRoughness: 0.04,
     normalMap: glassNormal,
-    normalScale: new THREE.Vector2(0.32, 0.32),
-    emissive: new THREE.Color(0x002233),
-    emissiveIntensity: 0.6,
-    envMapIntensity: 2.2,
+    normalScale: new THREE.Vector2(0.18, 0.18),
+    envMapIntensity: 1.8,
+  });
+
+  // G. Modern Architectural Sky-Reflective Glass (Sapphire/Charcoal curtain wall)
+  const glassCyan = new THREE.MeshPhysicalMaterial({
+    color: 0x1e293b,
+    metalness: 0.85,
+    roughness: 0.10,
+    transparent: true,
+    opacity: 0.88,
+    transmission: 0.35,
+    reflectivity: 0.95,
+    ior: 1.52,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.05,
+    normalMap: glassNormal,
+    normalScale: new THREE.Vector2(0.18, 0.18),
+    emissive: new THREE.Color(0x0a101d),
+    emissiveIntensity: 0.05,
+    envMapIntensity: 1.8,
     userData: {
       isWindowMaterial: true,
       district: 'technology',
-      baseColor: 0x00f0ff,
+      baseColor: 0xf8fafc,
     },
   });
 
@@ -168,18 +196,19 @@ export function createCityMaterials(): CityMaterials {
     asphalt,
     sidewalk,
     concrete,
+    podiumStone,
     metalDark,
     metalLight,
     glassDark,
     glassCyan,
-    neonCyan: new THREE.MeshBasicMaterial({ color: 0x00f0ff }),
-    neonPink: new THREE.MeshBasicMaterial({ color: 0xff007f }),
-    neonPurple: new THREE.MeshBasicMaterial({ color: 0xa855f7 }),
-    neonAmber: new THREE.MeshBasicMaterial({ color: 0xf59e0b }),
-    neonEmerald: new THREE.MeshBasicMaterial({ color: 0x10b981 }),
-    neonWhite: new THREE.MeshBasicMaterial({ color: 0xffffff }),
-    neonRed: new THREE.MeshBasicMaterial({ color: 0xef4444 }),
-    neonBlue: new THREE.MeshBasicMaterial({ color: 0x3b82f6 }),
+    neonCyan: new THREE.MeshBasicMaterial({ color: 0xf8fafc }), // Road White Paint
+    neonPink: new THREE.MeshBasicMaterial({ color: 0xdc2626 }), // Signal / Hazard Red
+    neonPurple: new THREE.MeshBasicMaterial({ color: 0x334155 }), // Architectural Charcoal
+    neonAmber: new THREE.MeshBasicMaterial({ color: 0xf59e0b }), // Road Yellow Paint
+    neonEmerald: new THREE.MeshBasicMaterial({ color: 0x15803d }), // Park Foliage / Signal Green
+    neonWhite: new THREE.MeshBasicMaterial({ color: 0xffffff }), // Clean Reflective White
+    neonRed: new THREE.MeshBasicMaterial({ color: 0xdc2626 }), // Aviation Beacon Red
+    neonBlue: new THREE.MeshBasicMaterial({ color: 0x2563eb }), // Deep Marine Blue
     maps,
   };
 }

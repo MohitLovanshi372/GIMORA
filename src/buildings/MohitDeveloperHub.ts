@@ -47,84 +47,82 @@ export function createMohitDeveloperHub(
     powerUsage: '32.8 MW (High-Density Quantum Compute)',
     occupancy: '98% (4,200 Engineers & AI Researchers)',
     networkStatus: 'Hyper-Band Terabit Neural Optical Grid',
-    description: 'The monumental headquarters of MOHIT DEVELOPER HUB. An ultra-modern cybernetic glass monolith housing high-throughput AI laboratories, quantum data clusters, collaborative developer suites, and an interactive open-source showcase pavilion.',
+    description: 'The monumental global headquarters of MOHIT DEVELOPER HUB. A state-of-the-art contemporary glass and steel architectural tower housing high-throughput AI laboratories, high-density computing clusters, executive conference suites, and innovation showcase atriums.',
     isLandmark: true,
     interiorAreas: [
       'Developer Workspace (Collaborative Pods & Dual 8K Workstations)',
-      'AI Laboratory (Neural Training Nodes & Large Quantum Models)',
-      'Project Showcase Area (Holographic Demo Vaults & Community Repos)',
+      'AI Laboratory (High-Density Neural Training Nodes & Research Labs)',
+      'Project Showcase Area (Innovation Gallery & Developer Repos)',
       'Server / Data Center (Sub-Zero Liquid Cooled Optical Racks)',
-      'Innovation Lab (Experimental Autonomous Systems & Robotics)',
+      'Executive Briefing Center & Panoramic Boardroom',
     ],
     features: [
-      'Rooftop VTOL & Aerocar Helipad Deck',
+      'Rooftop Aviation Helipad Deck',
       'High-Power Communications & Radar Mast',
       'Underground Multi-Level EV Parking Ramp',
-      'Illuminated Neon Pathway to Main Avenue',
-      'Panoramic Triple-Glazed Cyan/Purple Glass Facade',
+      'Architectural Landscaped Entrance Promenade',
+      'Panoramic Double-Glazed Low-E Architectural Glass Facade',
     ],
   };
 
-  // 1. BASE PLAZA & FOUNDATION
+  // 1. BASE PLAZA & FOUNDATION (Polished Granite Plaza)
   const plazaSize = 46;
   const plazaGeo = new THREE.BoxGeometry(plazaSize, 0.6, plazaSize);
   const plazaMat = new THREE.MeshStandardMaterial({
-    color: 0x090f1d,
-    metalness: 0.8,
-    roughness: 0.3,
+    color: 0x1e293b,
+    metalness: 0.4,
+    roughness: 0.4,
+    normalMap: materials.maps.concreteNormal,
+    normalScale: new THREE.Vector2(0.5, 0.5),
+    roughnessMap: materials.maps.concreteRoughness,
+    envMapIntensity: 1.3,
   });
   const plaza = new THREE.Mesh(plazaGeo, plazaMat);
   plaza.position.y = 0.3;
   plaza.receiveShadow = true;
   group.add(plaza);
 
-  // Plaza perimeter glowing borders (Cyan & Purple)
-  const borderGeo = new THREE.BoxGeometry(plazaSize + 0.4, 0.25, plazaSize + 0.4);
-  const borderEdges = new THREE.EdgesGeometry(borderGeo);
-  const borderLine = new THREE.LineSegments(borderEdges, materials.neonCyan);
-  borderLine.position.y = 0.65;
-  group.add(borderLine);
+  // Plaza perimeter architectural granite curb
+  const curbGeo = new THREE.BoxGeometry(plazaSize + 0.4, 0.25, plazaSize + 0.4);
+  const curbMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 });
+  const curbMesh = new THREE.Mesh(curbGeo, curbMat);
+  curbMesh.position.y = 0.65;
+  group.add(curbMesh);
 
-  // 2. NEON PATHWAY TO MAIN AVENUE
-  // Connects the entrance (Z: 20 from center) to the west avenue (X: -40 from center towards X: 100)
+  // 2. ENTRANCE PROMENADE TO MAIN AVENUE
   const pathLength = 34;
   const pathWidth = 6;
   const pathGeo = new THREE.PlaneGeometry(pathLength, pathWidth);
   pathGeo.rotateX(-Math.PI / 2);
   const pathMat = new THREE.MeshStandardMaterial({
-    color: 0x070c16,
-    roughness: 0.6,
-    metalness: 0.4,
+    color: 0x334155,
+    roughness: 0.5,
+    metalness: 0.2,
+    normalMap: materials.maps.concreteNormal,
+    normalScale: new THREE.Vector2(0.6, 0.6),
+    roughnessMap: materials.maps.concreteRoughness,
   });
   const pathway = new THREE.Mesh(pathGeo, pathMat);
   pathway.position.set(-towerWidth / 2 - pathLength / 2, 0.35, 0);
   pathway.receiveShadow = true;
   group.add(pathway);
 
-  // Pathway Glowing Rails (Cyan on one side, Purple on other side)
-  const railGeo = new THREE.BoxGeometry(pathLength, 0.25, 0.25);
-  const leftRail = new THREE.Mesh(railGeo, materials.neonCyan);
-  leftRail.position.set(-towerWidth / 2 - pathLength / 2, 0.5, -pathWidth / 2);
-  group.add(leftRail);
+  // Low architectural bollard path luminaires (warm 2700K ambient path markers)
+  const bollardCount = 6;
+  const bollardGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.9, 8);
+  const bollardCapGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 8);
+  for (let i = 0; i < bollardCount; i++) {
+    const bx = -towerWidth / 2 - 4 - i * 5;
+    [-pathWidth / 2 + 0.3, pathWidth / 2 - 0.3].forEach((bz) => {
+      const bollard = new THREE.Mesh(bollardGeo, materials.metalDark);
+      bollard.position.set(bx, 0.75, bz);
+      group.add(bollard);
 
-  const rightRail = new THREE.Mesh(railGeo, materials.neonPurple);
-  rightRail.position.set(-towerWidth / 2 - pathLength / 2, 0.5, pathWidth / 2);
-  group.add(rightRail);
-
-  // Pathway center chevron dash marks
-  const chevronCount = 8;
-  const chevronGeo = new THREE.PlaneGeometry(1.6, 0.3);
-  chevronGeo.rotateX(-Math.PI / 2);
-  const instancedChevrons = new THREE.InstancedMesh(chevronGeo, materials.neonCyan, chevronCount);
-  const dummy = new THREE.Object3D();
-  for (let i = 0; i < chevronCount; i++) {
-    const cx = -towerWidth / 2 - 4 - i * 3.8;
-    dummy.position.set(cx, 0.38, 0);
-    dummy.updateMatrix();
-    instancedChevrons.setMatrixAt(i, dummy.matrix);
+      const cap = new THREE.Mesh(bollardCapGeo, materials.neonWhite);
+      cap.position.set(bx, 1.2, bz);
+      group.add(cap);
+    });
   }
-  instancedChevrons.instanceMatrix.needsUpdate = true;
-  group.add(instancedChevrons);
 
   // 3. UNDERGROUND PARKING ENTRANCE RAMP
   const rampLength = 16;
@@ -141,18 +139,18 @@ export function createMohitDeveloperHub(
   portalArch.position.set(0, 1.8, towerDepth / 2 + 1);
   group.add(portalArch);
 
-  // Glowing Parking Sign
+  // Parking Sign (Architectural garage signage)
   const pSignGeo = new THREE.PlaneGeometry(3.5, 1.2);
   const pSignCanvas = document.createElement('canvas');
   pSignCanvas.width = 256;
   pSignCanvas.height = 128;
   const pCtx = pSignCanvas.getContext('2d')!;
-  pCtx.fillStyle = '#020617';
+  pCtx.fillStyle = '#0f172a';
   pCtx.fillRect(0, 0, 256, 128);
-  pCtx.fillStyle = '#00f0ff';
-  pCtx.font = 'bold 36px "Chakra Petch", monospace';
+  pCtx.fillStyle = '#ffffff';
+  pCtx.font = 'bold 30px "Plus Jakarta Sans", sans-serif';
   pCtx.textAlign = 'center';
-  pCtx.fillText('▼ P - SUB LEVEL', 128, 76);
+  pCtx.fillText('P - SUB LEVEL', 128, 76);
   const pSignTex = new THREE.CanvasTexture(pSignCanvas);
   const pSignMesh = new THREE.Mesh(pSignGeo, new THREE.MeshBasicMaterial({ map: pSignTex }));
   pSignMesh.position.set(0, 2.2, towerDepth / 2 + 1.65);
@@ -163,34 +161,39 @@ export function createMohitDeveloperHub(
   const entranceH = 6;
   const entranceD = 8;
   const entranceGeo = new THREE.BoxGeometry(entranceW, entranceH, entranceD);
-  const entranceMesh = new THREE.Mesh(entranceGeo, materials.glassCyan);
+  const entranceMesh = new THREE.Mesh(entranceGeo, materials.glassDark);
   entranceMesh.position.set(0, entranceH / 2 + 0.5, towerDepth / 2 + entranceD / 2 - 2);
   group.add(entranceMesh);
 
-  // Entrance Reception Desk & Holographic Hub Logo inside
+  // Entrance Reception Desk & Architectural Corporate Sculpture
   const deskGeo = new THREE.BoxGeometry(4.5, 1.1, 1.8);
   const desk = new THREE.Mesh(deskGeo, materials.metalLight);
   desk.position.set(0, 1.2, towerDepth / 2 + 2);
   group.add(desk);
 
-  const logoHoloGeo = new THREE.IcosahedronGeometry(0.9, 1);
-  const logoHolo = new THREE.Mesh(logoHoloGeo, materials.neonCyan);
-  logoHolo.position.set(0, 2.8, towerDepth / 2 + 2);
-  group.add(logoHolo);
+  // Contemporary Brushed Bronze Geometric Sculpture
+  const logoSculptureGeo = new THREE.IcosahedronGeometry(0.85, 1);
+  const logoSculptureMat = new THREE.MeshStandardMaterial({
+    color: 0xd97706, // Polished bronze
+    metalness: 0.85,
+    roughness: 0.25,
+  });
+  const logoSculpture = new THREE.Mesh(logoSculptureGeo, logoSculptureMat);
+  logoSculpture.position.set(0, 2.8, towerDepth / 2 + 2);
+  group.add(logoSculpture);
 
-  // 5. MAIN TOWER BODY (Futuristic Glass & Titanium Cyber-Monolith)
+  // 5. MAIN TOWER BODY (Contemporary Double-Glazed Architectural Glass Tower)
   // Outer Glass Shell
   const towerBodyGeo = new THREE.BoxGeometry(towerWidth, towerHeight, towerDepth);
-  const towerGlassMesh = new THREE.Mesh(towerBodyGeo, materials.glassCyan);
+  const towerGlassMesh = new THREE.Mesh(towerBodyGeo, materials.glassDark);
   towerGlassMesh.position.y = towerHeight / 2 + 0.5;
   towerGlassMesh.castShadow = true;
   towerGlassMesh.receiveShadow = true;
   group.add(towerGlassMesh);
 
-  // Structural Corner Columns & Ribbing (Dark Titanium)
+  // Structural Corner Columns (Charcoal Anodized Aluminum Columns)
   const colSize = 1.4;
   const colGeo = new THREE.BoxGeometry(colSize, towerHeight, colSize);
-  const stripGeo = new THREE.BoxGeometry(0.3, towerHeight, 0.3);
   const halfTW = towerWidth / 2;
   const halfTD = towerDepth / 2;
 
@@ -204,23 +207,17 @@ export function createMohitDeveloperHub(
     col.position.set(cx, towerHeight / 2 + 0.5, cz);
     col.castShadow = true;
     group.add(col);
-
-    // Vertical Neon Accent Strip along each corner (Cyan/Purple)
-    const strip = new THREE.Mesh(stripGeo, cx > 0 ? materials.neonCyan : materials.neonPurple);
-    strip.position.set(cx + (cx > 0 ? 0.6 : -0.6), towerHeight / 2 + 0.5, cz + (cz > 0 ? 0.6 : -0.6));
-    group.add(strip);
   });
 
-  // Intermediate Horizontal Neon Bands every 5 floors
-  const bandGeo = new THREE.BoxGeometry(towerWidth + 0.4, 0.4, towerDepth + 0.4);
-  const bandEdges = new THREE.EdgesGeometry(bandGeo);
-  for (let h = 18; h < towerHeight; h += 18) {
-    const bandLine = new THREE.LineSegments(bandEdges, h % 36 === 0 ? materials.neonCyan : materials.neonPurple);
-    bandLine.position.y = h;
-    group.add(bandLine);
+  // Architectural Precast Floor Spandrels every 4 floors
+  const spandrelGeo = new THREE.BoxGeometry(towerWidth + 0.3, 0.8, towerDepth + 0.3);
+  for (let h = 20; h < towerHeight; h += 20) {
+    const spandrel = new THREE.Mesh(spandrelGeo, materials.metalDark);
+    spandrel.position.y = h;
+    group.add(spandrel);
   }
 
-  // 6. VISIBLE INTERIOR FLOORS & LABS THROUGH GLASS
+  // 6. VISIBLE INTERIOR FLOORS THROUGH GLASS
   const innerCoreWidth = towerWidth - 4;
   const innerCoreDepth = towerDepth - 4;
 
@@ -233,19 +230,19 @@ export function createMohitDeveloperHub(
     group.add(floorPlate);
   }
 
-  // INTERIOR AREA 1: Project Showcase (Floors 1-3, Y: 10)
+  // INTERIOR AREA 1: Project Showcase Gallery (Floors 1-3, Y: 10)
   const showcasePedestalGeo = new THREE.CylinderGeometry(1.6, 1.8, 1.2, 16);
   const showcasePedestal = new THREE.Mesh(showcasePedestalGeo, materials.metalLight);
   showcasePedestal.position.set(0, 8.6, 0);
   group.add(showcasePedestal);
 
-  const showcaseHoloGeo = new THREE.TorusGeometry(1.8, 0.25, 8, 24);
-  const showcaseHolo = new THREE.Mesh(showcaseHoloGeo, materials.neonEmerald);
-  showcaseHolo.position.set(0, 11, 0);
-  showcaseHolo.rotation.x = Math.PI / 3;
-  group.add(showcaseHolo);
+  const showcaseExhibitGeo = new THREE.TorusGeometry(1.6, 0.2, 8, 24);
+  const showcaseExhibit = new THREE.Mesh(showcaseExhibitGeo, materials.metalLight);
+  showcaseExhibit.position.set(0, 10.8, 0);
+  showcaseExhibit.rotation.x = Math.PI / 3;
+  group.add(showcaseExhibit);
 
-  // INTERIOR AREA 2: Developer Workspace (Floors 4-8, Y: 30)
+  // INTERIOR AREA 2: Developer Workstations (Floors 4-8, Y: 28)
   const deskBlockGeo = new THREE.BoxGeometry(12, 1.0, 3.5);
   const deskBlock1 = new THREE.Mesh(deskBlockGeo, materials.sidewalk);
   deskBlock1.position.set(0, 28, 4);
@@ -255,94 +252,70 @@ export function createMohitDeveloperHub(
   deskBlock2.position.set(0, 28, -4);
   group.add(deskBlock2);
 
-  // INTERIOR AREA 3: Server / Data Center (Floors 9-13, Y: 55)
+  // INTERIOR AREA 3: Enterprise Data Center (Floors 9-13, Y: 52)
   const serverTex = createServerRacksTexture();
   serverTex.repeat.set(3, 1);
   const serverRackGeo = new THREE.BoxGeometry(14, 12, 14);
   const serverRackMat = new THREE.MeshStandardMaterial({
     map: serverTex,
-    color: 0x051329,
-    metalness: 0.9,
-    roughness: 0.2,
+    color: 0x0f172a,
+    metalness: 0.7,
+    roughness: 0.3,
   });
   const serverCore = new THREE.Mesh(serverRackGeo, serverRackMat);
   serverCore.position.set(0, 52, 0);
   group.add(serverCore);
 
-  // INTERIOR AREA 4: AI Laboratory Quantum Reactor (Floors 14-19, Y: 80)
-  const aiReactorRing1 = new THREE.Mesh(
-    new THREE.TorusGeometry(5, 0.4, 8, 24),
-    materials.neonCyan
-  );
-  aiReactorRing1.position.set(0, 78, 0);
-  group.add(aiReactorRing1);
+  // INTERIOR AREA 4: Executive Boardroom (Floors 14-19, Y: 78)
+  const boardroomTableGeo = new THREE.CylinderGeometry(4.5, 4.5, 0.6, 16);
+  const boardroomTableMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.4 });
+  const boardroomTable = new THREE.Mesh(boardroomTableGeo, boardroomTableMat);
+  boardroomTable.position.set(0, 78, 0);
+  group.add(boardroomTable);
 
-  const aiReactorRing2 = new THREE.Mesh(
-    new THREE.TorusGeometry(3.6, 0.35, 8, 24),
-    materials.neonPurple
+  // INTERIOR AREA 5: Innovation Studio (Floors 20-25, Y: 106)
+  const studioGlobe = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(2.8, 1),
+    materials.metalLight
   );
-  aiReactorRing2.position.set(0, 78, 0);
-  aiReactorRing2.rotation.x = Math.PI / 2;
-  group.add(aiReactorRing2);
+  studioGlobe.position.set(0, 106, 0);
+  group.add(studioGlobe);
 
-  const aiCoreSphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1.8, 12, 12),
-    materials.neonWhite
-  );
-  aiCoreSphere.position.set(0, 78, 0);
-  group.add(aiCoreSphere);
-
-  // INTERIOR AREA 5: Innovation Lab (Floors 20-25, Y: 105)
-  const innovGlobe = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(3.2, 1),
-    new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true })
-  );
-  innovGlobe.position.set(0, 106, 0);
-  group.add(innovGlobe);
-
-  // 7. MONUMENTAL ILLUMINATED SIGNAGE: "MOHIT DEVELOPER HUB"
-  // Creating high-fidelity double-sided canvas sign mounted on facade
+  // 7. MONUMENTAL ARCHITECTURAL SIGNAGE: "MOHIT DEVELOPER HUB"
   const createSignCanvas = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 320;
     const ctx = canvas.getContext('2d')!;
 
-    // Dark sleek background
-    ctx.fillStyle = '#020617';
+    // Sophisticated deep navy/charcoal corporate background
+    ctx.fillStyle = '#0f172a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Electric Cyan & Purple Glowing Border
-    ctx.strokeStyle = '#00f0ff';
-    ctx.lineWidth = 12;
-    ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+    // Stainless steel framing border
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
 
-    ctx.strokeStyle = '#a855f7';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
-
-    // Top Category Kicker
-    ctx.font = 'bold 34px "Chakra Petch", monospace';
-    ctx.fillStyle = '#00ffaa';
+    // Kicker
+    ctx.font = 'bold 30px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = '#38bdf8';
     ctx.textAlign = 'center';
-    ctx.fillText('⚡ GLOBAL HEADQUARTERS ⚡', canvas.width / 2, 70);
+    ctx.fillText('GLOBAL TECHNOLOGY HEADQUARTERS', canvas.width / 2, 70);
 
     // Main Illuminated Title
-    ctx.font = 'bold 64px "Chakra Petch", sans-serif';
+    ctx.font = 'bold 62px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = '#00f0ff';
-    ctx.shadowBlur = 18;
     ctx.fillText('MOHIT DEVELOPER HUB', canvas.width / 2, 160);
-    ctx.shadowBlur = 0;
 
-    // Subtitle requested by prompt: "AI • SOFTWARE • INNOVATION"
-    ctx.font = 'bold 36px "Chakra Petch", monospace';
-    ctx.fillStyle = '#38bdf8';
+    // Subtitle
+    ctx.font = '600 32px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = '#94a3b8';
     ctx.fillText('AI  •  SOFTWARE  •  INNOVATION', canvas.width / 2, 235);
 
-    // Accent line
-    ctx.fillStyle = '#a855f7';
-    ctx.fillRect(80, 265, canvas.width - 160, 6);
+    // Underline
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillRect(120, 265, canvas.width - 240, 4);
 
     return canvas;
   };
@@ -362,7 +335,7 @@ export function createMohitDeveloperHub(
   signMeshBack.rotation.y = Math.PI;
   group.add(signMeshBack);
 
-  // 8. DIGITAL LED SCREENS ON MID-TOWER
+  // 8. DIGITAL INFORMATION SCREENS ON MID-TOWER
   const ledCanvas = document.createElement('canvas');
   ledCanvas.width = 512;
   ledCanvas.height = 128;
@@ -382,22 +355,22 @@ export function createMohitDeveloperHub(
   group.add(ledScreenWest);
 
   const updateLedScreen = (time: number) => {
-    ledCtx.fillStyle = '#020617';
+    ledCtx.fillStyle = '#0f172a';
     ledCtx.fillRect(0, 0, 512, 128);
 
-    ledCtx.strokeStyle = '#a855f7';
-    ledCtx.lineWidth = 6;
+    ledCtx.strokeStyle = '#38bdf8';
+    ledCtx.lineWidth = 4;
     ledCtx.strokeRect(4, 4, 504, 120);
 
-    ledCtx.font = 'bold 26px "Chakra Petch", monospace';
-    ledCtx.fillStyle = '#00ffcc';
+    ledCtx.font = 'bold 24px "Plus Jakarta Sans", sans-serif';
+    ledCtx.fillStyle = '#ffffff';
     ledCtx.textAlign = 'center';
-    ledCtx.fillText('NEURAL CORE v9.4 // QUANTUM UPLINK', 256, 50);
+    ledCtx.fillText('MOHIT CLUSTER // PRODUCTION SYSTEMS', 256, 48);
 
-    const offset = Math.floor((time * 40) % 200);
-    ledCtx.font = '20px "Plus Jakarta Sans", sans-serif';
-    ledCtx.fillStyle = '#e2e8f0';
-    ledCtx.fillText(`ACTIVE THREADS: 128,400 · LATENCY: 0.${offset}ms · 100% OPERATIONAL`, 256, 92);
+    const offset = Math.floor((time * 25) % 100);
+    ledCtx.font = '18px "Plus Jakarta Sans", sans-serif';
+    ledCtx.fillStyle = '#94a3b8';
+    ledCtx.fillText(`ACTIVE REPOS: 4,820 · LATENCY: 1.${offset}ms · HEALTH: 100%`, 256, 88);
 
     ledTex.needsUpdate = true;
   };
@@ -417,27 +390,27 @@ export function createMohitDeveloperHub(
   padMesh.position.y = towerHeight + 5;
   group.add(padMesh);
 
-  // Helipad Yellow Perimeter Light Ring
+  // Helipad Aviation Yellow Perimeter Ring
   const padRingGeo = new THREE.TorusGeometry(padRadius + 0.2, 0.2, 8, 32);
   padRingGeo.rotateX(Math.PI / 2);
   const padRing = new THREE.Mesh(padRingGeo, materials.neonAmber);
   padRing.position.y = towerHeight + 5.35;
   group.add(padRing);
 
-  // Helipad "H" Marking
+  // Helipad Crisp White "H" Marking
   const hBarGeo1 = new THREE.PlaneGeometry(1.2, 6);
   hBarGeo1.rotateX(-Math.PI / 2);
-  const hBar1 = new THREE.Mesh(hBarGeo1, materials.neonCyan);
+  const hBar1 = new THREE.Mesh(hBarGeo1, materials.neonWhite);
   hBar1.position.set(-2, towerHeight + 5.36, 0);
   group.add(hBar1);
 
-  const hBar2 = new THREE.Mesh(hBarGeo1, materials.neonCyan);
+  const hBar2 = new THREE.Mesh(hBarGeo1, materials.neonWhite);
   hBar2.position.set(2, towerHeight + 5.36, 0);
   group.add(hBar2);
 
   const hBarMidGeo = new THREE.PlaneGeometry(4, 1.2);
   hBarMidGeo.rotateX(-Math.PI / 2);
-  const hBarMid = new THREE.Mesh(hBarMidGeo, materials.neonCyan);
+  const hBarMid = new THREE.Mesh(hBarMidGeo, materials.neonWhite);
   hBarMid.position.set(0, towerHeight + 5.36, 0);
   group.add(hBarMid);
 
@@ -447,83 +420,43 @@ export function createMohitDeveloperHub(
   spireMast.position.set(0, towerHeight + 21, 0);
   group.add(spireMast);
 
-  // Pulsing White Aircraft Warning Beacon Tip
+  // Red Aviation Obstruction Warning Beacon Tip (ICAO / FAA compliant red flasher)
   const tipGeo = new THREE.SphereGeometry(0.7, 8, 8);
-  const tipBeacon = new THREE.Mesh(tipGeo, materials.neonWhite);
+  const tipBeacon = new THREE.Mesh(tipGeo, materials.neonRed);
   tipBeacon.position.set(0, towerHeight + 37, 0);
   group.add(tipBeacon);
 
-  // High-Intensity Vertical Sky Beam Beacon (Visible across whole city)
-  const beamGeo = new THREE.CylinderGeometry(0.6, 4.0, 95, 16);
-  beamGeo.translate(0, 47.5, 0);
-  const beamMat = new THREE.MeshBasicMaterial({
-    color: 0x00f0ff,
-    transparent: true,
-    opacity: 0.28,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    side: THREE.DoubleSide,
-  });
-  const skyBeam = new THREE.Mesh(beamGeo, beamMat);
-  skyBeam.position.set(0, towerHeight + 37, 0);
-  group.add(skyBeam);
-
-  // Rooftop AI Command Center Glass Observation Dome
+  // Rooftop Executive Observation Dome
   const domeGeo = new THREE.SphereGeometry(4.2, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
-  const domeMesh = new THREE.Mesh(domeGeo, materials.glassCyan);
+  const domeMesh = new THREE.Mesh(domeGeo, materials.glassDark);
   domeMesh.position.set(0, towerHeight + 5.2, 0);
   group.add(domeMesh);
 
-  // Rotating Quantum Core Ring inside Command Center Dome
-  const coreRingGeo = new THREE.TorusGeometry(2.4, 0.2, 8, 24);
-  const coreRing = new THREE.Mesh(coreRingGeo, materials.neonEmerald);
-  coreRing.position.set(0, towerHeight + 6.8, 0);
-  coreRing.rotation.x = Math.PI / 3;
-  group.add(coreRing);
-
-  // 10. HIGH-TECH SKYBRIDGE CONNECTIONS
+  // 10. ARCHITECTURAL ENCLOSED GLASS SKYBRIDGES
   // Skybridge 1: North Skybridge at Level 12 (Y: 48m, connecting toward Technology Research Center)
   const skybridge1Length = 32;
-  const bridge1Geo = new THREE.CylinderGeometry(2.4, 2.4, skybridge1Length, 12, 1, true);
-  bridge1Geo.rotateX(Math.PI / 2);
-  const bridge1Mesh = new THREE.Mesh(bridge1Geo, materials.glassCyan);
+  const bridge1Geo = new THREE.BoxGeometry(3.6, 3.4, skybridge1Length);
+  const bridge1Mesh = new THREE.Mesh(bridge1Geo, materials.glassDark);
   bridge1Mesh.position.set(0, 48, -towerDepth / 2 - skybridge1Length / 2);
   group.add(bridge1Mesh);
 
-  // Skybridge 1 Floor Deck & Neon Ribs
-  const bridgeDeck1Geo = new THREE.BoxGeometry(3.2, 0.3, skybridge1Length);
+  // Skybridge 1 Structural Steel Trusses
+  const bridgeDeck1Geo = new THREE.BoxGeometry(3.8, 0.4, skybridge1Length);
   const bridgeDeck1 = new THREE.Mesh(bridgeDeck1Geo, materials.metalDark);
-  bridgeDeck1.position.set(0, 46.8, -towerDepth / 2 - skybridge1Length / 2);
+  bridgeDeck1.position.set(0, 46.2, -towerDepth / 2 - skybridge1Length / 2);
   group.add(bridgeDeck1);
 
-  const bridgeRail1 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, skybridge1Length), materials.neonCyan);
-  bridgeRail1.position.set(1.5, 47.1, -towerDepth / 2 - skybridge1Length / 2);
-  group.add(bridgeRail1);
-
-  const bridgeRail2 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, skybridge1Length), materials.neonCyan);
-  bridgeRail2.position.set(-1.5, 47.1, -towerDepth / 2 - skybridge1Length / 2);
-  group.add(bridgeRail2);
-
-  // Skybridge 2: West Skybridge at Level 24 (Y: 88m, connecting across Avenue to AI Research Pod)
+  // Skybridge 2: West Skybridge at Level 24 (Y: 88m, connecting across Avenue)
   const skybridge2Length = 26;
-  const bridge2Geo = new THREE.CylinderGeometry(2.2, 2.2, skybridge2Length, 12, 1, true);
-  bridge2Geo.rotateZ(Math.PI / 2);
-  const bridge2Mesh = new THREE.Mesh(bridge2Geo, materials.glassCyan);
+  const bridge2Geo = new THREE.BoxGeometry(skybridge2Length, 3.4, 3.6);
+  const bridge2Mesh = new THREE.Mesh(bridge2Geo, materials.glassDark);
   bridge2Mesh.position.set(-towerWidth / 2 - skybridge2Length / 2, 88, 0);
   group.add(bridge2Mesh);
 
-  const bridgeDeck2Geo = new THREE.BoxGeometry(skybridge2Length, 0.3, 3.0);
+  const bridgeDeck2Geo = new THREE.BoxGeometry(skybridge2Length, 0.4, 3.8);
   const bridgeDeck2 = new THREE.Mesh(bridgeDeck2Geo, materials.metalDark);
-  bridgeDeck2.position.set(-towerWidth / 2 - skybridge2Length / 2, 86.8, 0);
+  bridgeDeck2.position.set(-towerWidth / 2 - skybridge2Length / 2, 86.2, 0);
   group.add(bridgeDeck2);
-
-  const bridgeRail3 = new THREE.Mesh(new THREE.BoxGeometry(skybridge2Length, 0.2, 0.2), materials.neonPurple);
-  bridgeRail3.position.set(-towerWidth / 2 - skybridge2Length / 2, 87.1, 1.4);
-  group.add(bridgeRail3);
-
-  const bridgeRail4 = new THREE.Mesh(new THREE.BoxGeometry(skybridge2Length, 0.2, 0.2), materials.neonPurple);
-  bridgeRail4.position.set(-towerWidth / 2 - skybridge2Length / 2, 87.1, -1.4);
-  group.add(bridgeRail4);
 
   // 11. INTERACTION RAYCASTING TARGET
   // Covering the entire tower volume so clicking anywhere on the Mohit Developer Hub selects it
@@ -545,27 +478,17 @@ export function createMohitDeveloperHub(
   scene.add(group);
 
   const update = (time: number) => {
-    // Pulse aircraft beacon
-    tipBeacon.scale.setScalar(0.9 + Math.sin(time * 6) * 0.3);
+    // Pulse aircraft beacon (standard aviation strobe cadence)
+    tipBeacon.scale.setScalar(0.9 + (Math.sin(time * 4) > 0.5 ? 0.35 : 0));
 
-    // Rotate AI reactor rings inside lab
-    aiReactorRing1.rotation.z = time * 1.5;
-    aiReactorRing2.rotation.y = time * 2.0;
-    aiCoreSphere.scale.setScalar(1.0 + Math.sin(time * 4) * 0.15);
+    // Rotate entrance sculpture
+    logoSculpture.rotation.y = time * 0.6;
 
-    // Rotate holographic logo in entrance
-    logoHolo.rotation.y = time * 1.2;
-    logoHolo.rotation.x = Math.sin(time) * 0.5;
+    // Rotate gallery exhibit
+    showcaseExhibit.rotation.z = time * 0.5;
 
-    // Rotate showcase holo ring
-    showcaseHolo.rotation.z = time * 0.8;
-
-    // Rotate innovation globe
-    innovGlobe.rotation.y = time * 0.5;
-
-    // Animate AI Command Center Core Ring & Sky Beam
-    coreRing.rotation.y = time * 2.2;
-    beamMat.opacity = 0.22 + Math.sin(time * 3) * 0.08;
+    // Slowly rotate studio globe
+    studioGlobe.rotation.y = time * 0.4;
 
     // Update LED screens
     updateLedScreen(time);
@@ -575,35 +498,33 @@ export function createMohitDeveloperHub(
     scene.remove(group);
     plazaGeo.dispose();
     plazaMat.dispose();
-    borderGeo.dispose();
-    borderEdges.dispose();
+    curbGeo.dispose();
+    curbMat.dispose();
     pathGeo.dispose();
     pathMat.dispose();
-    railGeo.dispose();
-    chevronGeo.dispose();
+    bollardGeo.dispose();
+    bollardCapGeo.dispose();
     rampGeo.dispose();
     portalArchGeo.dispose();
     pSignGeo.dispose();
     pSignTex.dispose();
     entranceGeo.dispose();
     deskGeo.dispose();
-    logoHoloGeo.dispose();
+    logoSculptureGeo.dispose();
+    logoSculptureMat.dispose();
     towerBodyGeo.dispose();
     colGeo.dispose();
-    stripGeo.dispose();
-    bandGeo.dispose();
-    bandEdges.dispose();
+    spandrelGeo.dispose();
     floorPlateGeo.dispose();
     showcasePedestalGeo.dispose();
-    showcaseHoloGeo.dispose();
+    showcaseExhibitGeo.dispose();
     deskBlockGeo.dispose();
     serverRackGeo.dispose();
     serverRackMat.dispose();
     serverTex.dispose();
-    aiReactorRing1.geometry.dispose();
-    aiReactorRing2.geometry.dispose();
-    aiCoreSphere.geometry.dispose();
-    innovGlobe.geometry.dispose();
+    boardroomTableGeo.dispose();
+    boardroomTableMat.dispose();
+    studioGlobe.geometry.dispose();
     signGeo.dispose();
     signTex.dispose();
     ledGeo.dispose();
@@ -615,6 +536,10 @@ export function createMohitDeveloperHub(
     hBarMidGeo.dispose();
     spireMastGeo.dispose();
     tipGeo.dispose();
+    bridge1Geo.dispose();
+    bridgeDeck1Geo.dispose();
+    bridge2Geo.dispose();
+    bridgeDeck2Geo.dispose();
     clickTargetGeo.dispose();
     clickTargetMat.dispose();
   };

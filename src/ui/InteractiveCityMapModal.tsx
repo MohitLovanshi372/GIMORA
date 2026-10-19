@@ -108,11 +108,11 @@ export const InteractiveCityMapModal: React.FC<InteractiveCityMapModalProps> = (
   const currentDistrictInfo = selectedDistrict === 'mohit-hub'
     ? {
         name: 'MOHIT DEVELOPER HUB HQ',
-        description: 'Monumental glass cyber-tower, AI laboratories, quantum data center, and open-source project showcase pavilion.',
+        description: 'Monumental architectural glass and steel tower, high-throughput AI laboratories, enterprise data center, and innovation showcase pavilion.',
         status: 'Operational • 100% Core Load',
-        powerGrid: 'Quantum Geothermal 32.8 MW',
+        powerGrid: 'Grid Power & Solar Array 32.8 MW',
         density: '4,200 AI Engineers',
-        color: '#00f0ff',
+        color: '#0284c7',
       }
     : DISTRICT_REGISTRY[selectedDistrict];
 
