@@ -58,17 +58,39 @@ export class EmergencyAgent {
     return fullEvent;
   }
 
+  public resolveIncident(incidentId: string): CityEvent | null {
+    const idx = this.activeIncidents.findIndex((e) => e.id === incidentId);
+    if (idx === -1) return null;
+    const inc = this.activeIncidents[idx];
+    inc.status = 'RESOLVED';
+    inc.timeline.push({
+      time: new Date().toLocaleTimeString(),
+      stage: 'RESOLVED',
+      note: 'Incident cleared by municipal emergency response command.',
+    });
+    this.resolvedIncidents.unshift(inc);
+    if (this.resolvedIncidents.length > 20) this.resolvedIncidents.pop();
+    this.activeIncidents.splice(idx, 1);
+    return inc;
+  }
+
   public update(delta: number, _state: CityStateSnapshot): AgentDecision | null {
     this.scanTimer += delta;
     this.autoIncidentTimer += delta;
 
-    // Simulate resolution of incidents over time if dispatched
+    // Simulate multi-stage resolution of incidents over time once dispatched
     for (let i = this.activeIncidents.length - 1; i >= 0; i--) {
       const inc = this.activeIncidents[i];
-      if (inc.status === 'DISPATCHED') {
-        // Progress to RESOLVING after 7 seconds, then RESOLVED after 14 seconds
+      if (inc.status === 'DISPATCHED' || inc.status === 'RESOLVING') {
         const age = (Date.now() - parseInt(inc.id.split('_')[1] || '0')) / 1000;
-        if (age > 16) {
+        if (age > 20 && inc.status === 'DISPATCHED') {
+          inc.status = 'RESOLVING';
+          inc.timeline.push({
+            time: new Date().toLocaleTimeString(),
+            stage: 'ON_SCENE',
+            note: 'Emergency response unit arrived on scene. Mitigating hazard.',
+          });
+        } else if (age > 55) {
           inc.status = 'RESOLVED';
           inc.timeline.push({
             time: new Date().toLocaleTimeString(),
@@ -76,6 +98,7 @@ export class EmergencyAgent {
             note: 'Hazard neutralized. Site secured and returned to normal traffic flow.',
           });
           this.resolvedIncidents.unshift(inc);
+          if (this.resolvedIncidents.length > 20) this.resolvedIncidents.pop();
           this.activeIncidents.splice(i, 1);
 
           const decision: AgentDecision = {

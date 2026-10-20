@@ -9,7 +9,17 @@ import * as THREE from 'three';
  * Procedural Canvas Texture Generators for Realistic Metropolitan City
  */
 
-export type FacadeStyle = 'corporate-glass' | 'financial-granite' | 'modern-residential' | 'limestone-retail';
+export type FacadeStyle =
+  | 'corporate-glass'
+  | 'financial-granite'
+  | 'modern-residential'
+  | 'limestone-retail'
+  | 'diagrid-steel'
+  | 'art-deco-brass'
+  | 'biophilic-terrace'
+  | 'brutalist-concrete'
+  | 'emerald-curtain'
+  | 'rose-copper';
 
 // 1. Ultra-High-Resolution 4K Procedural Realistic Building Facade & Interior Room Grid
 export function createProceduralWindowTexture(
@@ -23,37 +33,47 @@ export function createProceduralWindowTexture(
   canvas.height = 2048;
   const ctx = canvas.getContext('2d')!;
 
-  // Base architectural facade cladding
-  if (style === 'financial-granite') {
-    ctx.fillStyle = facadeTone || '#334155';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // Fine granite mineral grain & ashlar joints
+  // Base architectural facade cladding by style
+  const styleDefaults: Record<FacadeStyle, string> = {
+    'corporate-glass': '#0a2540',
+    'financial-granite': '#78716c',
+    'modern-residential': '#7c2d12',
+    'limestone-retail': '#a8a29e',
+    'diagrid-steel': '#0f2942',
+    'art-deco-brass': '#1c1917',
+    'biophilic-terrace': '#44403c',
+    'brutalist-concrete': '#64748b',
+    'emerald-curtain': '#064e3b',
+    'rose-copper': '#78350f',
+  };
+
+  ctx.fillStyle = facadeTone || styleDefaults[style] || '#1e293b';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Add realistic stone/concrete/masonry mineral grain & ashlar joints where appropriate
+  if (
+    style === 'financial-granite' ||
+    style === 'limestone-retail' ||
+    style === 'brutalist-concrete' ||
+    style === 'modern-residential'
+  ) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
-    for (let i = 0; i < 16000; i++) {
+    for (let i = 0; i < 14000; i++) {
       ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
     }
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    for (let i = 0; i < 8000; i++) {
-      ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
-    }
-  } else if (style === 'limestone-retail') {
-    ctx.fillStyle = facadeTone || '#475569';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    for (let i = 0; i < 12000; i++) {
+    for (let i = 0; i < 10000; i++) {
       ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
     }
-  } else if (style === 'modern-residential') {
-    ctx.fillStyle = facadeTone || '#27272a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  } else {
-    // corporate-glass aluminum & dark anodized curtain wall
-    ctx.fillStyle = facadeTone || '#0f172a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  const padX = style === 'corporate-glass' ? 8 : 14;
-  const padY = style === 'corporate-glass' ? 10 : 14;
+  const isWideStonePiers =
+    style === 'financial-granite' ||
+    style === 'limestone-retail' ||
+    style === 'brutalist-concrete' ||
+    style === 'art-deco-brass';
+  const padX = isWideStonePiers ? 18 : style === 'modern-residential' ? 14 : 9;
+  const padY = isWideStonePiers ? 18 : style === 'biophilic-terrace' ? 20 : 11;
   const winW = (canvas.width - padX * (cols + 1)) / cols;
   const winH = (canvas.height - padY * (rows + 1)) / rows;
 
@@ -61,30 +81,61 @@ export function createProceduralWindowTexture(
     const spandrelY = r * (winH + padY);
     const isMechanicalFloor = r === Math.floor(rows * 0.5);
 
-    // Structural horizontal floor slab spandrel & shadow reveal
-    ctx.fillStyle = style === 'corporate-glass' ? '#1e293b' : '#334155';
-    ctx.fillRect(0, spandrelY, canvas.width, padY);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
-    ctx.fillRect(0, spandrelY, canvas.width, 2);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-    ctx.fillRect(0, spandrelY + padY - 2, canvas.width, 2);
+    // Structural horizontal floor slab spandrel & architectural cornice/ledges
+    if (style === 'art-deco-brass') {
+      ctx.fillStyle = '#b45309';
+      ctx.fillRect(0, spandrelY, canvas.width, padY);
+      ctx.fillStyle = '#fde047';
+      ctx.fillRect(0, spandrelY + 3, canvas.width, 3);
+    } else if (style === 'financial-granite' || style === 'limestone-retail') {
+      ctx.fillStyle = style === 'limestone-retail' ? '#d6d3d1' : '#a8a29e';
+      ctx.fillRect(0, spandrelY, canvas.width, padY);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.fillRect(0, spandrelY + padY - 3, canvas.width, 3);
+    } else if (style === 'biophilic-terrace') {
+      // Warm architectural timber slab + lush green vertical foliage planter box!
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(0, spandrelY, canvas.width, padY * 0.45);
+      ctx.fillStyle = '#15803d';
+      ctx.fillRect(0, spandrelY + padY * 0.45, canvas.width, padY * 0.55);
+      ctx.fillStyle = '#22c55e';
+      for (let gx = 0; gx < canvas.width; gx += 12) {
+        ctx.fillRect(gx, spandrelY + padY * 0.48, 7, padY * 0.48);
+      }
+    } else if (style === 'rose-copper') {
+      ctx.fillStyle = '#92400e';
+      ctx.fillRect(0, spandrelY, canvas.width, padY);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(0, spandrelY, canvas.width, 2);
+    } else {
+      ctx.fillStyle = style === 'emerald-curtain' ? '#065f46' : '#1e293b';
+      ctx.fillRect(0, spandrelY, canvas.width, padY);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.fillRect(0, spandrelY, canvas.width, 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillRect(0, spandrelY + padY - 2, canvas.width, 2);
+    }
 
     for (let c = 0; c < cols; c++) {
       const wx = padX + c * (winW + padX);
       const wy = padY + r * (winH + padY);
 
-      // Anodized metallic window frame bevel
+      // Window frame bevel (Gold brass for Art-Deco, Bronze for Granite/Copper, Silver for Curtain-Wall)
       ctx.fillStyle = '#090d16';
       ctx.fillRect(wx - 2, wy - 2, winW + 4, winH + 4);
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle =
+        style === 'art-deco-brass'
+          ? 'rgba(250, 204, 21, 0.7)'
+          : style === 'rose-copper' || style === 'financial-granite'
+          ? 'rgba(217, 119, 6, 0.55)'
+          : 'rgba(148, 163, 184, 0.45)';
+      ctx.lineWidth = isWideStonePiers ? 2.5 : 1.5;
       ctx.strokeRect(wx - 1, wy - 1, winW + 2, winH + 2);
 
       if (isMechanicalFloor) {
-        // Acoustic intake louvers on mechanical floor
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(wx, wy, winW, winH);
-        ctx.fillStyle = '#334155';
+        ctx.fillStyle = style === 'art-deco-brass' ? '#ca8a04' : '#334155';
         for (let ly = wy + 3; ly < wy + winH - 2; ly += 5) {
           ctx.fillRect(wx + 2, ly, winW - 4, 2);
         }
@@ -92,13 +143,13 @@ export function createProceduralWindowTexture(
       }
 
       const rand = Math.random();
-      if (rand > 0.32) {
+      if (rand > 0.30) {
         // Illuminated interior room with depth gradient
         const variation = Math.random();
         let topColor = '#f8fafc';
         let bottomColor = '#cbd5e1';
 
-        if (style === 'modern-residential') {
+        if (style === 'modern-residential' || style === 'biophilic-terrace' || style === 'art-deco-brass') {
           if (variation > 0.5) {
             topColor = '#fef3c7';
             bottomColor = '#d97706';
@@ -109,6 +160,9 @@ export function createProceduralWindowTexture(
             topColor = '#ffedd5';
             bottomColor = '#c2410c';
           }
+        } else if (style === 'emerald-curtain' || style === 'diagrid-steel') {
+          topColor = variation > 0.45 ? '#ecfdf5' : '#e0f2fe';
+          bottomColor = variation > 0.45 ? '#059669' : '#0284c7';
         } else {
           if (variation > 0.55) {
             topColor = '#fef9c3';
@@ -118,14 +172,14 @@ export function createProceduralWindowTexture(
             bottomColor = '#64748b';
           } else {
             topColor = '#e0f2fe';
-            bottomColor = '#475569';
+            bottomColor = '#38bdf8';
           }
         }
 
         const roomGrad = ctx.createLinearGradient(wx, wy, wx, wy + winH);
         roomGrad.addColorStop(0, topColor);
         roomGrad.addColorStop(1, bottomColor);
-        ctx.globalAlpha = 0.72 + Math.random() * 0.28;
+        ctx.globalAlpha = 0.76 + Math.random() * 0.24;
         ctx.fillStyle = roomGrad;
         ctx.fillRect(wx, wy, winW, winH);
 
@@ -136,54 +190,80 @@ export function createProceduralWindowTexture(
         // Interior office furniture / workstation silhouette at lower pane
         ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
         ctx.fillRect(wx + winW * 0.1, wy + winH * 0.68, winW * 0.8, winH * 0.32);
-        if (Math.random() > 0.4) {
-          // Partition or bookshelf silhouette
-          ctx.fillRect(wx + winW * 0.58, wy + winH * 0.32, winW * 0.18, winH * 0.38);
+
+        // Arched stone top lintel for Beaux-Arts limestone style
+        if (style === 'limestone-retail') {
+          ctx.fillStyle = '#d6d3d1';
+          ctx.fillRect(wx, wy, winW, 5);
         }
 
-        // Architectural venetian blinds or solar shade
-        if (Math.random() > 0.52) {
-          const shadeRatio = 0.25 + Math.random() * 0.45;
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.42)';
-          const shadeH = winH * shadeRatio;
-          for (let ly = wy; ly < wy + shadeH; ly += 4) {
-            ctx.fillRect(wx, ly, winW, 2.2);
-          }
-        }
         ctx.globalAlpha = 1.0;
       } else {
-        // Unlit daytime reflective architectural glass pane
+        // Unlit daytime reflective architectural glass pane (distinct tint per architectural style!)
         const skyGrad = ctx.createLinearGradient(wx, wy, wx + winW, wy + winH);
-        skyGrad.addColorStop(0, style === 'corporate-glass' ? '#1e3a5f' : '#1e293b');
-        skyGrad.addColorStop(0.5, '#0f172a');
-        skyGrad.addColorStop(1, '#172554');
+        if (style === 'emerald-curtain') {
+          skyGrad.addColorStop(0, '#065f46');
+          skyGrad.addColorStop(1, '#022c22');
+        } else if (style === 'corporate-glass' || style === 'diagrid-steel') {
+          skyGrad.addColorStop(0, '#1d4ed8');
+          skyGrad.addColorStop(0.5, '#0f2942');
+          skyGrad.addColorStop(1, '#172554');
+        } else if (style === 'rose-copper' || style === 'art-deco-brass') {
+          skyGrad.addColorStop(0, '#451a03');
+          skyGrad.addColorStop(1, '#1c1917');
+        } else {
+          skyGrad.addColorStop(0, '#334155');
+          skyGrad.addColorStop(1, '#0f172a');
+        }
         ctx.fillStyle = skyGrad;
         ctx.fillRect(wx, wy, winW, winH);
       }
 
-      // Crisp diagonal exterior glass specular reflection streak
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.09)';
-      ctx.beginPath();
-      ctx.moveTo(wx + 2, wy + winH - 2);
-      ctx.lineTo(wx + winW * 0.42, wy + 2);
-      ctx.lineTo(wx + winW * 0.58, wy + 2);
-      ctx.lineTo(wx + 14, wy + winH - 2);
-      ctx.closePath();
-      ctx.fill();
-
-      // Balcony glass railing on residential facades
-      if (style === 'modern-residential') {
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.45)';
-        ctx.fillRect(wx, wy + winH * 0.72, winW, 2.5);
+      // Balcony glass railing & warm wood soffit on residential & biophilic facades
+      if (style === 'modern-residential' || style === 'biophilic-terrace') {
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.65)';
+        ctx.fillRect(wx, wy + winH * 0.70, winW, 3.5);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+        ctx.fillRect(wx, wy + winH * 0.74, winW, winH * 0.26);
       }
     }
   }
 
-  // Vertical anodized structural mullion fins
+  // Vertical structural pilasters / mullions by architectural style
   for (let c = 0; c <= cols; c++) {
     const mx = c * (winW + padX);
-    ctx.fillStyle = 'rgba(148, 163, 184, 0.28)';
-    ctx.fillRect(mx + padX * 0.35, 0, 2, canvas.height);
+    if (style === 'art-deco-brass') {
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(mx + padX * 0.2, 0, 5, canvas.height);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(mx + padX * 0.4, 0, 1.5, canvas.height);
+    } else if (style === 'financial-granite' || style === 'limestone-retail') {
+      ctx.fillStyle = style === 'limestone-retail' ? '#e7e5e4' : '#a8a29e';
+      ctx.fillRect(mx, 0, padX * 0.75, canvas.height);
+    } else {
+      ctx.fillStyle = 'rgba(203, 213, 225, 0.35)';
+      ctx.fillRect(mx + padX * 0.35, 0, 2.5, canvas.height);
+    }
+  }
+
+  // Diagrid Structural Steel X-Bracing Lattice Overlay
+  if (style === 'diagrid-steel') {
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 10;
+    const diagSteps = 8;
+    const stepH = canvas.height / diagSteps;
+    for (let i = 0; i < diagSteps; i++) {
+      const y0 = i * stepH;
+      const y1 = (i + 1) * stepH;
+      ctx.beginPath();
+      ctx.moveTo(0, y0);
+      ctx.lineTo(canvas.width / 2, y1);
+      ctx.lineTo(canvas.width, y0);
+      ctx.moveTo(0, y1);
+      ctx.lineTo(canvas.width / 2, y0);
+      ctx.lineTo(canvas.width, y1);
+      ctx.stroke();
+    }
   }
 
   const texture = new THREE.CanvasTexture(canvas);

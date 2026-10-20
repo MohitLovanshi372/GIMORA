@@ -5,13 +5,14 @@
 
 import React from 'react';
 import { BuildingData } from '../city/types';
-import { Layers, Zap, Users, Wifi, Compass, X, Sparkles, CheckCircle2, Box } from 'lucide-react';
+import { Layers, Zap, Users, Wifi, Compass, X, Sparkles, CheckCircle2, Box, DoorOpen } from 'lucide-react';
 import { InteriorBuildingType } from './BuildingInteriorModal';
 
 interface BuildingInspectorProps {
   building: BuildingData;
   onClose: () => void;
   onFocus: (building: BuildingData) => void;
+  onFocusEntryGate?: (building: BuildingData) => void;
   onEnterInterior?: (type: InteriorBuildingType) => void;
 }
 
@@ -19,26 +20,22 @@ export const BuildingInspector: React.FC<BuildingInspectorProps> = ({
   building,
   onClose,
   onFocus,
+  onFocusEntryGate,
   onEnterInterior,
 }) => {
   const isMohitHub = building.id === 'mohit-developer-hub-hq';
-  const hasInterior =
-    isMohitHub ||
-    building.category === 'Skyscraper' ||
-    building.category === 'Transit Terminal' ||
-    building.category === 'Transit Hub' ||
-    building.category === 'Smart Hospital' ||
-    building.category === 'University' ||
-    building.category === 'Entertainment Megaplex';
 
   const getInteriorType = (): InteriorBuildingType => {
-    if (isMohitHub) return 'mohit-hub';
-    if (building.districtId === 'airport' || building.id.includes('airport') || building.id.includes('skyport')) return 'airport';
-    if (building.category === 'Skyscraper') return 'corporate-office';
-    if (building.category === 'Transit Terminal' || building.category === 'Transit Hub') return 'railway';
-    if (building.category === 'Smart Hospital') return 'hospital';
-    if (building.category === 'University') return 'university';
-    return 'mall';
+    const id = building.id.toLowerCase();
+    const cat = building.category.toLowerCase();
+    if (isMohitHub || building.districtId === 'technology' || cat.includes('research')) return 'mohit-hub';
+    if (building.districtId === 'airport' || id.includes('airport') || id.includes('skyport')) return 'airport';
+    if (cat.includes('transit') || id.includes('rail')) return 'railway';
+    if (building.districtId === 'healthcare' || cat.includes('hospital') || cat.includes('emergency') || cat.includes('pharm')) return 'hospital';
+    if (building.districtId === 'education' || cat.includes('university') || cat.includes('college') || cat.includes('school') || cat.includes('library')) return 'university';
+    if (id.includes('cultural') || id.includes('civic') || id.includes('hall')) return 'city-hall';
+    if (building.districtId === 'entertainment' || cat.includes('megaplex') || id.includes('galleria')) return 'mall';
+    return 'corporate-office';
   };
 
   return (
@@ -167,21 +164,33 @@ export const BuildingInspector: React.FC<BuildingInspectorProps> = ({
         )}
 
         {/* Action Buttons */}
-        <div className="pt-3 flex items-center justify-between gap-2.5">
-          <button
-            onClick={() => onFocus(building)}
-            className="flex-1 py-2 px-3 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border border-cyan-400/40 rounded text-xs font-semibold tracking-wider flex items-center justify-center gap-2 transition-all"
-          >
-            <Compass className="w-3.5 h-3.5" /> FOCUS CAMERA
-          </button>
+        <div className="pt-3 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={() => onFocus(building)}
+              className="flex-1 py-2 px-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 hover:text-white border border-cyan-400/40 rounded text-xs font-semibold tracking-wider flex items-center justify-center gap-1.5 transition-all"
+            >
+              <Compass className="w-3.5 h-3.5" /> TOWER VIEW
+            </button>
 
-          {hasInterior && onEnterInterior && (
+            {onFocusEntryGate && (
+              <button
+                onClick={() => onFocusEntryGate(building)}
+                className="flex-1 py-2 px-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-white border border-amber-400/50 rounded text-xs font-bold tracking-wider flex items-center justify-center gap-1.5 transition-all"
+                title="Zoom camera to Street Entry Gate to look inside 3D Ground-Floor Room"
+              >
+                <DoorOpen className="w-3.5 h-3.5 text-amber-400" /> 3D ENTRY GATE
+              </button>
+            )}
+          </div>
+
+          {onEnterInterior && (
             <button
               onClick={() => onEnterInterior(getInteriorType())}
-              className="py-2 px-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-400/50 rounded text-xs font-bold tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-emerald-950/40"
-              title="Step Inside Building Interior"
+              className="w-full py-2.5 px-3 bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-200 hover:text-white border border-emerald-400/60 rounded text-xs font-bold tracking-wider flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-950/50"
+              title="Enter Building Interior Rooms"
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> ENTER INTERIOR
+              <Sparkles className="w-4 h-4 text-emerald-400" /> ENTER INTERIOR ROOMS
             </button>
           )}
         </div>

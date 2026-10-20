@@ -18,7 +18,14 @@ import {
   Users,
   Tag,
   TrendingUp,
+  Laptop,
+  Presentation,
+  GitBranch,
+  GitPullRequest,
+  CheckCircle2,
+  Terminal,
 } from 'lucide-react';
+import { MohitHubOffice3DView, OfficeCameraZone } from './MohitHubOffice3DView';
 
 export type InteriorBuildingType =
   | 'mohit-hub'
@@ -43,12 +50,15 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
 }) => {
   const [selectedFloor, setSelectedFloor] = useState<number>(0);
   const [selectedShopId, setSelectedShopId] = useState<string>('neobionix');
+  const [mohitCameraZone, setMohitCameraZone] = useState<OfficeCameraZone>('overview');
+  const [presentationSlide, setPresentationSlide] = useState<number>(0);
+  const [mergedPrIds, setMergedPrIds] = useState<string[]>(['PR-426', 'PR-424']);
 
   const buildingTitles: Record<InteriorBuildingType, { name: string; subtitle: string; floorsCount: number }> = {
     'mohit-hub': {
       name: 'MOHIT DEVELOPER HUB',
-      subtitle: 'AI • SOFTWARE • INNOVATION HQ',
-      floorsCount: 6,
+      subtitle: 'CORPORATE EMPLOYEE OFFICE • LAPTOP/PC PODS • PRESENTATION ROOM • GITHUB AGENTS',
+      floorsCount: 5,
     },
     'corporate-office': {
       name: 'APEX INTERNATIONAL FINANCIAL TOWER',
@@ -682,22 +692,36 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
             </div>
           )}
 
-          {/* MOHIT DEVELOPER HUB INTERIOR */}
+          {/* MOHIT DEVELOPER HUB INTERIOR: REAL 3D CORPORATE OFFICE, LAPTOPS/PCs, PRESENTATION ROOM & GITHUB AGENTS */}
           {buildingType === 'mohit-hub' && (
-            <div className="space-y-6">
-              {/* Floor Selection Tabs */}
+            <div className="space-y-5">
+              {/* Interactive 3D Walkthrough Viewport of the Corporate Employee Office Under Tower */}
+              <MohitHubOffice3DView
+                activeZone={mohitCameraZone}
+                onZoneChange={(zone) => {
+                  setMohitCameraZone(zone);
+                  if (zone === 'workstations') setSelectedFloor(0);
+                  else if (zone === 'presentation') setSelectedFloor(1);
+                  else if (zone === 'github-agents') setSelectedFloor(2);
+                }}
+                slideIndex={presentationSlide}
+                onNextSlide={() => setPresentationSlide((prev) => (prev + 1) % 4)}
+              />
+
+              {/* Floor & Room Selection Tabs */}
               <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/90 rounded-xl border border-cyan-500/20 text-xs font-mono">
                 {[
-                  { floor: 0, label: 'G: Reception & Showcase' },
-                  { floor: 1, label: 'L2: Software Lab' },
-                  { floor: 2, label: 'L3: AI Laboratory' },
-                  { floor: 3, label: 'L4: Cloud Data Center' },
-                  { floor: 4, label: 'L5: Innovation Lab' },
-                  { floor: 5, label: 'R: Rooftop AI Command' },
+                  { floor: 0, zone: 'workstations' as OfficeCameraZone, label: 'L1: Corporate Office & Laptop/PC Desks' },
+                  { floor: 1, zone: 'presentation' as OfficeCameraZone, label: 'L2: Presentation Room & Projector' },
+                  { floor: 2, zone: 'github-agents' as OfficeCameraZone, label: 'L3: GitHub Project Work & Agents' },
+                  { floor: 3, zone: 'overview' as OfficeCameraZone, label: 'L4: Server Core & Rooftop Helipad' },
                 ].map((item) => (
                   <button
                     key={item.floor}
-                    onClick={() => setSelectedFloor(item.floor)}
+                    onClick={() => {
+                      setSelectedFloor(item.floor);
+                      setMohitCameraZone(item.zone);
+                    }}
                     className={`px-3 py-1.5 rounded-lg transition font-medium ${
                       selectedFloor === item.floor
                         ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 shadow-sm shadow-cyan-500/20'
@@ -709,92 +733,331 @@ export const BuildingInteriorModal: React.FC<BuildingInteriorModalProps> = ({
                 ))}
               </div>
 
-              {/* FLOOR 0: Reception */}
+              {/* TAB 0: CORPORATE EMPLOYEE OFFICE & LAPTOP / DUAL-PC WORKSTATIONS */}
               {selectedFloor === 0 && (
-                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
-                  <div className="flex items-center gap-2 text-cyan-400">
-                    <Sparkles className="w-5 h-5" />
-                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Ground Level: Grand Reception & Open-Source Showcase Atrium
-                    </h3>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-slate-900/75 border border-cyan-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 text-cyan-400 mb-1">
+                        <Laptop className="w-4 h-4" />
+                        <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                          Under-Tower Corporate Employee Office & Laptop/PC Workstations
+                        </h3>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                        Located directly inside the crystal-clear glass lower floors of the Mohit Developer Hub tower. Every engineer desk features an open aluminum developer laptop paired with dual curved 4K PC monitors, an RGB liquid-cooled desktop workstation tower, and direct optical GitHub Enterprise links.
+                      </p>
+                    </div>
+                    <div className="flex gap-2 shrink-0 font-mono">
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/85 border border-slate-800 text-center">
+                        <span className="text-[10px] text-slate-400 block">Workstations</span>
+                        <span className="text-emerald-400 font-bold text-xs">Laptop + Dual 4K PC</span>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/85 border border-slate-800 text-center">
+                        <span className="text-[10px] text-slate-400 block">Active Staff</span>
+                        <span className="text-cyan-400 font-bold text-xs">120 On Floor</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Welcome to the monumental headquarters of MOHIT DEVELOPER HUB. Features a triple-height glass atrium, contemporary software exhibits, interactive code repositories, and an executive concierge desk.
-                  </p>
+
+                  {/* Workstation Desk Roster */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      {
+                        desk: 'DESK POD A-01',
+                        name: 'Mohit Lovanshi',
+                        role: 'Founder & Principal Systems Architect',
+                        rig: 'MacBook Pro M4 Max + Dual 32" 8K PC Tower',
+                        ideFile: 'src/city/AutonomousAgentCore.ts',
+                        branch: 'feat/multi-agent-office',
+                        agentPair: '@mohit-arch-agent',
+                      },
+                      {
+                        desk: 'DESK POD A-02',
+                        name: 'Aria Chen',
+                        role: 'Staff AI & Neural Graphics Engineer',
+                        rig: 'ThinkPad X1 Carbon + Dual Curved 4K RTX-5090 PC',
+                        ideFile: 'src/transportation/TrafficManager.ts',
+                        branch: 'feat/3d-signal-gantries',
+                        agentPair: '@mohit-vision-agent',
+                      },
+                      {
+                        desk: 'DESK POD B-01',
+                        name: 'Marcus Vance',
+                        role: 'Principal Cloud & Kubernetes SRE',
+                        rig: 'ProBook Studio Laptop + Triple-Monitor Linux PC',
+                        ideFile: 'infra/github-actions-runner.yaml',
+                        branch: 'ops/zero-latency-ci',
+                        agentPair: '@mohit-ci-sentinel',
+                      },
+                      {
+                        desk: 'DESK POD B-02',
+                        name: 'Elena Rostova',
+                        role: 'Lead Security & Cryptography Engineer',
+                        rig: 'Aluminum DevBook 16" + Dual 4K Hardened PC',
+                        ideFile: 'security/PostQuantumAuth.ts',
+                        branch: 'sec/zero-trust-audit',
+                        agentPair: '@mohit-sec-auditor',
+                      },
+                    ].map((wk) => (
+                      <div
+                        key={wk.desk}
+                        className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-cyan-500/40 transition space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-[10px] font-mono text-cyan-300 font-bold">
+                              {wk.desk}
+                            </span>
+                            <span className="text-xs font-bold text-white">{wk.name}</span>
+                          </div>
+                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                            ● Coding Live
+                          </span>
+                        </div>
+                        <p className="text-[11px] font-mono text-cyan-400">{wk.role}</p>
+                        <div className="text-[11px] font-mono text-slate-300 bg-slate-950/70 p-2 rounded-lg border border-slate-800/80 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400">Hardware:</span>
+                            <span className="text-slate-200">{wk.rig}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400">IDE Buffer:</span>
+                            <span className="text-amber-300">{wk.ideFile}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400">Git Branch & Agent:</span>
+                            <span className="text-emerald-300">
+                              {wk.branch} • {wk.agentPair}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* FLOOR 1: Software Lab */}
+              {/* TAB 1: EXECUTIVE PRESENTATION & ARCHITECTURE REVIEW ROOM */}
               {selectedFloor === 1 && (
-                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
-                  <div className="flex items-center gap-2 text-cyan-400">
-                    <Code className="w-5 h-5" />
-                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Floor 2: Collaborative Developer Suites & Workstations
-                    </h3>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-slate-900/75 border border-cyan-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 text-cyan-400 mb-1">
+                        <Presentation className="w-4 h-4" />
+                        <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                          Level 2: Glass-Enclosed Presentation & Architecture Review Room
+                        </h3>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                        Features a 16:9 ultra-bright wall projector screen, speaker podium with presenter laptop, and a 10-meter walnut executive conference table where 8 seated engineers review sprint demos with open laptops. Click any slide below to project it onto the 3D Presentation Screen above!
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setPresentationSlide((prev) => (prev + 1) % 4)}
+                      className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-200 text-xs font-mono font-bold shrink-0 transition"
+                    >
+                      Next Projector Slide ({(presentationSlide % 4) + 1}/4) →
+                    </button>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Curved dual 8K display workstations, dedicated zero-latency fiber links, acoustic privacy pods, and coffee lounges where developers engineer next-generation city protocols.
-                  </p>
+
+                  {/* Interactive Slide Selector Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      {
+                        idx: 0,
+                        title: 'Slide 01: Autonomous GitHub Agent Workflow',
+                        speaker: 'Mohit Lovanshi (Lead Presenter at Podium)',
+                        summary: '96% automated PR code review coverage with 38 active coding & testing agents.',
+                      },
+                      {
+                        idx: 1,
+                        title: 'Slide 02: Metropolis Smart Traffic & Signal AI',
+                        speaker: 'Aria Chen (Traffic Systems Lead)',
+                        summary: '100% red/yellow signal compliance, all-red safety clearance, and multi-lane pathfinding.',
+                      },
+                      {
+                        idx: 2,
+                        title: 'Slide 03: Sub-Zero Quantum Server Cluster',
+                        speaker: 'Marcus Vance (Principal Cloud SRE)',
+                        summary: '32.8 MW geothermal compute core operating at 1.06 PUE efficiency & 1.2ms latency.',
+                      },
+                      {
+                        idx: 3,
+                        title: 'Slide 04: Q4 Spatial Computing & Open-Source',
+                        speaker: 'Devon Kincaid (VP Product Strategy)',
+                        summary: '4,820 active repositories and real-time 3D building interior digital twin telemetry.',
+                      },
+                    ].map((sl) => (
+                      <button
+                        key={sl.idx}
+                        onClick={() => {
+                          setPresentationSlide(sl.idx);
+                          setMohitCameraZone('presentation');
+                        }}
+                        className={`p-3.5 rounded-xl border text-left transition space-y-1.5 ${
+                          presentationSlide % 4 === sl.idx
+                            ? 'bg-cyan-500/20 border-cyan-400/60 shadow-sm'
+                            : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-cyan-300 font-['Chakra_Petch']">{sl.title}</span>
+                          {presentationSlide % 4 === sl.idx && (
+                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold">
+                              ON SCREEN
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] font-mono text-amber-300">Presenter: {sl.speaker}</p>
+                        <p className="text-[11px] text-slate-300 leading-snug">{sl.summary}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* FLOOR 2: AI Lab */}
+              {/* TAB 2: GITHUB PROJECT WORK & AUTONOMOUS CODING AGENTS */}
               {selectedFloor === 2 && (
-                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
-                  <div className="flex items-center gap-2 text-emerald-400">
-                    <Cpu className="w-5 h-5" />
-                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Floor 3: Advanced AI Training & Quantum Compute Lab
-                    </h3>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-slate-900/75 border border-cyan-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 text-emerald-400 mb-1">
+                        <GitBranch className="w-4 h-4" />
+                        <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
+                          github.com / mohit-developer-hub / metropolis-autonomous-core
+                        </h3>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                        Live GitHub Enterprise War-Room where human engineers collaborate with autonomous AI coding agents to review Pull Requests, run CI/CD test suites, and deploy city-wide updates.
+                      </p>
+                    </div>
+                    <div className="flex gap-2 shrink-0 font-mono">
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/85 border border-slate-800 text-center">
+                        <span className="text-[10px] text-slate-400 block">Commits (Main)</span>
+                        <span className="text-emerald-400 font-bold text-xs">14,820+</span>
+                      </div>
+                      <div className="px-3 py-1.5 rounded-lg bg-slate-950/85 border border-slate-800 text-center">
+                        <span className="text-[10px] text-slate-400 block">AI Agents</span>
+                        <span className="text-cyan-400 font-bold text-xs">38 Active</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Houses high-throughput neural tensor accelerators, fine-tuning large multimodal foundation models, training real-time vision algorithms for autonomous city traffic, and quantum weight simulators.
-                  </p>
+
+                  {/* Active Autonomous GitHub Agents & Pull Requests Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Left: Pull Requests with Interactive Merge */}
+                    <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+                      <div className="flex items-center justify-between text-xs font-mono text-cyan-300 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <GitPullRequest className="w-4 h-4" />
+                          ACTIVE PULL REQUESTS
+                        </span>
+                        <span className="text-[10px] text-emerald-400">CI/CD: 1,420/1,420 Passing</span>
+                      </div>
+                      {[
+                        {
+                          id: 'PR-429',
+                          title: 'feat(hub): 3D Corporate Office, Laptops/PCs & Presentation Room',
+                          author: 'mohitlovanshi92 + @mohit-codegen-agent',
+                        },
+                        {
+                          id: 'PR-428',
+                          title: 'feat(traffic): Multi-lane signal gantries & all-red safety phase',
+                          author: 'aria-chen + @mohit-pr-reviewer',
+                        },
+                        {
+                          id: 'PR-426',
+                          title: 'feat(buildings): 10 exterior architectural archetypes & crowns',
+                          author: 'marcus-vance + @mohit-ci-sentinel',
+                        },
+                      ].map((pr) => {
+                        const isMerged = mergedPrIds.includes(pr.id);
+                        return (
+                          <div
+                            key={pr.id}
+                            className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/90 flex items-center justify-between gap-2"
+                          >
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-mono font-bold text-cyan-400">{pr.id}</span>
+                                <span className="text-xs font-semibold text-white truncate">{pr.title}</span>
+                              </div>
+                              <span className="text-[10px] font-mono text-slate-400 block mt-0.5">{pr.author}</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                if (!isMerged) setMergedPrIds((prev) => [...prev, pr.id]);
+                              }}
+                              className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold shrink-0 transition ${
+                                isMerged
+                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                                  : 'bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/40'
+                              }`}
+                            >
+                              {isMerged ? '✓ MERGED' : 'Merge PR'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Right: Autonomous Coding Agents Roster */}
+                    <div className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2.5">
+                      <div className="flex items-center justify-between text-xs font-mono text-emerald-300 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Terminal className="w-4 h-4" />
+                          AUTONOMOUS GITHUB CODING AGENTS
+                        </span>
+                        <span className="text-[10px] text-cyan-400">Swarm Sync: 100%</span>
+                      </div>
+                      {[
+                        {
+                          handle: '@mohit-codegen-agent',
+                          role: 'Autonomous TypeScript & Three.js Synthesizer',
+                          task: 'Generating procedural PBR geometries & shader uniforms on branch feat/office-3d',
+                        },
+                        {
+                          handle: '@mohit-pr-reviewer',
+                          role: 'Automated AST & Architecture Reviewer',
+                          task: 'Verified zero memory leaks and 60 FPS instanced draw call budgets on PR #429',
+                        },
+                        {
+                          handle: '@mohit-ci-sentinel',
+                          role: 'Continuous Integration & Build Runner',
+                          task: 'Running parallel Vite production bundle verification & typechecking',
+                        },
+                      ].map((ag) => (
+                        <div
+                          key={ag.handle}
+                          className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/90 space-y-0.5"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-mono font-bold text-emerald-400">{ag.handle}</span>
+                            <span className="text-[10px] font-mono text-cyan-300 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Active
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-mono text-slate-400 block">{ag.role}</span>
+                          <p className="text-[11px] text-slate-300 leading-tight">{ag.task}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* FLOOR 3: Cloud Data Center */}
+              {/* TAB 3: SERVER CORE & ROOFTOP HELIPAD */}
               {selectedFloor === 3 && (
-                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
+                <div className="p-5 rounded-xl bg-slate-900/75 border border-cyan-500/25 space-y-3">
                   <div className="flex items-center gap-2 text-blue-400">
                     <Server className="w-5 h-5" />
                     <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Floor 4: Cloud & Quantum Data Center
+                      Upper Tower: Sub-Zero Quantum Data Center & Rooftop VTOL Helipad
                     </h3>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Liquid-nitrogen immersion cooling tanks and optical backbones supporting multi-terabit low-latency routing across the entire metropolis.
-                  </p>
-                </div>
-              )}
-
-              {/* FLOOR 4: Innovation Lab */}
-              {selectedFloor === 4 && (
-                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
-                  <div className="flex items-center gap-2 text-purple-400">
-                    <Sparkles className="w-5 h-5" />
-                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Floor 5: Innovation & Robotics Pavilion
-                    </h3>
-                  </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Experimental proving grounds for next-generation automated drones, hover-craft navigation algorithms, and clean fusion cell testing.
-                  </p>
-                </div>
-              )}
-
-              {/* FLOOR 5: Rooftop AI Command */}
-              {selectedFloor === 5 && (
-                <div className="p-6 rounded-xl bg-slate-900/70 border border-cyan-500/20 space-y-4">
-                  <div className="flex items-center gap-2 text-cyan-400">
-                    <Compass className="w-5 h-5" />
-                    <h3 className="text-base font-bold font-['Chakra_Petch'] text-white">
-                      Rooftop Level: AI Command & VTOL Helipad Deck
-                    </h3>
-                  </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    At 142 meters above ground level, the rooftop commands a 360-degree panoramic skyline view of Metropolis Central, river bridges, and continental railway tracks.
+                    Above the 3-level Corporate Office, Presentation Room, and GitHub War-Room, the upper tower houses liquid-cooled optical server racks (Floors 9–18) and the 142m Rooftop Aviation Helipad & AI Command Dome.
                   </p>
                 </div>
               )}

@@ -42,14 +42,28 @@ export class VehicleSpawner {
     }
   }
 
+  private assignRouteToVehicle(vehicle: Vehicle, startLane: RoadLane, keepCurrentPosition = false) {
+    const destLane = this.network.getRandomLane();
+    const lanes = this.pathfinding.findRoute(startLane.id, destLane.id);
+    const routeData = this.pathfinding.generateRouteWithLanes(lanes);
+    const savedPos = keepCurrentPosition ? vehicle.mesh.position.clone() : null;
+
+    vehicle.setRoute(
+      routeData.waypoints,
+      startLane,
+      routeData.waypointLanes,
+      routeData.isTurnWaypoint
+    );
+
+    if (savedPos && routeData.waypoints.length > 0) {
+      vehicle.mesh.position.copy(savedPos);
+    }
+  }
+
   public spawnBus(routeId: string, routeName: string): Bus {
     const bus = new Bus(`bus_${this.nextVehicleId++}`, routeId, routeName, this.network.busStops);
     const startLane = this.network.getRandomLane();
-    const destLane = this.network.getRandomLane();
-    const lanes = this.pathfinding.findRoute(startLane.id, destLane.id);
-    const waypoints = this.pathfinding.generateWaypoints(lanes);
-
-    bus.setRoute(waypoints, startLane);
+    this.assignRouteToVehicle(bus, startLane);
     this.activeVehicles.push(bus);
     this.group.add(bus.mesh);
     return bus;
@@ -58,59 +72,64 @@ export class VehicleSpawner {
   public spawnEmergencyVehicle(emergencyType: EmergencyType): EmergencyVehicle {
     const ev = new EmergencyVehicle(`ev_${this.nextVehicleId++}`, emergencyType);
     const startLane = this.network.getRandomLane();
-    const destLane = this.network.getRandomLane();
-    const lanes = this.pathfinding.findRoute(startLane.id, destLane.id);
-    const waypoints = this.pathfinding.generateWaypoints(lanes);
-
-    ev.setRoute(waypoints, startLane);
+    this.assignRouteToVehicle(ev, startLane);
     this.activeVehicles.push(ev);
     this.group.add(ev.mesh);
     return ev;
   }
 
-  public spawnCar(subModel?: 'coupe' | 'sedan' | 'motorcycle' | 'taxi' | 'delivery-truck' | 'supercar' | 'dubai-police', preferredLane?: RoadLane): Car {
+  public spawnCar(
+    subModel?: 'coupe' | 'sedan' | 'motorcycle' | 'taxi' | 'delivery-truck' | 'supercar' | 'dubai-police',
+    preferredLane?: RoadLane
+  ): Car {
     let car: Car;
     if (this.pooledVehicles.length > 0) {
       car = this.pooledVehicles.pop() as Car;
       car.active = true;
     } else {
       const rand = Math.random();
-      const model = subModel || (
-        rand < 0.12 ? 'dubai-police' :
-        rand < 0.28 ? 'supercar' :
-        rand < 0.42 ? 'taxi' :
-        rand < 0.55 ? 'motorcycle' :
-        rand < 0.70 ? 'delivery-truck' :
-        rand < 0.85 ? 'sedan' : 'coupe'
-      );
+      const model =
+        subModel ||
+        (rand < 0.12
+          ? 'dubai-police'
+          : rand < 0.28
+          ? 'supercar'
+          : rand < 0.42
+          ? 'taxi'
+          : rand < 0.55
+          ? 'motorcycle'
+          : rand < 0.7
+          ? 'delivery-truck'
+          : rand < 0.85
+          ? 'sedan'
+          : 'coupe');
       car = new Car(`car_${this.nextVehicleId++}`, model);
       this.group.add(car.mesh);
     }
 
     const startLane = preferredLane || this.network.getRandomLane();
-    const destLane = this.network.getRandomLane();
-    const lanes = this.pathfinding.findRoute(startLane.id, destLane.id);
-    const waypoints = this.pathfinding.generateWaypoints(lanes);
-
-    car.setRoute(waypoints, startLane);
+    this.assignRouteToVehicle(car, startLane);
     this.activeVehicles.push(car);
     return car;
   }
 
   public recycleVehicle(vehicle: Vehicle) {
-    const idx = this.activeVehicles.indexOf(vehicle);
-    if (idx !== -1) {
-      this.activeVehicles.splice(idx, 1);
+    // Seamlessly chain the next route from the vehicle's current lane downstream connection so it never teleports
+    let nextStartLane: RoadLane | undefined;
+    if (vehicle.currentLane && vehicle.currentLane.connectedLanes.length > 0) {
+      const nextId =
+        vehicle.currentLane.connectedLanes[
+          Math.floor(Math.random() * vehicle.currentLane.connectedLanes.length)
+        ];
+      nextStartLane = this.network.lanes.get(nextId);
     }
 
-    // Pick new destination route immediately to keep traffic flowing smoothly
-    const startLane = this.network.getRandomLane();
-    const destLane = this.network.getRandomLane();
-    const lanes = this.pathfinding.findRoute(startLane.id, destLane.id);
-    const waypoints = this.pathfinding.generateWaypoints(lanes);
-
-    vehicle.setRoute(waypoints, startLane);
-    this.activeVehicles.push(vehicle);
+    if (nextStartLane) {
+      this.assignRouteToVehicle(vehicle, nextStartLane, true);
+    } else {
+      const randomLane = this.network.getRandomLane();
+      this.assignRouteToVehicle(vehicle, randomLane, false);
+    }
   }
 
   public maintainPopulation(targetCount: number) {
@@ -118,7 +137,9 @@ export class VehicleSpawner {
     while (this.activeVehicles.length < targetCount) {
       const rand = Math.random();
       if (rand < 0.08) {
-        this.spawnEmergencyVehicle(Math.random() < 0.4 ? 'ambulance' : Math.random() < 0.7 ? 'police' : 'fire-truck');
+        this.spawnEmergencyVehicle(
+          Math.random() < 0.4 ? 'ambulance' : Math.random() < 0.7 ? 'police' : 'fire-truck'
+        );
       } else if (rand < 0.16) {
         this.spawnBus('route-101', 'Line 101 - Metro Loop');
       } else {

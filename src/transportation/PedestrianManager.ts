@@ -271,43 +271,41 @@ export class PedestrianManager {
       });
     };
 
-    // Mohit Developer Hub Forecourt Plaza
-    linkPlaza('plaza_mohit_hub', 124, -80, 'technology', 7, [
+    // Mohit Developer Hub Forecourt Plaza (Block center 145, -46 -> west forecourt at 124, -46)
+    linkPlaza('plaza_mohit_hub', 124, -46, 'technology', 7, [
       'c_100_-90_SE',
       'c_100_0_NE',
     ]);
 
-    // Downtown Burj Khalifa & Apex Promenade
-    linkPlaza('plaza_downtown_burj', -91, -45, 'downtown', 7, [
-      'c_-100_-90_SE',
-      'c_-100_0_NE',
+    // Downtown Burj Khalifa & Apex Promenade (Burj at -132, -52 -> east forecourt at -114, -52)
+    linkPlaza('plaza_downtown_burj', -114, -52, 'downtown', 7, [
+      'c_-100_-90_SW',
+      'c_-100_0_NW',
     ]);
 
-    // Singapore Marina Bay Sands Waterfront Boardwalk
-    linkPlaza('plaza_singapore_mbs', -152, 55, 'singapore', 6, [
-      'c_-180_0_SE',
-      'c_-180_90_NE',
-      'c_-100_90_NW',
+    // Singapore Marina Bay Sands Waterfront Boardwalk (MBS at -140, 125 -> north forecourt at -140, 106)
+    linkPlaza('plaza_singapore_mbs', -140, 106, 'singapore', 6, [
+      'c_-180_90_SE',
+      'c_-100_90_SW',
     ]);
 
-    // Paris Eiffel Tower & Champs-Élysées Esplanade
-    linkPlaza('plaza_paris_eiffel', -56, -125, 'paris', 6, [
+    // Paris Eiffel Tower & Champs-Élysées Esplanade (Eiffel at -72, -125 -> south plaza at -72, -104)
+    linkPlaza('plaza_paris_eiffel', -72, -104, 'paris', 6, [
       'c_-45_-90_NW',
-      'c_-45_-160_SW',
-      'c_-100_-160_SE',
+      'c_-100_-90_NE',
     ]);
 
-    // America Empire State & One WTC Midtown Plaza
-    linkPlaza('plaza_america_midtown', 82, -55, 'technology', 6, [
+    // America Empire State & One WTC Midtown Plaza (Between ESB 72, -60 and One WTC 72, -26 -> plaza at 86, -44)
+    linkPlaza('plaza_america_midtown', 86, -44, 'technology', 6, [
       'c_100_-90_SW',
       'c_100_0_NW',
       'c_45_-90_SE',
     ]);
 
-    // Grand Central Railway Terminal Concourse
-    linkPlaza('plaza_railway_terminal', 0, -176, 'railway', 6, [
-      'c_-45_-160_NE',
-      'c_45_-160_NW',
+    // Grand Central Railway Terminal Concourse (Terminal at -140, -190 -> south forecourt at -140, -172)
+    linkPlaza('plaza_railway_terminal', -140, -172, 'railway', 6, [
+      'c_-180_-160_NE',
+      'c_-100_-160_NW',
     ]);
   }
 
@@ -542,12 +540,11 @@ export class PedestrianManager {
 
       const needsNewRoute = ped.update(
         delta,
-        localNeighbors,
         activeLights,
         activeVehicles,
-        this.physicsEngine,
-        playerPos,
-        this.staticObstacles
+        localNeighbors,
+        this.physicsEngine ?? null,
+        playerPos
       );
 
       if (needsNewRoute) {

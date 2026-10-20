@@ -37,6 +37,8 @@ export class AgentManager {
 
   public decisionsLog: AgentDecision[] = [];
   public maxDecisionsLog = 40;
+  private autoIncidentTimer = 0;
+  private autoScenarioIndex = 0;
 
   constructor(scene: THREE.Scene, trafficManager: TrafficManager) {
     this.cityState = new CityState();
@@ -49,10 +51,24 @@ export class AgentManager {
     this.emergencyAgent = new EmergencyAgent();
     this.transitAgent = new TransitAgent();
     this.citizenAgent = new CitizenAgent();
+
+    // Seed initial real-time city incidents so the Events log is populated immediately
+    this.triggerDowntownFire();
+    this.triggerTechDistrictMedical();
+    this.triggerAvenueAccident();
   }
 
   public update(delta: number, simTimeStr: string) {
     this.cityState.updateTime(simTimeStr);
+
+    // Periodically generate real-time city incidents (fire alerts, medical emergencies, traffic & grid events)
+    this.autoIncidentTimer += delta;
+    if (this.autoIncidentTimer >= 24.0) {
+      this.autoIncidentTimer = 0;
+      if (this.emergencyAgent.activeIncidents.length < 5) {
+        this.spawnNextScheduledIncident();
+      }
+    }
 
     // Sync live traffic & transit data into CityState
     const metrics = this.trafficManager.getMetrics();
@@ -215,44 +231,143 @@ export class AgentManager {
 
   // --- SCENARIO INJECTION METHODS FOR TESTING & USER INTERACTION ---
 
-  public triggerDowntownFire() {
+  public triggerDowntownFire(): CityEvent {
+    const fireLocations = [
+      {
+        title: 'High-Rise Transformer Fire Alert',
+        districtId: 'downtown',
+        districtName: 'Financial Core • Apex Tower Plaza',
+        location: { x: -142, y: 0.5, z: -24 },
+        description: 'High-voltage HVAC chiller unit fire detected on the lower podium of Apex Financial Tower. Fire Engine Unit-04 responding.',
+      },
+      {
+        title: 'Commercial Kitchen Fire Alarm',
+        districtId: 'entertainment',
+        districtName: 'Commercial Galleria • South Promenade',
+        location: { x: -72, y: 0.5, z: 108 },
+        description: 'Automated suppression sprinklers triggered at Grand Metropolitan Galleria dining atrium. Fire brigade en route.',
+      },
+      {
+        title: 'Geothermal Turbine Thermal Flare',
+        districtId: 'industrial',
+        districtName: 'Industrial Sector • Energy Station',
+        location: { x: -195, y: 0.5, z: 46 },
+        description: 'Overheated heat-exchanger manifold reported at Metropolitan Geothermal Station. Hazmat & Fire units dispatched.',
+      },
+    ];
+    const pick = fireLocations[this.emergencyAgent.activeIncidents.length % fireLocations.length];
     const event = this.emergencyAgent.reportIncident({
       type: 'FIRE',
-      title: 'Structural High-Rise Fire Alarm',
+      title: pick.title,
       severity: 'CRITICAL',
-      districtId: 'downtown',
-      districtName: 'Metropolitan Downtown District',
-      location: { x: -80, y: 15, z: -40 },
-      description: 'Electrical transformer surge on level 18 of Metropolitan Tower Alpha.',
+      districtId: pick.districtId,
+      districtName: pick.districtName,
+      location: pick.location,
+      description: pick.description,
     });
     this.incidentVisuals.addIncident(event);
+    return event;
   }
 
-  public triggerAvenueAccident() {
+  public triggerAvenueAccident(): CityEvent {
+    const accidentLocations = [
+      {
+        title: 'Multi-Vehicle Intersection Collision',
+        districtId: 'downtown',
+        districtName: 'Grand Boulevard & Central Ave',
+        location: { x: -100, y: 0.5, z: 0 },
+        description: 'Three-vehicle fender-bender obstructing the northbound right turn lane at Grand Blvd intersection. Tow & Traffic Police dispatched.',
+      },
+      {
+        title: 'Autonomous Express Bus Lane Obstruction',
+        districtId: 'technology',
+        districtName: 'Technology Avenue Crossing',
+        location: { x: 100, y: 0.5, z: -90 },
+        description: 'Delivery transport stalled in eastbound transit corridor near Tech Campus. Adaptive traffic signals rerouting flow.',
+      },
+    ];
+    const pick = accidentLocations[this.emergencyAgent.activeIncidents.length % accidentLocations.length];
     const event = this.emergencyAgent.reportIncident({
       type: 'ACCIDENT',
-      title: 'Multi-Vehicle Traffic Collision',
+      title: pick.title,
       severity: 'HIGH',
-      districtId: 'technology',
-      districtName: 'Technology Boulevard',
-      location: { x: 75, y: 1, z: -55 },
-      roadId: 'road_tech_main',
-      description: 'Traffic incident between two commercial vehicles obstructing central avenue lane.',
+      districtId: pick.districtId,
+      districtName: pick.districtName,
+      location: pick.location,
+      roadId: 'road_main_corridor',
+      description: pick.description,
     });
     this.incidentVisuals.addIncident(event);
+    return event;
   }
 
-  public triggerTechDistrictMedical() {
+  public triggerTechDistrictMedical(): CityEvent {
+    const medicalLocations = [
+      {
+        title: 'Cardiac Emergency — Paramedic Dispatch',
+        districtId: 'technology',
+        districtName: 'Mohit Developer Hub West Forecourt',
+        location: { x: 118, y: 0.5, z: -46 },
+        description: 'Priority-1 medical telemetry alert near Mohit Developer Hub main entrance gate. Autonomous Ambulance Med-02 en route.',
+      },
+      {
+        title: 'Emergency Trauma Transfer Request',
+        districtId: 'healthcare',
+        districtName: 'Neo-Genesis Hospital Emergency Bay',
+        location: { x: -230, y: 0.5, z: 125 },
+        description: 'Rapid trauma stabilization team mobilized at Smart Hospital ambulance bay with green-wave traffic signal priority.',
+      },
+      {
+        title: 'Campus Sports Heat Exhaustion Call',
+        districtId: 'education',
+        districtName: 'Metropolis University Quad',
+        location: { x: -135, y: 0.5, z: -125 },
+        description: 'Campus medical response unit assisting student athlete at University Science Quad.',
+      },
+    ];
+    const pick = medicalLocations[this.emergencyAgent.activeIncidents.length % medicalLocations.length];
     const event = this.emergencyAgent.reportIncident({
       type: 'MEDICAL_EMERGENCY',
-      title: 'Acute Neural Trauma at Mohit Hub Campus',
+      title: pick.title,
       severity: 'HIGH',
-      districtId: 'technology',
-      districtName: 'Mohit Developer Hub Perimeter',
-      location: { x: 125, y: 1, z: -78 },
-      description: 'Emergency medical assistance requested near the Mohit Developer Hub entrance plaza.',
+      districtId: pick.districtId,
+      districtName: pick.districtName,
+      location: pick.location,
+      description: pick.description,
     });
     this.incidentVisuals.addIncident(event);
+    return event;
+  }
+
+  public triggerPowerSurge(): CityEvent {
+    const event = this.emergencyAgent.reportIncident({
+      type: 'POWER_OUTAGE',
+      title: 'Substation Voltage Fluctuation Alert',
+      severity: 'MEDIUM',
+      districtId: 'residential',
+      districtName: 'Sky-Terrace Residential Sector',
+      location: { x: 180, y: 0.5, z: 125 },
+      description: 'Automated smart-grid transformer balancing micro-surge at East Residential avenue. Backup battery array engaged.',
+    });
+    this.incidentVisuals.addIncident(event);
+    return event;
+  }
+
+  public resolveIncident(incidentId: string) {
+    const resolved = this.emergencyAgent.resolveIncident(incidentId);
+    if (resolved) {
+      this.incidentVisuals.removeIncident(incidentId);
+      this.cityState.updateEvents(this.emergencyAgent.activeIncidents, this.emergencyAgent.resolvedIncidents);
+    }
+  }
+
+  private spawnNextScheduledIncident() {
+    const slot = this.autoScenarioIndex % 4;
+    this.autoScenarioIndex++;
+    if (slot === 0) this.triggerDowntownFire();
+    else if (slot === 1) this.triggerTechDistrictMedical();
+    else if (slot === 2) this.triggerAvenueAccident();
+    else this.triggerPowerSurge();
   }
 
   public triggerMohitHubSummit() {

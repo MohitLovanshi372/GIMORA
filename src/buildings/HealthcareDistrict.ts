@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { BuildingData } from '../city/types';
 import { CityMaterials } from '../assets/materials';
 import { createProceduralWindowTexture } from '../assets/textures';
+import { createBuildingEntryGateAndRoom } from './BuildingEntryRoom';
 
 export interface HealthcareDistrictSystem {
   group: THREE.Group;
@@ -38,8 +39,8 @@ export function createHealthcareDistrict(
     category: 'Smart Hospital',
     height: 122,
     floors: 38,
-    position: [-160, 0, 160],
-    dimensions: [28, 122, 28],
+    position: [-152, 0, 190],
+    dimensions: [26, 122, 26],
     powerUsage: '16.8 MW (Redundant Uninterruptible Grid)',
     occupancy: '92% (8,400 Patients & Medical Staff)',
     networkStatus: 'Bio-Telemetry Real-Time Link Active',
@@ -49,9 +50,9 @@ export function createHealthcareDistrict(
   buildingsData.push(hospitalData);
 
   const hospGroup = new THREE.Group();
-  hospGroup.position.set(-160, 0, 160);
+  hospGroup.position.set(-152, 0, 190);
 
-  // Hospital Main Tower
+  // Hospital Cruciform Stepped Citadel (Central Tower + East/West Clinical Wings + Horizontal Sun-Louvers)
   const hospMat = new THREE.MeshStandardMaterial({
     map: healthWinTex,
     emissiveMap: healthWinTex,
@@ -64,10 +65,28 @@ export function createHealthcareDistrict(
     envMapIntensity: 1.5,
   });
   hospMat.userData = { isWindowMaterial: true, district: 'healthcare', baseColor: 0xfef08a };
-  const hospMesh = new THREE.Mesh(new THREE.BoxGeometry(28, 122, 28), hospMat);
+  const hospMesh = new THREE.Mesh(new THREE.BoxGeometry(20, 122, 20), hospMat);
   hospMesh.position.y = 61;
   hospMesh.castShadow = true;
   hospGroup.add(hospMesh);
+
+  // Cruciform Clinical Side Wings (Rising to 76m)
+  const wingEW = new THREE.Mesh(new THREE.BoxGeometry(28, 76, 12), hospMat);
+  wingEW.position.y = 38;
+  wingEW.castShadow = true;
+  hospGroup.add(wingEW);
+
+  // White Titanium Horizontal Architectural Louver Bands every 12m
+  for (let ly = 16; ly < 118; ly += 12) {
+    const wBand = ly < 76 ? 28.6 : 20.6;
+    const dBand = ly < 76 ? 12.6 : 20.6;
+    const louver = new THREE.Mesh(
+      new THREE.BoxGeometry(wBand, 0.7, dBand),
+      materials.metalLight
+    );
+    louver.position.y = ly;
+    hospGroup.add(louver);
+  }
 
   // Rooftop Medical Cross Sign (Realistic Emergency Red Cross)
   const crossGroup = new THREE.Group();
@@ -77,6 +96,20 @@ export function createHealthcareDistrict(
   crossGroup.add(crossV);
   crossGroup.add(crossH);
   hospGroup.add(crossGroup);
+
+  const hospEntryGate = createBuildingEntryGateAndRoom(
+    {
+      title: hospitalData.name,
+      theme: 'hospital',
+      roomWidth: 12.5,
+      roomHeight: 4.8,
+      roomDepth: 7.5,
+      buildingData: hospitalData,
+    },
+    interactiveMeshes
+  );
+  hospEntryGate.position.set(0, 0, 13.5);
+  hospGroup.add(hospEntryGate);
 
   hospMesh.userData = { buildingData: hospitalData };
   interactiveMeshes.push(hospMesh);
@@ -91,8 +124,8 @@ export function createHealthcareDistrict(
     category: 'Emergency Center',
     height: 36,
     floors: 8,
-    position: [-195, 0, 130],
-    dimensions: [34, 36, 26],
+    position: [-210, 0, 190],
+    dimensions: [26, 36, 22],
     powerUsage: '8.4 MW (Instant Backup Storage)',
     occupancy: '95% (24/7 Rapid Response)',
     networkStatus: 'Priority Emergency Dispatch Link',
@@ -102,7 +135,7 @@ export function createHealthcareDistrict(
   buildingsData.push(emergencyData);
 
   const emGroup = new THREE.Group();
-  emGroup.position.set(-195, 0, 130);
+  emGroup.position.set(-210, 0, 190);
 
   const emMat = new THREE.MeshStandardMaterial({
     map: healthWinTex,
@@ -116,18 +149,33 @@ export function createHealthcareDistrict(
     envMapIntensity: 1.4,
   });
   emMat.userData = { isWindowMaterial: true, district: 'healthcare', baseColor: 0x06b6d4 };
-  const emMesh = new THREE.Mesh(new THREE.BoxGeometry(34, 36, 26), emMat);
+  const emMesh = new THREE.Mesh(new THREE.BoxGeometry(26, 36, 22), emMat);
   emMesh.position.y = 18;
   emMesh.castShadow = true;
   emGroup.add(emMesh);
 
   // Red & Cyan Emergency Beacon Strip around canopy
   const emStrobe = new THREE.Mesh(
-    new THREE.BoxGeometry(34.4, 0.6, 26.4),
+    new THREE.BoxGeometry(26.4, 0.6, 22.4),
     materials.neonRed
   );
   emStrobe.position.y = 10;
   emGroup.add(emStrobe);
+
+  const emEntryGate = createBuildingEntryGateAndRoom(
+    {
+      title: emergencyData.name,
+      subtitle: 'EMERGENCY ENTRY GATE • TRAUMA & TRIAGE ROOM',
+      theme: 'hospital',
+      roomWidth: 11.5,
+      roomHeight: 4.6,
+      roomDepth: 7.0,
+      buildingData: emergencyData,
+    },
+    interactiveMeshes
+  );
+  emEntryGate.position.set(0, 0, 11.5);
+  emGroup.add(emEntryGate);
 
   emMesh.userData = { buildingData: emergencyData };
   interactiveMeshes.push(emMesh);
@@ -142,8 +190,8 @@ export function createHealthcareDistrict(
     category: 'Pharmacy',
     height: 28,
     floors: 6,
-    position: [-125, 0, 130],
-    dimensions: [22, 28, 22],
+    position: [-124, 0, 190],
+    dimensions: [20, 28, 20],
     powerUsage: '4.2 MW',
     occupancy: '99% Automated Robotic Dispensing',
     networkStatus: 'Encrypted Prescription Relay',
@@ -153,10 +201,10 @@ export function createHealthcareDistrict(
   buildingsData.push(pharmData);
 
   const pharmGroup = new THREE.Group();
-  pharmGroup.position.set(-125, 0, 130);
+  pharmGroup.position.set(-124, 0, 190);
 
   const pharmMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(22, 28, 22),
+    new THREE.BoxGeometry(20, 28, 20),
     materials.glassCyan
   );
   pharmMesh.position.y = 14;
@@ -165,7 +213,7 @@ export function createHealthcareDistrict(
 
   // Pharmacy Green Cross
   const pCross = new THREE.Group();
-  pCross.position.set(0, 18, 11.2);
+  pCross.position.set(0, 18, 10.2);
   const pcv = new THREE.Mesh(new THREE.BoxGeometry(1.4, 4.5, 0.2), materials.neonEmerald);
   const pch = new THREE.Mesh(new THREE.BoxGeometry(4.5, 1.4, 0.2), materials.neonEmerald);
   pCross.add(pcv);
@@ -178,7 +226,7 @@ export function createHealthcareDistrict(
 
   // 4. AMBULANCE PARKING & STAGING BAYS
   const ambParkingGroup = new THREE.Group();
-  ambParkingGroup.position.set(-195, 0, 160);
+  ambParkingGroup.position.set(-272, 0, 190);
 
   // Sheltered Canopy
   const canopyGeo = new THREE.BoxGeometry(26, 0.8, 18);
@@ -215,7 +263,7 @@ export function createHealthcareDistrict(
 
   // 5. ELEVATED EMERGENCY HELIPAD
   const heliGroup = new THREE.Group();
-  heliGroup.position.set(-160, 0, 120);
+  heliGroup.position.set(-272, 0, 125);
 
   // Sturdy Support Pylon
   const heliPylon = new THREE.Mesh(new THREE.CylinderGeometry(4, 5, 24, 12), materials.metalDark);
@@ -261,7 +309,7 @@ export function createHealthcareDistrict(
     category: 'Medical Research',
     height: 84,
     floors: 24,
-    position: [-170, 0, 220],
+    position: [-140, 0, 285],
     dimensions: [26, 84, 26],
     powerUsage: '12.6 MW',
     occupancy: '90% (4,100 Scientists)',
@@ -271,15 +319,36 @@ export function createHealthcareDistrict(
   };
   buildingsData.push(medResData);
 
+  const medResGroup = new THREE.Group();
+  medResGroup.position.set(-140, 0, 285);
+
+  const medResMat = new THREE.MeshStandardMaterial({ map: researchWinTex, roughness: 0.2, metalness: 0.85 });
   const medResMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(26, 84, 26),
-    new THREE.MeshStandardMaterial({ map: researchWinTex, roughness: 0.2, metalness: 0.85 })
+    new THREE.CylinderGeometry(11, 13, 84, 16),
+    medResMat
   );
-  medResMesh.position.set(-170, 42, 220);
+  medResMesh.position.y = 42;
   medResMesh.castShadow = true;
+  medResGroup.add(medResMesh);
+
+  // DNA Double-Helix Exterior Structural Ribs spiraling up the Cylindrical Research Citadel
+  for (let i = 0; i < 20; i++) {
+    const frac = i / 20;
+    const hy = 6 + frac * 74;
+    const ang = frac * Math.PI * 3;
+    const rad = THREE.MathUtils.lerp(13.2, 11.2, frac);
+    [-1, 1].forEach((strand) => {
+      const a = ang + (strand === 1 ? 0 : Math.PI);
+      const node = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.2, 0.9), materials.metalLight);
+      node.position.set(Math.cos(a) * rad, hy, Math.sin(a) * rad);
+      node.rotation.y = -a;
+      medResGroup.add(node);
+    });
+  }
+
   medResMesh.userData = { buildingData: medResData };
   interactiveMeshes.push(medResMesh);
-  group.add(medResMesh);
+  group.add(medResGroup);
 
   scene.add(group);
 

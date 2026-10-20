@@ -97,7 +97,7 @@ export function createDubaiLandmarks(
   // 1. BURJ KHALIFA (The World's Tallest Megatall Skyscraper - 285m Equivalent)
   // =========================================================================
   const burjGroup = new THREE.Group();
-  burjGroup.position.set(-105, 0, -45); // Central Downtown Dubai Core
+  burjGroup.position.set(-132, 0, -52); // Central Downtown Dubai Block (clear of X=-100 and X=-180 avenues)
 
   const burjData: BuildingData = {
     id: 'dubai-burj-khalifa',
@@ -107,8 +107,8 @@ export function createDubaiLandmarks(
     category: 'Skyscraper',
     height: 285,
     floors: 163,
-    position: [-105, 0, -45],
-    dimensions: [42, 285, 42],
+    position: [-132, 0, -52],
+    dimensions: [36, 285, 36],
     powerUsage: '48.5 MW Clean Solar Grid',
     occupancy: '98% (35,000 Residents & Office Personnel)',
     networkStatus: 'Terabit High-Frequency Fiber Core 100%',
@@ -124,8 +124,8 @@ export function createDubaiLandmarks(
   };
   buildingsData.push(burjData);
 
-  // A. Grand Hexagonal Base Podium & Lake
-  const lakeGeo = new THREE.CylinderGeometry(36, 38, 0.4, 32);
+  // A. Grand Hexagonal Base Podium & Lake (Sized to fit cleanly within the city block)
+  const lakeGeo = new THREE.CylinderGeometry(23, 24.5, 0.4, 32);
   const lakeMat = new THREE.MeshStandardMaterial({
     color: 0x0284c7,
     roughness: 0.08,
@@ -136,7 +136,7 @@ export function createDubaiLandmarks(
   burjGroup.add(lakeMesh);
 
   // Stepped Hexagonal Foundation Podium
-  const podiumGeo = new THREE.CylinderGeometry(24, 28, 4.5, 6);
+  const podiumGeo = new THREE.CylinderGeometry(18, 21, 4.5, 6);
   const podium = new THREE.Mesh(podiumGeo, burjSteelMat);
   podium.position.y = 2.25;
   podium.castShadow = true;
@@ -263,7 +263,7 @@ export function createDubaiLandmarks(
 
   for (let f = 0; f < fountainCount; f++) {
     const ang = (f / fountainCount) * Math.PI * 2;
-    const rad = 28;
+    const rad = 19.5;
     const jet = new THREE.Mesh(jetGeo, jetMat);
     jet.position.set(Math.cos(ang) * rad, 3.2, Math.sin(ang) * rad);
     burjGroup.add(jet);
@@ -297,7 +297,7 @@ export function createDubaiLandmarks(
   // 2. BURJ AL ARAB (Iconic 7-Star Luxury Dhow Sail Hotel on Island)
   // =========================================================================
   const baaGroup = new THREE.Group();
-  baaGroup.position.set(-55, 0, 85); // Coastal Island sector along water
+  baaGroup.position.set(-72, 0, 50); // Waterfront Block between X=-100 and X=-45, Z=0 and Z=90
 
   const baaData: BuildingData = {
     id: 'dubai-burj-al-arab',
@@ -307,8 +307,8 @@ export function createDubaiLandmarks(
     category: 'Waterfront Venue',
     height: 120,
     floors: 56,
-    position: [-55, 0, 85],
-    dimensions: [36, 120, 36],
+    position: [-72, 0, 50],
+    dimensions: [28, 120, 28],
     powerUsage: '14.8 MW Luxury Reserve Grid',
     occupancy: '94% (Exclusive VIP Suites & Royal Pavilions)',
     networkStatus: 'Private Sovereign Optical Encrypted 100%',
@@ -324,8 +324,8 @@ export function createDubaiLandmarks(
   };
   buildingsData.push(baaData);
 
-  // A. Triangular Offshore Artificial Island
-  const islandGeo = new THREE.CylinderGeometry(26, 28, 1.2, 3);
+  // A. Triangular Offshore Artificial Island (Calibrated to block footprint)
+  const islandGeo = new THREE.CylinderGeometry(15.5, 16.5, 1.2, 3);
   const islandMat = new THREE.MeshStandardMaterial({
     color: 0x475569, // Granite rip-rap wave barriers
     roughness: 0.9,
@@ -338,7 +338,7 @@ export function createDubaiLandmarks(
 
   // Island Paved Terrace
   const islandPaving = new THREE.Mesh(
-    new THREE.CylinderGeometry(23, 23, 0.3, 3),
+    new THREE.CylinderGeometry(14, 14, 0.3, 3),
     materials.sidewalk
   );
   islandPaving.position.y = 1.3;
@@ -422,15 +422,15 @@ export function createDubaiLandmarks(
   baaGroup.add(skyview);
 
   // F. Private Causeway Bridge to Mainland
-  const causewayGeo = new THREE.BoxGeometry(7, 0.8, 38);
+  const causewayGeo = new THREE.BoxGeometry(6, 0.8, 16);
   const causeway = new THREE.Mesh(causewayGeo, materials.asphalt);
-  causeway.position.set(0, 0.8, -36);
+  causeway.position.set(0, 0.8, -19);
   causeway.receiveShadow = true;
   baaGroup.add(causeway);
 
   // Royal Date Palms on Causeway Bridge
-  for (let pz = -48; pz <= -24; pz += 10) {
-    [-4.5, 4.5].forEach((px) => {
+  for (let pz = -25; pz <= -15; pz += 10) {
+    [-3.5, 3.5].forEach((px) => {
       const palm = createDatePalmMesh(palmTrunkMat, palmFoliageMat, 0.7);
       palm.position.set(px, 0.8, pz);
       baaGroup.add(palm);
@@ -445,7 +445,7 @@ export function createDubaiLandmarks(
   // 3. MUSEUM OF THE FUTURE (Torus Architectural Marvel with Arabic Calligraphy)
   // =========================================================================
   const motfGroup = new THREE.Group();
-  motfGroup.position.set(70, 0, 10); // Prime Sheikh Zayed Road Boulevard Frontage
+  motfGroup.position.set(72, 0, 46); // East Waterfront Future Block (clear of Z=0 and Z=90 streets)
 
   const motfData: BuildingData = {
     id: 'dubai-museum-of-the-future',
@@ -455,8 +455,8 @@ export function createDubaiLandmarks(
     category: 'Research Pod',
     height: 77,
     floors: 7,
-    position: [70, 0, 10],
-    dimensions: [32, 77, 48],
+    position: [72, 0, 46],
+    dimensions: [26, 77, 30],
     powerUsage: '8.4 MW Sustainable Platinum LEED',
     occupancy: '95% (18,000 Global Innovators & Visitors)',
     networkStatus: 'AI Ecosystem Trunks 100% Operational',
@@ -473,34 +473,34 @@ export function createDubaiLandmarks(
   buildingsData.push(motfData);
 
   // A. Lush Green Landscaped Hill Podium
-  const hillGeo = new THREE.ConeGeometry(26, 6, 24);
+  const hillGeo = new THREE.ConeGeometry(15, 5.5, 24);
   const hillMat = new THREE.MeshStandardMaterial({
     color: 0x2e7d32, // Lush manicured grass green
     roughness: 0.8,
     metalness: 0.05,
   });
   const hill = new THREE.Mesh(hillGeo, hillMat);
-  hill.position.y = 3.0;
+  hill.position.y = 2.75;
   hill.receiveShadow = true;
   motfGroup.add(hill);
 
   // B. Torus Ring Structure with Central Void
-  const torusMajor = 22;
-  const torusMinor = 8.5;
+  const torusMajor = 14.5;
+  const torusMinor = 5.6;
   const torusGeo = new THREE.TorusGeometry(torusMajor, torusMinor, 24, 48);
-  torusGeo.scale(1.2, 1.4, 0.7); // Elliptical profile
+  torusGeo.scale(1.15, 1.45, 0.7); // Elliptical profile
   const torusMesh = new THREE.Mesh(torusGeo, museumSteelMat);
-  torusMesh.position.set(0, 32, 0);
+  torusMesh.position.set(0, 28, 0);
   torusMesh.rotation.y = Math.PI / 4;
   torusMesh.castShadow = true;
   motfGroup.add(torusMesh);
 
   // Entrance Atrium Glass Cube below void
   const entranceCube = new THREE.Mesh(
-    new THREE.BoxGeometry(14, 6, 14),
+    new THREE.BoxGeometry(10, 6, 10),
     materials.glassDark
   );
-  entranceCube.position.y = 7.5;
+  entranceCube.position.y = 6.5;
   motfGroup.add(entranceCube);
 
   torusMesh.userData = { buildingData: motfData };
@@ -511,7 +511,7 @@ export function createDubaiLandmarks(
   // 4. DUBAI FRAME (The Monumental Golden Architectural Picture Frame)
   // =========================================================================
   const frameGroup = new THREE.Group();
-  frameGroup.position.set(-145, 0, -145); // Gateway Park sector
+  frameGroup.position.set(-72, 0, -56); // Zabeel Park Gateway Block (between X=-100 and X=-45, Z=-90 and Z=0)
 
   const frameData: BuildingData = {
     id: 'dubai-frame',
@@ -521,15 +521,15 @@ export function createDubaiLandmarks(
     category: 'Landmark',
     height: 75,
     floors: 48,
-    position: [-145, 0, -145],
-    dimensions: [48, 75, 12],
+    position: [-72, 0, -56],
+    dimensions: [26, 75, 12],
     powerUsage: '4.2 MW Solar Integrated',
     occupancy: '92% (8,500 Daily Visitors)',
     networkStatus: 'Civic Fiber Network',
-    description: 'Iconic 150m-equivalent golden monument framing panoramic views of historic and contemporary Dubai. Features twin golden towers clad in Islamic star filigree and an illuminated glass-floored skybridge spanning 48m.',
+    description: 'Iconic 150m-equivalent golden monument framing panoramic views of historic and contemporary Dubai. Features twin golden towers clad in Islamic star filigree and an illuminated glass-floored skybridge.',
     features: [
       'Twin Golden Stainless Steel Towers (75m Tall)',
-      '48-Meter High Glass-Floored Sky Bridge with 360° Views',
+      'Glass-Floored Sky Bridge with 360° Views',
       '24k Gold Islamic Star Filigree Cladding Panels',
       'Historic & Futuristic Immersive Holographic Galleries',
     ],
@@ -539,9 +539,9 @@ export function createDubaiLandmarks(
 
   // Twin Golden Towers
   const towerH = 75;
-  const towerW = 6.5;
-  const towerD = 8.5;
-  const towerSpan = 38;
+  const towerW = 5.2;
+  const towerD = 7.2;
+  const towerSpan = 20;
 
   [-towerSpan / 2, towerSpan / 2].forEach((tx) => {
     const frameTower = new THREE.Mesh(
@@ -554,9 +554,9 @@ export function createDubaiLandmarks(
   });
 
   // Top Glass Skybridge
-  const skybridgeGeo = new THREE.BoxGeometry(towerSpan + towerW, 5.5, towerD);
+  const skybridgeGeo = new THREE.BoxGeometry(towerSpan + towerW, 5.0, towerD);
   const skybridge = new THREE.Mesh(skybridgeGeo, gold24kMat);
-  skybridge.position.set(0, towerH - 2.75, 0);
+  skybridge.position.set(0, towerH - 2.5, 0);
   skybridge.castShadow = true;
   frameGroup.add(skybridge);
 
@@ -565,15 +565,15 @@ export function createDubaiLandmarks(
     new THREE.PlaneGeometry(towerSpan, towerD - 1).rotateX(-Math.PI / 2),
     materials.glassDark
   );
-  glassStrip.position.set(0, towerH - 5.4, 0);
+  glassStrip.position.set(0, towerH - 5.1, 0);
   frameGroup.add(glassStrip);
 
   // Bottom Exhibition Pavilion
   const basePavilion = new THREE.Mesh(
-    new THREE.BoxGeometry(towerSpan + towerW + 10, 4.2, towerD + 8),
+    new THREE.BoxGeometry(towerSpan + towerW + 4, 4.0, towerD + 4),
     gold24kMat
   );
-  basePavilion.position.set(0, 2.1, 0);
+  basePavilion.position.set(0, 2.0, 0);
   basePavilion.castShadow = true;
   frameGroup.add(basePavilion);
 
@@ -585,7 +585,7 @@ export function createDubaiLandmarks(
   // 5. CAYAN TOWER / INFINITY TOWER (Iconic 90° Twisting Skyscraper)
   // =========================================================================
   const cayanGroup = new THREE.Group();
-  cayanGroup.position.set(130, 0, 95); // Dubai Marina sector
+  cayanGroup.position.set(130, 0, 125); // Dubai Marina Block (cleanly between Z=90 and Z=160)
 
   const cayanData: BuildingData = {
     id: 'dubai-cayan-tower',
@@ -595,7 +595,7 @@ export function createDubaiLandmarks(
     category: 'Skyscraper',
     height: 105,
     floors: 75,
-    position: [130, 0, 95],
+    position: [130, 0, 125],
     dimensions: [22, 105, 22],
     powerUsage: '12.4 MW',
     occupancy: '98% (4,200 Luxury Marina Residents)',
@@ -643,19 +643,20 @@ export function createDubaiLandmarks(
   // =========================================================================
   // 6. ROYAL DATE PALMS ALONG SHEIKH ZAYED RD & MARINA PROMENADES
   // =========================================================================
-  // Plant authentic Royal Date Palms along major avenues and plazas
+  // Plant authentic Royal Date Palms along major avenue sidewalks, keeping all street intersections clear
   const palmAvenues = [
     { x: -100, zMin: -200, zMax: 200, step: 25 },
     { x: 100, zMin: -200, zMax: 200, step: 25 },
     { x: -45, zMin: -120, zMax: 120, step: 30 },
     { x: 45, zMin: -120, zMax: 120, step: 30 },
   ];
+  const crossStreetZ = [-260, -220, -160, -90, 0, 90, 160, 220, 260];
 
   palmAvenues.forEach((av) => {
     for (let z = av.zMin; z <= av.zMax; z += av.step) {
-      if (Math.abs(z) < 20) continue; // clear crossings
+      if (crossStreetZ.some((cz) => Math.abs(z - cz) < 16)) continue; // keep intersections and crosswalks clear
       const palm = createDatePalmMesh(palmTrunkMat, palmFoliageMat, 1.0 + Math.random() * 0.25);
-      palm.position.set(av.x + (av.x > 0 ? 8.5 : -8.5), 0.1, z);
+      palm.position.set(av.x + (av.x > 0 ? 9.5 : -9.5), 0.1, z);
       group.add(palm);
     }
   });

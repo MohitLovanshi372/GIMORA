@@ -6,11 +6,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { CityScene, PlayerRadarTelemetry } from './city/CityScene';
+import { InteractionPrompt } from './city/modules/PlayerSystem';
 import { BuildingData, CameraMode, CityMetrics, DistrictId, TrafficDensityLevel, TransportationMetrics } from './city/types';
 import { HUD } from './ui/HUD';
 import { BuildingInspector } from './ui/BuildingInspector';
 import { BuildingInteriorModal, InteriorBuildingType } from './ui/BuildingInteriorModal';
 import { DubaiModelStudioModal } from './ui/DubaiModelStudioModal';
+import { EventsPanel } from './ui/EventsPanel';
 import { NavDistrictId } from './ui/DistrictNav';
 import { AgentManagerSnapshot } from './simulation/AgentManager';
 import { CityDirective } from './simulation/AgentTypes';
@@ -30,8 +32,10 @@ export default function App() {
   const [isControlCenterOpen, setIsControlCenterOpen] = useState(false);
   const [controlCenterTab, setControlCenterTab] = useState<'map' | 'overview' | 'time_weather' | 'energy' | 'camera' | 'events'>('map');
   const [interiorModalType, setInteriorModalType] = useState<InteriorBuildingType | null>(null);
+  const [interactionPrompt, setInteractionPrompt] = useState<InteractionPrompt | null>(null);
   const [isAgentDashboardOpen, setIsAgentDashboardOpen] = useState(true);
   const [isDubaiStudioOpen, setIsDubaiStudioOpen] = useState(false);
+  const [isEventsPanelOpen, setIsEventsPanelOpen] = useState(true);
 
   // Time & Weather State
   const [currentWeather, setCurrentWeather] = useState<WeatherType>('CLEAR');
@@ -135,9 +139,16 @@ export default function App() {
           }
         }
       },
+      onInteractionPrompt: (prompt) => {
+        setInteractionPrompt(prompt);
+      },
+      onInteractBuilding: (type) => {
+        setInteriorModalType(type);
+      },
     });
 
     citySceneRef.current = cityScene;
+    setAgentSnapshot(cityScene.getAgentSnapshot());
 
     // Periodic telemetry update from CityScene
     const metricsInterval = setInterval(() => {
@@ -219,6 +230,12 @@ export default function App() {
   const handleFocusBuilding = (building: BuildingData) => {
     if (citySceneRef.current) {
       citySceneRef.current.focusBuilding(building);
+    }
+  };
+
+  const handleFocusEntryGate = (building: BuildingData) => {
+    if (citySceneRef.current) {
+      citySceneRef.current.focusBuildingEntryGate(building);
     }
   };
 
@@ -372,21 +389,39 @@ export default function App() {
 
   const handleTriggerFire = () => {
     if (citySceneRef.current) {
-      citySceneRef.current.agentManager.triggerDowntownFire();
+      const ev = citySceneRef.current.agentManager.triggerDowntownFire();
       setAgentSnapshot(citySceneRef.current.getAgentSnapshot());
+      citySceneRef.current.flyToLocation(new THREE.Vector3(ev.location.x, ev.location.y, ev.location.z));
     }
   };
 
   const handleTriggerAccident = () => {
     if (citySceneRef.current) {
-      citySceneRef.current.agentManager.triggerAvenueAccident();
+      const ev = citySceneRef.current.agentManager.triggerAvenueAccident();
       setAgentSnapshot(citySceneRef.current.getAgentSnapshot());
+      citySceneRef.current.flyToLocation(new THREE.Vector3(ev.location.x, ev.location.y, ev.location.z));
     }
   };
 
   const handleTriggerMedical = () => {
     if (citySceneRef.current) {
-      citySceneRef.current.agentManager.triggerTechDistrictMedical();
+      const ev = citySceneRef.current.agentManager.triggerTechDistrictMedical();
+      setAgentSnapshot(citySceneRef.current.getAgentSnapshot());
+      citySceneRef.current.flyToLocation(new THREE.Vector3(ev.location.x, ev.location.y, ev.location.z));
+    }
+  };
+
+  const handleTriggerPowerSurge = () => {
+    if (citySceneRef.current) {
+      const ev = citySceneRef.current.agentManager.triggerPowerSurge();
+      setAgentSnapshot(citySceneRef.current.getAgentSnapshot());
+      citySceneRef.current.flyToLocation(new THREE.Vector3(ev.location.x, ev.location.y, ev.location.z));
+    }
+  };
+
+  const handleResolveIncident = (incidentId: string) => {
+    if (citySceneRef.current) {
+      citySceneRef.current.agentManager.resolveIncident(incidentId);
       setAgentSnapshot(citySceneRef.current.getAgentSnapshot());
     }
   };
@@ -401,6 +436,8 @@ export default function App() {
 
   const handleLocateIncident = (incident: CityEvent) => {
     if (citySceneRef.current) {
+      setSelectedBuilding(null);
+      citySceneRef.current.clearSelection();
       citySceneRef.current.flyToLocation(
         new THREE.Vector3(incident.location.x, incident.location.y, incident.location.z)
       );
@@ -436,6 +473,7 @@ export default function App() {
         cameraMode={cameraMode}
         activeDistrict={activeDistrict}
         radarTelemetry={radarTelemetry}
+        interactionPrompt={interactionPrompt}
         timeOfDay={timeOfDay}
         currentWeather={currentWeather}
         onSetCameraMode={handleSetCameraMode}
@@ -448,10 +486,29 @@ export default function App() {
         onSelectAirport={handleSelectAirport}
         onSelectRailway={handleSelectRailway}
         onOpenDubaiStudio={() => setIsDubaiStudioOpen(true)}
+        onOpenInteriorRoom={handleOpenInterior}
         onStartFlyover={handleStartFlyover}
         onSetTimeOfDay={handleSetTime}
         onSetWeather={handleSetWeather}
+        activeIncidents={agentSnapshot.activeEmergencies}
+        isEventsPanelOpen={isEventsPanelOpen}
+        onToggleEventsPanel={() => setIsEventsPanelOpen((prev) => !prev)}
       />
+
+      {/* Real-Time City Events & Emergency Incident Log Panel */}
+      {isEventsPanelOpen && (
+        <EventsPanel
+          activeIncidents={agentSnapshot.activeEmergencies}
+          resolvedIncidents={agentSnapshot.resolvedEmergencies}
+          onClose={() => setIsEventsPanelOpen(false)}
+          onFocusIncident={handleLocateIncident}
+          onResolveIncident={handleResolveIncident}
+          onTriggerFire={handleTriggerFire}
+          onTriggerMedical={handleTriggerMedical}
+          onTriggerAccident={handleTriggerAccident}
+          onTriggerPowerSurge={handleTriggerPowerSurge}
+        />
+      )}
 
       {/* Building Inspector Panel */}
       {selectedBuilding && (
@@ -459,6 +516,7 @@ export default function App() {
           building={selectedBuilding}
           onClose={handleCloseInspector}
           onFocus={handleFocusBuilding}
+          onFocusEntryGate={handleFocusEntryGate}
           onEnterInterior={handleOpenInterior}
         />
       )}

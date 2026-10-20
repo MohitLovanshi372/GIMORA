@@ -375,43 +375,43 @@ export function createEnvironment(
     normalScale: new THREE.Vector2(0.35, 0.35),
   });
 
-  // Central Riverside Emerald Park
-  const centralPark = new THREE.Mesh(new THREE.BoxGeometry(48, 0.25, 96), parkGrassMat);
-  centralPark.position.set(-68, 0.12, 0);
+  // Central Riverside Emerald Park (Cleanly inside West Waterfront Block X ∈ [-88.5, -55.5], Z ∈ [-79.5, -13.0])
+  const centralPark = new THREE.Mesh(new THREE.BoxGeometry(30, 0.25, 62), parkGrassMat);
+  centralPark.position.set(-72, 0.12, -46);
   centralPark.receiveShadow = true;
   group.add(centralPark);
 
   // Promenade Pedestrian Walkways across Central Park
   // North-South Promenade
-  const nsPath = new THREE.Mesh(new THREE.PlaneGeometry(5.0, 92).rotateX(-Math.PI / 2), parkPathMat);
-  nsPath.position.set(-68, 0.26, 0);
+  const nsPath = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 60).rotateX(-Math.PI / 2), parkPathMat);
+  nsPath.position.set(-72, 0.26, -46);
   nsPath.receiveShadow = true;
   group.add(nsPath);
 
-  // East-West Bridge Approach Pathway
-  const ewPath = new THREE.Mesh(new THREE.PlaneGeometry(44, 4.5).rotateX(-Math.PI / 2), parkPathMat);
-  ewPath.position.set(-68, 0.26, 0);
+  // East-West Park Pathway
+  const ewPath = new THREE.Mesh(new THREE.PlaneGeometry(28, 4.0).rotateX(-Math.PI / 2), parkPathMat);
+  ewPath.position.set(-72, 0.26, -32);
   ewPath.receiveShadow = true;
   group.add(ewPath);
 
   // Reflecting Pond with glowing rim
   const pond = new THREE.Mesh(
-    new THREE.CylinderGeometry(8.5, 8.5, 0.1, 24),
+    new THREE.CylinderGeometry(7.0, 7.0, 0.1, 24),
     new THREE.MeshStandardMaterial({ color: 0x001524, roughness: 0.05, metalness: 0.95 })
   );
-  pond.position.set(-68, 0.27, 0);
+  pond.position.set(-72, 0.27, -32);
   group.add(pond);
 
   const pondRim = new THREE.Mesh(
-    new THREE.TorusGeometry(8.6, 0.25, 8, 32).rotateX(Math.PI / 2),
+    new THREE.TorusGeometry(7.1, 0.25, 8, 32).rotateX(Math.PI / 2),
     materials.concrete
   );
-  pondRim.position.set(-68, 0.32, 0);
+  pondRim.position.set(-72, 0.32, -32);
   group.add(pondRim);
 
   // Central Tiered Water Fountain
-  const fountainBase = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.8, 1.2, 16), materials.concrete);
-  fountainBase.position.set(-68, 0.8, 0);
+  const fountainBase = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.4, 1.2, 16), materials.concrete);
+  fountainBase.position.set(-72, 0.8, -32);
   group.add(fountainBase);
 
   const waterSprayMat = new THREE.MeshStandardMaterial({
@@ -422,27 +422,27 @@ export function createEnvironment(
     opacity: 0.7,
   });
   const fountainSpray = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.8, 3.8, 12), waterSprayMat);
-  fountainSpray.position.set(-68, 2.7, 0);
+  fountainSpray.position.set(-72, 2.7, -32);
   group.add(fountainSpray);
 
-  // Romantic Arched Footbridge over North Pond Arm
-  const footbridgeGeo = new THREE.BoxGeometry(3.6, 0.35, 11);
+  // Romantic Arched Footbridge over Pond Arm
+  const footbridgeGeo = new THREE.BoxGeometry(3.2, 0.35, 9);
   const footbridge = new THREE.Mesh(footbridgeGeo, materials.concrete);
-  footbridge.position.set(-68, 0.65, 8);
+  footbridge.position.set(-72, 0.65, -24);
   footbridge.castShadow = true;
   group.add(footbridge);
 
-  const bridgeHandrailL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 11), materials.metalDark);
-  bridgeHandrailL.position.set(-68 - 1.7, 1.1, 8);
+  const bridgeHandrailL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 9), materials.metalDark);
+  bridgeHandrailL.position.set(-72 - 1.5, 1.1, -24);
   group.add(bridgeHandrailL);
 
-  const bridgeHandrailR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 11), materials.metalDark);
-  bridgeHandrailR.position.set(-68 + 1.7, 1.1, 8);
+  const bridgeHandrailR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 9), materials.metalDark);
+  bridgeHandrailR.position.set(-72 + 1.5, 1.1, -24);
   group.add(bridgeHandrailR);
 
-  // Tech Arboretum Park (East Bank)
-  const techPark = new THREE.Mesh(new THREE.BoxGeometry(40, 0.25, 55), parkGrassMat);
-  techPark.position.set(68, 0.12, -80);
+  // Tech Arboretum Park (Cleanly inside East Waterfront Block X ∈ [55.5, 88.5], Z ∈ [100.5, 149.5])
+  const techPark = new THREE.Mesh(new THREE.BoxGeometry(30, 0.25, 44), parkGrassMat);
+  techPark.position.set(72, 0.12, 125);
   techPark.receiveShadow = true;
   group.add(techPark);
 
@@ -467,27 +467,35 @@ export function createEnvironment(
   let cIdx = 0;
   let sIdx = 0;
 
-  for (let x = -86; x <= -50; x += 9) {
-    for (let z = -40; z <= 40; z += 12) {
-      if (Math.hypot(x - -68, z) > 9.5 && tIdx < treeCount) {
-        dummy.position.set(x, 2.25, z);
-        dummy.rotation.set(0, Math.random() * Math.PI, 0);
-        dummy.updateMatrix();
-        instancedTrunks.setMatrixAt(tIdx, dummy.matrix);
+  // Trees around Central Park (-72, -46) and Tech Arboretum Park (72, 125)
+  const parkTreeZones = [
+    { xMin: -84, xMax: -60, zMin: -72, zMax: -18, avoidX: -72, avoidZ: -32, avoidR: 9.0 },
+    { xMin: 60, xMax: 84, zMin: 106, zMax: 144, avoidX: 72, avoidZ: 125, avoidR: 5.0 },
+  ];
 
-        dummy.position.set(x, 4.6, z);
-        const sc = 0.8 + Math.random() * 0.4;
-        dummy.scale.set(sc, sc, sc);
-        dummy.updateMatrix();
+  for (const zone of parkTreeZones) {
+    for (let x = zone.xMin; x <= zone.xMax; x += 8) {
+      for (let z = zone.zMin; z <= zone.zMax; z += 11) {
+        if (Math.hypot(x - zone.avoidX, z - zone.avoidZ) > zone.avoidR && Math.abs(z - -56) > 8 && tIdx < treeCount) {
+          dummy.position.set(x, 2.25, z);
+          dummy.rotation.set(0, Math.random() * Math.PI, 0);
+          dummy.updateMatrix();
+          instancedTrunks.setMatrixAt(tIdx, dummy.matrix);
 
-        if (tIdx % 3 === 0 && gIdx < 24) {
-          instancedCanopyGreen.setMatrixAt(gIdx++, dummy.matrix);
-        } else if (tIdx % 3 === 1 && cIdx < 24) {
-          instancedCanopyCyan.setMatrixAt(cIdx++, dummy.matrix);
-        } else if (sIdx < 24) {
-          instancedCanopySakura.setMatrixAt(sIdx++, dummy.matrix);
+          dummy.position.set(x, 4.6, z);
+          const sc = 0.8 + Math.random() * 0.4;
+          dummy.scale.set(sc, sc, sc);
+          dummy.updateMatrix();
+
+          if (tIdx % 3 === 0 && gIdx < 24) {
+            instancedCanopyGreen.setMatrixAt(gIdx++, dummy.matrix);
+          } else if (tIdx % 3 === 1 && cIdx < 24) {
+            instancedCanopyCyan.setMatrixAt(cIdx++, dummy.matrix);
+          } else if (sIdx < 24) {
+            instancedCanopySakura.setMatrixAt(sIdx++, dummy.matrix);
+          }
+          tIdx++;
         }
-        tIdx++;
       }
     }
   }

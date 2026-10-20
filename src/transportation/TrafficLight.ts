@@ -16,8 +16,9 @@ export interface TrafficLightMeshRef {
 export class TrafficLight {
   public id: string;
   public position: THREE.Vector3;
-  public greenDuration = 8.0;
-  public yellowDuration = 2.2;
+  public greenDuration = 9.0;
+  public yellowDuration = 2.4;
+  public allRedClearance = 1.2; // All-red safety interval so turning traffic clears the intersection box
   public totalCycle: number;
   public phaseOffset: number;
   private currentTime = 0;
@@ -30,20 +31,20 @@ export class TrafficLight {
   public overrideAxis: 'NS' | 'EW' | null = null;
   public overrideTimer = 0;
 
-  // Materials
-  private redActiveMat = new THREE.MeshBasicMaterial({ color: 0xff2244 });
-  private redDimMat = new THREE.MeshBasicMaterial({ color: 0x440810 });
-  private yellowActiveMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
-  private yellowDimMat = new THREE.MeshBasicMaterial({ color: 0x442800 });
-  private greenActiveMat = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
-  private greenDimMat = new THREE.MeshBasicMaterial({ color: 0x003318 });
+  // High-visibility LED signal materials
+  private redActiveMat = new THREE.MeshBasicMaterial({ color: 0xff1e38 });
+  private redDimMat = new THREE.MeshBasicMaterial({ color: 0x2a070c });
+  private yellowActiveMat = new THREE.MeshBasicMaterial({ color: 0xffb700 });
+  private yellowDimMat = new THREE.MeshBasicMaterial({ color: 0x2b1d00 });
+  private greenActiveMat = new THREE.MeshBasicMaterial({ color: 0x00ff66 });
+  private greenDimMat = new THREE.MeshBasicMaterial({ color: 0x042914 });
 
   constructor(id: string, position: THREE.Vector3, phaseOffset = 0) {
     this.id = id;
     this.position = position;
     this.phaseOffset = phaseOffset;
-    this.totalCycle = (this.greenDuration + this.yellowDuration) * 2;
-    this.currentTime = phaseOffset;
+    this.totalCycle = (this.greenDuration + this.yellowDuration + this.allRedClearance) * 2;
+    this.currentTime = phaseOffset % this.totalCycle;
   }
 
   public registerMeshRef(direction: 'NS' | 'EW', ref: TrafficLightMeshRef) {
@@ -69,6 +70,7 @@ export class TrafficLight {
         this.overrideTimer = 0;
       }
     }
+    this.totalCycle = (this.greenDuration + this.yellowDuration + this.allRedClearance) * 2;
     this.currentTime = (this.currentTime + delta) % this.totalCycle;
     this.updateVisuals();
   }
@@ -78,24 +80,26 @@ export class TrafficLight {
       return this.overrideAxis === axis ? 'GREEN' : 'RED';
     }
 
-    const halfCycle = this.greenDuration + this.yellowDuration;
+    const halfCycle = this.greenDuration + this.yellowDuration + this.allRedClearance;
 
     if (axis === 'NS') {
       if (this.currentTime < this.greenDuration) {
         return 'GREEN';
-      } else if (this.currentTime < halfCycle) {
+      } else if (this.currentTime < this.greenDuration + this.yellowDuration) {
         return 'YELLOW';
       } else {
         return 'RED';
       }
     } else {
-      // EW is opposite
+      // EW phase runs in the second half of the cycle after NS all-red clearance
       if (this.currentTime < halfCycle) {
         return 'RED';
       } else if (this.currentTime < halfCycle + this.greenDuration) {
         return 'GREEN';
-      } else {
+      } else if (this.currentTime < halfCycle + this.greenDuration + this.yellowDuration) {
         return 'YELLOW';
+      } else {
+        return 'RED';
       }
     }
   }
@@ -116,17 +120,19 @@ export class TrafficLight {
     const nsState = this.getStateForAxis('NS');
     const ewState = this.getStateForAxis('EW');
 
-    this.nsLamps.forEach((lamp) => {
+    for (let i = 0; i < this.nsLamps.length; i++) {
+      const lamp = this.nsLamps[i];
       lamp.redLamp.material = nsState === 'RED' ? this.redActiveMat : this.redDimMat;
       lamp.yellowLamp.material = nsState === 'YELLOW' ? this.yellowActiveMat : this.yellowDimMat;
       lamp.greenLamp.material = nsState === 'GREEN' ? this.greenActiveMat : this.greenDimMat;
-    });
+    }
 
-    this.ewLamps.forEach((lamp) => {
+    for (let i = 0; i < this.ewLamps.length; i++) {
+      const lamp = this.ewLamps[i];
       lamp.redLamp.material = ewState === 'RED' ? this.redActiveMat : this.redDimMat;
       lamp.yellowLamp.material = ewState === 'YELLOW' ? this.yellowActiveMat : this.yellowDimMat;
       lamp.greenLamp.material = ewState === 'GREEN' ? this.greenActiveMat : this.greenDimMat;
-    });
+    }
   }
 
   public dispose() {

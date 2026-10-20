@@ -43,7 +43,7 @@ export class CityPhysicsEngine {
   ];
 
   constructor() {
-    this.initStaticCityBlockColliders();
+    // Colliders are initialized via registerBuildingsList and initStaticCityBlockColliders
   }
 
   private getCellKey(cx: number, cz: number): string {
@@ -132,32 +132,37 @@ export class CityPhysicsEngine {
 
   /**
    * Registers all instanced city-block skyscrapers using the exact deterministic
-   * coordinates and dimensions from BuildingsManager.ts.
+   * coordinates, dimensions, and landmark exclusion zones from BuildingsManager.ts.
    */
-  private initStaticCityBlockColliders() {
-    const xSectors = [-250, -210, -170, -130, -90, -50, 50, 90, 130, 170, 210, 250];
-    const zSectors = [-250, -200, -150, -100, -50, 50, 100, 150, 200, 250];
+  public initStaticCityBlockColliders(registeredLandmarks: BuildingData[] = []) {
+    const xSectors = [-272, -210, -154, -126, -72, 72, 126, 154, 210, 272];
+    const zSectors = [-285, -188, -125, -58, -28, 28, 58, 125, 190, 240, 285];
 
     for (const bx of xSectors) {
       for (const bz of zSectors) {
-        if (Math.abs(bx) < 35) continue; // river
-        if (Math.abs(bx - 140) < 32 && Math.abs(bz - -80) < 32) continue; // Mohit Developer Hub
-        if (Math.abs(bx - -68) < 32 && Math.abs(bz) < 55) continue; // Central Park
-        if (Math.abs(bx - -160) < 36 && Math.abs(bz - 160) < 36) continue; // Healthcare
-        if (Math.abs(bx - -170) < 36 && Math.abs(bz - -170) < 36) continue; // Education
-        if (Math.abs(bz - -220) < 40) continue; // Railway corridor
-        if (bx > 90 && bz < -240) continue; // Airport runway & tarmac zone
-        if (Math.abs(bx - -165) < 30 && Math.abs(bz - 75) < 30) continue; // Singapore MBS
-        if (Math.abs(bx - -205) < 30 && Math.abs(bz - 110) < 30) continue; // Singapore Gardens by the Bay
-        if (Math.abs(bx - -45) < 25 && Math.abs(bz - -125) < 25) continue; // Paris Eiffel Tower
-        if (Math.abs(bx - -85) < 25 && Math.abs(bz - -165) < 25) continue; // Paris Arc de Triomphe
-        if (Math.abs(bx - 65) < 25 && Math.abs(bz - -85) < 25) continue; // America Empire State Building
-        if (Math.abs(bx - 115) < 25 && Math.abs(bz - -45) < 25) continue; // America One World Trade Center
+        if (Math.abs(bx) < 56) continue; // river & waterfront avenues
+        if (Math.abs(bz - -220) < 28) continue; // railway corridor
+        if (bx > 20 && bz < -260) continue; // airport tarmac & runway zone
+        if (Math.abs(bx - -72) < 20 && bz >= -78 && bz <= -14) continue; // Central Riverside Emerald Park
+        if (Math.abs(bx - 72) < 20 && bz >= 102 && bz <= 148) continue; // Tech Arboretum Park
+        if (Math.abs(bx - -140) < 34 && Math.abs(bz - -188) < 22) continue; // West Bank Railway Terminal
+        if (Math.abs(bx - 140) < 24 && Math.abs(bz - -188) < 22) continue; // East Bank Railway Control Tower
+        if (Math.abs(bx - -210) < 18 && Math.abs(bz - -18) < 18) continue; // West EV Parking Lot
+        if (Math.abs(bx - 210) < 18 && Math.abs(bz - 18) < 18) continue; // East EV Parking Lot
+        if (Math.abs(bx - -272) < 20 && (Math.abs(bz - 125) < 20 || Math.abs(bz - 190) < 20)) continue; // Medical Helipad & Ambulance Bays
+
+        const overlapsLandmark = registeredLandmarks.some((b) => {
+          const bw = (b.dimensions[0] || 24) * 0.5 + 13;
+          const bd = (b.dimensions[2] || 24) * 0.5 + 13;
+          return Math.abs(bx - b.position[0]) < bw && Math.abs(bz - b.position[2]) < bd;
+        });
+        if (overlapsLandmark) continue;
 
         const hNoise = Math.sin(bx * 0.05 + bz * 0.07) * 0.5 + 0.5;
         const totalH = 26 + hNoise * 76;
-        const w = 14 + (Math.cos(bx * 0.1) * 0.5 + 0.5) * 8;
-        const d = 14 + (Math.sin(bz * 0.1) * 0.5 + 0.5) * 8;
+        const maxBlockDepth = Math.abs(bz - 240) < 5 ? 12 : 20;
+        const w = 14 + (Math.cos(bx * 0.1) * 0.5 + 0.5) * 6;
+        const d = Math.min(maxBlockDepth, 14 + (Math.sin(bz * 0.1) * 0.5 + 0.5) * 6);
 
         // Register solid podium + tower footprint
         this.registerBoxCollider(
@@ -200,19 +205,20 @@ export class CityPhysicsEngine {
       }
     }
 
-    // 2. Central Riverside Park & East Tech Park elevated terraces
-    if (x >= -92 && x <= -44 && z >= -48 && z <= 48) {
+    // 2. Central Riverside Park & East Tech Arboretum Park elevated terraces
+    if (x >= -87 && x <= -57 && z >= -77 && z <= -15) {
       return 0.26;
     }
-    if (x >= 48 && x <= 88 && z >= -108 && z <= -52) {
+    if (x >= 58 && x <= 86 && z >= 102 && z <= 148) {
       return 0.26;
     }
 
-    // 3. Raised sidewalks/plazas around building blocks vs asphalt road corridors
-    // Road corridors run every ~40-50m; building plots sit on +0.18m sidewalk slabs
-    const nearRoadZ = Math.abs(z) < 12 || Math.abs(Math.abs(z) - 75) < 8 || Math.abs(Math.abs(z) - 125) < 8;
-    const nearRoadX = Math.abs(Math.abs(x) - 35) < 7 || Math.abs(Math.abs(x) - 110) < 6;
-    if (!nearRoadZ && !nearRoadX) {
+    // 3. Raised sidewalks/plazas around building blocks (+0.18m) vs asphalt road lanes (0.0m)
+    const nsRoads = [-240, -180, -100, -45, 45, 100, 180, 240];
+    const ewRoads = [-260, -160, -90, 0, 90, 160, 220, 260];
+    const onAsphaltX = nsRoads.some((rx) => Math.abs(x - rx) < 7.0);
+    const onAsphaltZ = ewRoads.some((rz) => Math.abs(z - rz) < (rz === 0 ? 9.0 : 7.0));
+    if (!onAsphaltX && !onAsphaltZ) {
       return 0.18;
     }
 

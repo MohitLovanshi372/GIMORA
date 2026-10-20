@@ -103,17 +103,17 @@ export function createRoadsAndDetails(
   };
 
   // 2. PRIMARY ROAD NETWORK
-  // West Bank North-South Avenues
-  createRoadStrip(-240, 0, 680, 14);
-  createRoadStrip(-180, 0, 680, 14);
-  createRoadStrip(-100, 0, 680, 16);
-  createRoadStrip(-45, 0, 680, 14);
+  // West Bank North-South Avenues (Spanning Z: -270 to +310)
+  createRoadStrip(-240, 20, 580, 14);
+  createRoadStrip(-180, 20, 580, 14);
+  createRoadStrip(-100, 20, 580, 16);
+  createRoadStrip(-45, 20, 580, 14);
 
-  // East Bank North-South Avenues
-  createRoadStrip(45, 0, 680, 14);
-  createRoadStrip(100, 0, 680, 16);
-  createRoadStrip(180, 0, 680, 14);
-  createRoadStrip(240, 0, 680, 14);
+  // East Bank North-South Avenues (Spanning Z: -265 to +310, terminating cleanly at Airport Perimeter Highway Z=-260)
+  createRoadStrip(45, 22, 575, 14);
+  createRoadStrip(100, 22, 575, 16);
+  createRoadStrip(180, 22, 575, 14);
+  createRoadStrip(240, 22, 575, 14);
 
   // Connecting East-West Streets
   [-260, -220, -160, -90, 0, 90, 160, 220, 260].forEach((zPos) => {
@@ -467,21 +467,35 @@ export function createRoadsAndDetails(
 
   // 4. CROSSWALKS AT MAJOR INTERSECTIONS
   const intersectionPoints = [
-    [-100, -160], [-100, 0], [-100, 160],
-    [100, -160], [100, 0], [100, 160],
-    [-180, 0], [180, 0]
+    [-180, -160], [-180, -90], [-180, 0], [-180, 90], [-180, 160],
+    [-100, -160], [-100, -90], [-100, 0], [-100, 90], [-100, 160],
+    [-45, -160], [-45, 0], [-45, 160],
+    [45, -160], [45, 0], [45, 160],
+    [100, -160], [100, -90], [100, 0], [100, 90], [100, 160],
+    [180, -160], [180, -90], [180, 0], [180, 90], [180, 160],
   ];
 
-  const crosswalkStripeGeo = new THREE.PlaneGeometry(0.8, 4.2);
+  const crosswalkStripeGeo = new THREE.PlaneGeometry(0.8, 3.8);
   crosswalkStripeGeo.rotateX(-Math.PI / 2);
   const crosswalkMat = new THREE.MeshBasicMaterial({ color: 0xe2e8f0 });
+
+  // Road Directional Approach Arrows
+  const arrowStraightTex = createRoadArrowTexture('straight');
+  const arrowStraightMat = new THREE.MeshBasicMaterial({
+    map: arrowStraightTex,
+    transparent: true,
+    opacity: 0.75,
+    depthWrite: false,
+  });
+  const arrowGeo = new THREE.PlaneGeometry(1.8, 3.6);
+  arrowGeo.rotateX(-Math.PI / 2);
 
   intersectionPoints.forEach(([ix, iz]) => {
     const cwGroup = new THREE.Group();
     cwGroup.position.set(ix, 0.04, iz);
 
     // 4 Crosswalks (North, South, East, West around the intersection box)
-    [-10, 10].forEach((distZ) => {
+    [-10.5, 10.5].forEach((distZ) => {
       for (let s = -5; s <= 5; s += 1.8) {
         const stripe = new THREE.Mesh(crosswalkStripeGeo, crosswalkMat);
         stripe.position.set(s, 0, distZ);
@@ -489,7 +503,7 @@ export function createRoadsAndDetails(
       }
     });
 
-    [-10, 10].forEach((distX) => {
+    [-10.5, 10.5].forEach((distX) => {
       for (let s = -5; s <= 5; s += 1.8) {
         const stripe = new THREE.Mesh(crosswalkStripeGeo, crosswalkMat);
         stripe.position.set(distX, 0, s);
@@ -497,17 +511,6 @@ export function createRoadsAndDetails(
         cwGroup.add(stripe);
       }
     });
-
-    // Road Directional Approach Arrows
-    const arrowStraightTex = createRoadArrowTexture('straight');
-    const arrowStraightMat = new THREE.MeshBasicMaterial({
-      map: arrowStraightTex,
-      transparent: true,
-      opacity: 0.75,
-      depthWrite: false,
-    });
-    const arrowGeo = new THREE.PlaneGeometry(1.8, 3.6);
-    arrowGeo.rotateX(-Math.PI / 2);
 
     [-22, 22].forEach((offsetZ) => {
       const arrow = new THREE.Mesh(arrowGeo, arrowStraightMat);
@@ -525,45 +528,14 @@ export function createRoadsAndDetails(
     group.add(cwGroup);
   });
 
-  // 5. TRAFFIC LIGHT GANTRIES
-  const gantryPostGeo = new THREE.CylinderGeometry(0.2, 0.25, 8.5, 8);
-  const gantryArmGeo = new THREE.BoxGeometry(14, 0.35, 0.35);
-  const signalBoxGeo = new THREE.BoxGeometry(0.8, 1.8, 0.6);
-  const signalLampGeo = new THREE.SphereGeometry(0.2, 8, 8);
-
-  intersectionPoints.forEach(([gx, gz], idx) => {
-    const gantry = new THREE.Group();
-    gantry.position.set(gx, 0, gz);
-
-    const post = new THREE.Mesh(gantryPostGeo, materials.metalLight);
-    post.position.set(7.5, 4.25, 0);
-    gantry.add(post);
-
-    const arm = new THREE.Mesh(gantryArmGeo, materials.metalLight);
-    arm.position.set(0, 8.0, 0);
-    gantry.add(arm);
-
-    [-3, 3].forEach((headX) => {
-      const box = new THREE.Mesh(signalBoxGeo, materials.metalDark);
-      box.position.set(headX, 6.8, 0);
-      gantry.add(box);
-
-      const lamp = new THREE.Mesh(signalLampGeo, idx % 2 === 0 ? materials.neonEmerald : materials.neonRed);
-      lamp.position.set(headX, 6.8, 0.35);
-      gantry.add(lamp);
-    });
-
-    group.add(gantry);
-  });
-
-  // 6. STREET SIGNS AT CORNERS (Standard Municipal Green Signage)
+  // 6. STREET SIGNS AT SIDEWALK CORNERS (Standard Municipal Green Signage)
   const streetSignConfigs = [
-    { text: 'METROPOLITAN BLVD', x: -100, z: -172 },
-    { text: 'RIVERSIDE DRIVE', x: -100, z: 12 },
-    { text: 'UNIVERSITY AVENUE', x: 100, z: -172 },
-    { text: 'INNOVATION PARKWAY', x: 100, z: 12 },
-    { text: 'HARBOR PARKWAY', x: -45, z: 12 },
-    { text: 'ACADEMY DRIVE', x: -180, z: -172 },
+    { text: 'METROPOLITAN BLVD', x: -110, z: -171 },
+    { text: 'RIVERSIDE DRIVE', x: -110, z: 12 },
+    { text: 'UNIVERSITY AVENUE', x: 110, z: -171 },
+    { text: 'INNOVATION PARKWAY', x: 110, z: 12 },
+    { text: 'HARBOR PARKWAY', x: -54, z: 12 },
+    { text: 'ACADEMY DRIVE', x: -189, z: -171 },
   ];
 
   streetSignConfigs.forEach((cfg) => {
@@ -599,10 +571,10 @@ export function createRoadsAndDetails(
     group.add(signGroup);
   });
 
-  // 7. CYBER BUS STOPS
+  // 7. CYBER BUS STOPS (On Outer Sidewalk Edges)
   const busStopLocations = [
-    [-92, -60], [-92, 60],
-    [92, -60], [92, 60],
+    [-90, -58], [-90, 58],
+    [90, -58], [90, 58],
   ];
 
   busStopLocations.forEach(([bx, bz]) => {
@@ -634,10 +606,10 @@ export function createRoadsAndDetails(
     group.add(shelterGroup);
   });
 
-  // 8. PARKING LOTS WITH CHARGING PYLONS
+  // 8. PARKING LOTS WITH CHARGING PYLONS (Inside Block Plots Clear of Streets)
   const parkingLocations = [
-    { x: -140, z: -90, w: 28, d: 24 },
-    { x: 140, z: 90, w: 28, d: 24 },
+    { x: -210, z: -18, w: 22, d: 14 },
+    { x: 210, z: 18, w: 22, d: 14 },
   ];
 
   parkingLocations.forEach((pkg) => {
@@ -821,10 +793,6 @@ export function createRoadsAndDetails(
     edgeGeo.dispose();
     crosswalkStripeGeo.dispose();
     crosswalkMat.dispose();
-    gantryPostGeo.dispose();
-    gantryArmGeo.dispose();
-    signalBoxGeo.dispose();
-    signalLampGeo.dispose();
     poleGeo.dispose();
     headGeo.dispose();
     headGlowGeo.dispose();

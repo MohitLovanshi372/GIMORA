@@ -307,6 +307,7 @@ export class CityScene {
     this.physicsEngine.registerBuildingsList(this.railwayDistrict.buildingsData);
     this.physicsEngine.registerBuildingsList(this.riverDistrict.buildingsData);
     this.physicsEngine.registerBuildingsList(this.airportDistrict.buildingsData);
+    this.physicsEngine.initStaticCityBlockColliders(this.buildingsManager.allBuildingsData);
 
     this.cameraController.setPhysicsEngine(this.physicsEngine);
     this.trafficManager.setPhysicsEngine(this.physicsEngine);
@@ -332,8 +333,8 @@ export class CityScene {
       transitWaypoints: this.railwayDistrict.trackWaypoints.flat(),
       pedestrianWaypoints: [],
       landmarkArea: {
-        center: [140, 0, -80],
-        bounds: [42, 42],
+        center: [145, 0, -46],
+        bounds: [40, 40],
       },
     });
 
@@ -362,6 +363,19 @@ export class CityScene {
     }
   };
 
+  private mapBuildingToInteriorType(building: BuildingData): InteriorBuildingType {
+    const id = building.id.toLowerCase();
+    const cat = building.category.toLowerCase();
+    if (id === 'mohit-developer-hub-hq' || building.districtId === 'technology') return 'mohit-hub';
+    if (id.includes('hospital') || id.includes('emergency') || id.includes('pharm') || building.districtId === 'healthcare') return 'hospital';
+    if (id.includes('university') || id.includes('college') || id.includes('school') || id.includes('library') || building.districtId === 'education') return 'university';
+    if (id.includes('mall') || id.includes('galleria') || id.includes('megaplex')) return 'mall';
+    if (id.includes('airport') || id.includes('skyport')) return 'airport';
+    if (id.includes('rail') || cat.includes('transit')) return 'railway';
+    if (id.includes('cultural') || id.includes('hall') || id.includes('civic')) return 'city-hall';
+    return 'corporate-office';
+  }
+
   private onPointerClick = (event: MouseEvent) => {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -372,13 +386,20 @@ export class CityScene {
 
     if (intersects.length > 0) {
       let hitObj: THREE.Object3D | null = intersects[0].object;
+      let clickedEntryGate = Boolean(hitObj?.userData?.isEntryGate);
       while (hitObj && !hitObj.userData.buildingData && hitObj.parent) {
+        if (hitObj.userData?.isEntryGate) clickedEntryGate = true;
         hitObj = hitObj.parent;
       }
 
       if (hitObj && hitObj.userData.buildingData) {
+        if (hitObj.userData?.isEntryGate) clickedEntryGate = true;
         const buildingData = hitObj.userData.buildingData as BuildingData;
         this.selectBuilding(hitObj, buildingData);
+        if (clickedEntryGate) {
+          this.focusBuildingEntryGate(buildingData);
+          this.callbacks.onInteractBuilding?.(this.mapBuildingToInteriorType(buildingData));
+        }
         return;
       }
     }
@@ -427,6 +448,27 @@ export class CityScene {
     this.cameraController.flyTo(targetPos, cameraPos, 1.4);
   }
 
+  /**
+   * Flies the 3D camera directly to street level in front of a building's 3D Entry Gate
+   * so the user can look straight through the open sliding doors into the 3D ground-floor room.
+   */
+  public focusBuildingEntryGate(building: BuildingData) {
+    const [bx, , bz] = building.position;
+    const d = building.dimensions[2] || 22;
+    const isMohitHub = building.id === 'mohit-developer-hub-hq';
+
+    const targetPos = isMohitHub
+      ? new THREE.Vector3(bx, 5.8, bz)
+      : new THREE.Vector3(bx, 2.5, bz + d / 2 - 1);
+
+    const cameraPos = isMohitHub
+      ? new THREE.Vector3(bx - 22, 8.2, bz + 16)
+      : new THREE.Vector3(bx + 2, 3.6, bz + d / 2 + 16);
+
+    this.cameraController.setMode('orbit');
+    this.cameraController.flyTo(targetPos, cameraPos, 1.2);
+  }
+
   public focusDistrict(districtId: DistrictId) {
     const info = DISTRICT_REGISTRY[districtId];
     if (info) {
@@ -459,8 +501,8 @@ export class CityScene {
     } else {
       // Downtown Dubai skyline focus
       this.cameraController.flyTo(
-        new THREE.Vector3(-105, 60, -45),
-        new THREE.Vector3(-45, 95, 75),
+        new THREE.Vector3(-132, 60, -52),
+        new THREE.Vector3(-60, 95, 45),
         1.5
       );
     }
@@ -478,8 +520,8 @@ export class CityScene {
       if (mesh) this.selectBuilding(mesh, mbs);
     } else {
       this.cameraController.flyTo(
-        new THREE.Vector3(-185, 90, 160),
-        new THREE.Vector3(-180, 50, 90),
+        new THREE.Vector3(-140, 65, 125),
+        new THREE.Vector3(-90, 95, 195),
         1.6
       );
     }
@@ -497,8 +539,8 @@ export class CityScene {
       if (mesh) this.selectBuilding(mesh, eiffel);
     } else {
       this.cameraController.flyTo(
-        new THREE.Vector3(-45, 90, -45),
-        new THREE.Vector3(-45, 65, -125),
+        new THREE.Vector3(-72, 65, -125),
+        new THREE.Vector3(-35, 95, -55),
         1.6
       );
     }
@@ -516,8 +558,8 @@ export class CityScene {
       if (mesh) this.selectBuilding(mesh, esb);
     } else {
       this.cameraController.flyTo(
-        new THREE.Vector3(75, 120, 25),
-        new THREE.Vector3(65, 80, -85),
+        new THREE.Vector3(72, 80, -60),
+        new THREE.Vector3(35, 125, 10),
         1.6
       );
     }
@@ -530,8 +572,8 @@ export class CityScene {
       this.selectBuilding(terminal, terminal.userData.buildingData);
     } else {
       this.cameraController.flyTo(
-        new THREE.Vector3(120, 65, -210),
-        new THREE.Vector3(180, 15, -290),
+        new THREE.Vector3(120, 65, -255),
+        new THREE.Vector3(180, 15, -335),
         1.6
       );
     }
@@ -544,8 +586,8 @@ export class CityScene {
       this.selectBuilding(terminal, terminal.userData.buildingData);
     } else {
       this.cameraController.flyTo(
-        new THREE.Vector3(0, 55, -135),
-        new THREE.Vector3(0, 15, -220),
+        new THREE.Vector3(-140, 55, -135),
+        new THREE.Vector3(-140, 15, -190),
         1.6
       );
     }
@@ -591,9 +633,12 @@ export class CityScene {
     return this.agentManager.getSnapshot();
   }
 
-  public flyToLocation(target: THREE.Vector3, duration = 1.4) {
-    const camPos = new THREE.Vector3(target.x - 45, target.y + 40, target.z + 45);
-    this.cameraController.flyTo(target, camPos, duration);
+  public flyToLocation(target: THREE.Vector3, duration = 1.25) {
+    this.cinematicTourManager.stopTour();
+    this.cameraController.setMode('orbit');
+    const lookTarget = new THREE.Vector3(target.x, Math.max(2.5, target.y + 2.0), target.z);
+    const camPos = new THREE.Vector3(target.x - 26, Math.max(18, target.y + 20), target.z + 26);
+    this.cameraController.flyTo(lookTarget, camPos, duration);
   }
 
   public startFlyoverTour() {
@@ -630,7 +675,7 @@ export class CityScene {
 
     let heading = 0;
     if (this.cameraController.mode === 'third-person') {
-      heading = this.playerSystem.rotationY;
+      heading = (this.playerSystem as any).rotationY ?? 0;
     } else {
       const dir = new THREE.Vector3();
       this.cameraController.camera.getWorldDirection(dir);

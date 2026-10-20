@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { BuildingData } from '../city/types';
 import { CityMaterials } from '../assets/materials';
 import { createProceduralWindowTexture } from '../assets/textures';
+import { createBuildingEntryGateAndRoom } from './BuildingEntryRoom';
 
 export interface EducationDistrictSystem {
   group: THREE.Group;
@@ -26,9 +27,10 @@ export function createEducationDistrict(
   const buildingsData: BuildingData[] = [];
   const interactiveMeshes: THREE.Object3D[] = [];
 
-  const eduWinTex = createProceduralWindowTexture('#a855f7', 8, 24);
-  const engWinTex = createProceduralWindowTexture('#3b82f6', 8, 24);
-  const labWinTex = createProceduralWindowTexture('#00ffcc', 8, 16);
+  const eduWinTex = createProceduralWindowTexture('#a8a29e', 8, 24, 'limestone-retail');
+  const engWinTex = createProceduralWindowTexture('#0f2942', 8, 24, 'diagrid-steel');
+  const labWinTex = createProceduralWindowTexture('#064e3b', 8, 16, 'emerald-curtain');
+  const hostelWinTex = createProceduralWindowTexture('#7c2d12', 8, 24, 'modern-residential');
 
   // 1. NEO-METROPOLIS UNIVERSITY MAIN HALL
   const uniData: BuildingData = {
@@ -39,8 +41,8 @@ export function createEducationDistrict(
     category: 'University',
     height: 88,
     floors: 26,
-    position: [-160, 0, -140],
-    dimensions: [32, 88, 28],
+    position: [-152, 0, -125],
+    dimensions: [28, 88, 26],
     powerUsage: '7.8 MW (Solar Shielded)',
     occupancy: '96% (12,800 Students & Academics)',
     networkStatus: 'Universal Knowledge Uplink Active',
@@ -50,7 +52,7 @@ export function createEducationDistrict(
   buildingsData.push(uniData);
 
   const uniGroup = new THREE.Group();
-  uniGroup.position.set(-160, 0, -140);
+  uniGroup.position.set(-152, 0, -125);
 
   // Base Quadrangle
   const uniBaseMat = new THREE.MeshStandardMaterial({
@@ -65,7 +67,7 @@ export function createEducationDistrict(
     envMapIntensity: 1.4,
   });
   uniBaseMat.userData = { isWindowMaterial: true, district: 'education', baseColor: 0x3b82f6 };
-  const uniBase = new THREE.Mesh(new THREE.BoxGeometry(32, 40, 28), uniBaseMat);
+  const uniBase = new THREE.Mesh(new THREE.BoxGeometry(28, 40, 26), uniBaseMat);
   uniBase.position.y = 20;
   uniBase.castShadow = true;
   uniGroup.add(uniBase);
@@ -101,6 +103,20 @@ export function createEducationDistrict(
   clockBeacon.position.y = 112;
   uniGroup.add(clockBeacon);
 
+  const uniEntryGate = createBuildingEntryGateAndRoom(
+    {
+      title: uniData.name,
+      theme: 'university',
+      roomWidth: 12.5,
+      roomHeight: 4.8,
+      roomDepth: 7.5,
+      buildingData: uniData,
+    },
+    interactiveMeshes
+  );
+  uniEntryGate.position.set(0, 0, 13.5);
+  uniGroup.add(uniEntryGate);
+
   uniBase.userData = { buildingData: uniData };
   interactiveMeshes.push(uniBase);
   group.add(uniGroup);
@@ -114,8 +130,8 @@ export function createEducationDistrict(
     category: 'Engineering College',
     height: 78,
     floors: 22,
-    position: [-200, 0, -180],
-    dimensions: [26, 78, 24],
+    position: [-210, 0, -125],
+    dimensions: [24, 78, 22],
     powerUsage: '14.5 MW (Robotics Fabricators)',
     occupancy: '94% (6,400 Engineers)',
     networkStatus: 'Direct SCADA & Simulation Mesh',
@@ -125,7 +141,7 @@ export function createEducationDistrict(
   buildingsData.push(engData);
 
   const engGroup = new THREE.Group();
-  engGroup.position.set(-200, 0, -180);
+  engGroup.position.set(-210, 0, -125);
 
   // Main vertical shaft
   const engCoreMat = new THREE.MeshStandardMaterial({
@@ -162,6 +178,20 @@ export function createEducationDistrict(
   engEdges.position.set(4, 52, 0);
   engGroup.add(engEdges);
 
+  const engEntryGate = createBuildingEntryGateAndRoom(
+    {
+      title: engData.name,
+      theme: 'tech',
+      roomWidth: 11.0,
+      roomHeight: 4.6,
+      roomDepth: 7.0,
+      buildingData: engData,
+    },
+    interactiveMeshes
+  );
+  engEntryGate.position.set(0, 0, 9.5);
+  engGroup.add(engEntryGate);
+
   engCore.userData = { buildingData: engData };
   interactiveMeshes.push(engCore);
   group.add(engGroup);
@@ -175,8 +205,8 @@ export function createEducationDistrict(
     category: 'School',
     height: 44,
     floors: 10,
-    position: [-130, 0, -200],
-    dimensions: [36, 44, 22],
+    position: [-272, 0, -125],
+    dimensions: [28, 44, 22],
     powerUsage: '3.8 MW (Solar Roof)',
     occupancy: '98% (3,800 Students)',
     networkStatus: 'Safe Educational Sandbox 100%',
@@ -186,26 +216,47 @@ export function createEducationDistrict(
   buildingsData.push(schoolData);
 
   const schoolGroup = new THREE.Group();
-  schoolGroup.position.set(-130, 0, -200);
+  schoolGroup.position.set(-272, 0, -125);
 
-  const schoolMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(36, 44, 22),
-    new THREE.MeshStandardMaterial({ map: eduWinTex, roughness: 0.4, metalness: 0.6 })
+  // 3-Tier Stepped Terrace Academy with Solar Louver Overhangs & Rooftop Science Dome
+  const schoolMat = new THREE.MeshStandardMaterial({ map: eduWinTex, roughness: 0.42, metalness: 0.45 });
+  const schoolTier1 = new THREE.Mesh(new THREE.BoxGeometry(28, 18, 22), schoolMat);
+  schoolTier1.position.y = 9;
+  schoolTier1.castShadow = true;
+  schoolGroup.add(schoolTier1);
+
+  const schoolTier2 = new THREE.Mesh(new THREE.BoxGeometry(22, 14, 18), schoolMat);
+  schoolTier2.position.set(-2, 25, 0);
+  schoolTier2.castShadow = true;
+  schoolGroup.add(schoolTier2);
+
+  const schoolTier3 = new THREE.Mesh(new THREE.BoxGeometry(15, 12, 14), schoolMat);
+  schoolTier3.position.set(-4, 38, 0);
+  schoolTier3.castShadow = true;
+  schoolGroup.add(schoolTier3);
+
+  // Geodesic Botanical & Astronomy Dome on Tier 2 Terrace
+  const schoolDome = new THREE.Mesh(
+    new THREE.SphereGeometry(5.5, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+    materials.glassCyan
   );
-  schoolMesh.position.y = 22;
-  schoolMesh.castShadow = true;
-  schoolGroup.add(schoolMesh);
+  schoolDome.position.set(6, 18, 0);
+  schoolGroup.add(schoolDome);
 
-  // Terraced solar roof
-  const solarRoof = new THREE.Mesh(
-    new THREE.BoxGeometry(38, 1.2, 24),
-    materials.metalLight
-  );
-  solarRoof.position.y = 44.6;
-  schoolGroup.add(solarRoof);
+  // Terraced solar shading canopies
+  [18.2, 32.2, 44.2].forEach((sy, idx) => {
+    const sw = 30 - idx * 6;
+    const sd = 24 - idx * 4;
+    const solarRoof = new THREE.Mesh(
+      new THREE.BoxGeometry(sw, 0.8, sd),
+      materials.metalLight
+    );
+    solarRoof.position.set(-idx * 2, sy, 0);
+    schoolGroup.add(solarRoof);
+  });
 
-  schoolMesh.userData = { buildingData: schoolData };
-  interactiveMeshes.push(schoolMesh);
+  schoolTier1.userData = { buildingData: schoolData };
+  interactiveMeshes.push(schoolTier1);
   group.add(schoolGroup);
 
   // 4. METROPOLITAN UNIVERSITY LIBRARY
@@ -217,8 +268,8 @@ export function createEducationDistrict(
     category: 'Digital Library',
     height: 52,
     floors: 12,
-    position: [-170, 0, -220],
-    dimensions: [34, 52, 34],
+    position: [-272, 0, -188],
+    dimensions: [30, 52, 30],
     powerUsage: '8.2 MW',
     occupancy: '89% (5,200 Researchers & Visitors)',
     networkStatus: 'Campus High-Speed Fiber 100 Gbps',
@@ -228,7 +279,7 @@ export function createEducationDistrict(
   buildingsData.push(libData);
 
   const libGroup = new THREE.Group();
-  libGroup.position.set(-170, 0, -220);
+  libGroup.position.set(-272, 0, -188);
 
   // Hexagonal Podium
   const libPodium = new THREE.Mesh(
@@ -270,8 +321,8 @@ export function createEducationDistrict(
     category: 'Research Center',
     height: 96,
     floors: 30,
-    position: [-220, 0, -130],
-    dimensions: [28, 96, 24],
+    position: [-210, 0, -188],
+    dimensions: [24, 96, 20],
     powerUsage: '18.4 MW (Superconducting Coils)',
     occupancy: '91% (4,800 Scientists)',
     networkStatus: 'Synchrotron Grid Synchronized',
@@ -281,7 +332,7 @@ export function createEducationDistrict(
   buildingsData.push(resData);
 
   const resGroup = new THREE.Group();
-  resGroup.position.set(-220, 0, -130);
+  resGroup.position.set(-210, 0, -188);
 
   // Tower A & B
   const labMat = new THREE.MeshStandardMaterial({
@@ -332,8 +383,8 @@ export function createEducationDistrict(
     category: 'Student Hostel',
     height: 68,
     floors: 20,
-    position: [-120, 0, -150],
-    dimensions: [24, 68, 20],
+    position: [-124, 0, -125],
+    dimensions: [20, 68, 20],
     powerUsage: '5.2 MW',
     occupancy: '99% (4,100 Residents)',
     networkStatus: 'Campus Fiber Network 100%',
@@ -342,17 +393,30 @@ export function createEducationDistrict(
   };
   buildingsData.push(hostelData);
 
-  const hostelMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(24, 68, 20),
-    new THREE.MeshStandardMaterial({ map: eduWinTex, metalness: 0.6, roughness: 0.4 })
-  );
-  hostelMesh.position.set(-120, 34, -150);
+  const hostelGroup = new THREE.Group();
+  hostelGroup.position.set(-124, 0, -125);
+
+  const hostelMat = new THREE.MeshStandardMaterial({ map: hostelWinTex, metalness: 0.45, roughness: 0.55 });
+  const hostelMesh = new THREE.Mesh(new THREE.BoxGeometry(20, 68, 20), hostelMat);
+  hostelMesh.position.y = 34;
   hostelMesh.castShadow = true;
+  hostelGroup.add(hostelMesh);
+
+  // Staggered Projecting Student Balconies on Every 2nd Floor
+  for (let by = 8; by < 64; by += 6.5) {
+    const balc = new THREE.Mesh(
+      new THREE.BoxGeometry(21.6, 0.45, 21.6),
+      materials.metalLight
+    );
+    balc.position.set(Math.sin(by) * 0.6, by, Math.cos(by) * 0.6);
+    hostelGroup.add(balc);
+  }
+
   hostelMesh.userData = { buildingData: hostelData };
   interactiveMeshes.push(hostelMesh);
-  group.add(hostelMesh);
+  group.add(hostelGroup);
 
-  // 7. NANOTECHNOLOGY & SCIENCE LABORATORY
+  // 7. NANOTECHNOLOGY & SCIENCE LABORATORY (Octagonal Cleanroom Complex with External Filtration Scrubbers)
   const labData: BuildingData = {
     id: 'edu-nano-lab',
     name: 'Nanotechnology & Quantum Materials Lab',
@@ -361,25 +425,41 @@ export function createEducationDistrict(
     category: 'Science Laboratory',
     height: 52,
     floors: 14,
-    position: [-210, 0, -230],
-    dimensions: [28, 52, 26],
+    position: [-272, 0, -46],
+    dimensions: [26, 52, 24],
     powerUsage: '11.2 MW (Cleanroom Environmental Control)',
     occupancy: '88% (2,400 Nanotechnologists)',
     networkStatus: 'Class-100 Cleanroom Certified',
-    description: 'Hermetic scientific testing facility with specialized mechanical filtration stacks and vibration-isolated foundations.',
-    features: ['Class-100 Cleanrooms', 'Exhaust Filtration Scrubbers', 'Vibration-Damped Basement'],
+    description: 'Hermetic octagonal scientific facility with external stainless-steel air filtration scrubbers and vibration-isolated cleanrooms.',
+    features: ['Octagonal Cleanroom Core', 'External Filtration Scrubber Towers', 'Vibration-Damped Basement'],
   };
   buildingsData.push(labData);
 
+  const labGroup = new THREE.Group();
+  labGroup.position.set(-272, 0, -46);
+
   const labMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(28, 52, 26),
-    new THREE.MeshStandardMaterial({ map: labWinTex, metalness: 0.85, roughness: 0.2 })
+    new THREE.CylinderGeometry(12, 13, 52, 8),
+    new THREE.MeshStandardMaterial({ map: labWinTex, metalness: 0.82, roughness: 0.24 })
   );
-  labMesh.position.set(-210, 26, -230);
+  labMesh.position.y = 26;
   labMesh.castShadow = true;
+  labGroup.add(labMesh);
+
+  // External Stainless-Steel Cleanroom Filtration Scrubber Silos around perimeter
+  for (let a = 0; a < 4; a++) {
+    const ang = (a * Math.PI) / 2 + Math.PI / 4;
+    const silo = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.4, 1.4, 56, 12),
+      materials.metalLight
+    );
+    silo.position.set(Math.cos(ang) * 13.2, 28, Math.sin(ang) * 13.2);
+    labGroup.add(silo);
+  }
+
   labMesh.userData = { buildingData: labData };
   interactiveMeshes.push(labMesh);
-  group.add(labMesh);
+  group.add(labGroup);
 
   scene.add(group);
 

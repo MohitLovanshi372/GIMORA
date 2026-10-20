@@ -6,6 +6,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CameraMode, CityMetrics, DistrictId, WeatherType } from '../city/types';
 import { PlayerRadarTelemetry } from '../city/CityScene';
+import { InteractionPrompt } from '../city/modules/PlayerSystem';
+import { InteriorBuildingType } from './BuildingInteriorModal';
 import { DistrictNav, NavDistrictId } from './DistrictNav';
 import {
   Eye,
@@ -20,13 +22,17 @@ import {
   Sunset,
   Moon,
   User,
+  DoorOpen,
+  Radio,
 } from 'lucide-react';
+import { CityEvent } from '../simulation/CityState';
 
 interface HUDProps {
   metrics: CityMetrics;
   cameraMode: CameraMode;
   activeDistrict: NavDistrictId | null;
   radarTelemetry?: PlayerRadarTelemetry;
+  interactionPrompt?: InteractionPrompt | null;
   timeOfDay?: number;
   currentWeather?: WeatherType;
   onSetCameraMode: (mode: CameraMode) => void;
@@ -40,8 +46,12 @@ interface HUDProps {
   onSelectRailway?: () => void;
   onStartFlyover?: () => void;
   onOpenDubaiStudio?: () => void;
+  onOpenInteriorRoom?: (type: InteriorBuildingType) => void;
   onSetTimeOfDay?: (hour: number) => void;
   onSetWeather?: (weather: WeatherType) => void;
+  activeIncidents?: CityEvent[];
+  isEventsPanelOpen?: boolean;
+  onToggleEventsPanel?: () => void;
 }
 
 export const HUD: React.FC<HUDProps> = ({
@@ -49,6 +59,7 @@ export const HUD: React.FC<HUDProps> = ({
   cameraMode,
   activeDistrict,
   radarTelemetry,
+  interactionPrompt,
   timeOfDay = 17.35,
   currentWeather = 'CLEAR',
   onSetCameraMode,
@@ -62,8 +73,12 @@ export const HUD: React.FC<HUDProps> = ({
   onSelectRailway,
   onStartFlyover,
   onOpenDubaiStudio,
+  onOpenInteriorRoom,
   onSetTimeOfDay,
   onSetWeather,
+  activeIncidents = [],
+  isEventsPanelOpen = false,
+  onToggleEventsPanel,
 }) => {
   const [isUiVisible, setIsUiVisible] = useState(true);
   const radarCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -98,7 +113,8 @@ export const HUD: React.FC<HUDProps> = ({
 
     // 2. Central Emerald Park
     ctx.fillStyle = '#14532d';
-    ctx.fillRect((-92 - px) * scale, (-48 - pz) * scale, 48 * scale, 96 * scale);
+    ctx.fillRect((-87 - px) * scale, (-77 - pz) * scale, 30 * scale, 62 * scale);
+    ctx.fillRect((58 - px) * scale, (102 - pz) * scale, 28 * scale, 46 * scale);
 
     // 3. City Road Grid (North-South & East-West Avenues)
     ctx.strokeStyle = '#475569';
@@ -131,12 +147,12 @@ export const HUD: React.FC<HUDProps> = ({
 
     // 4. Landmark Blips on Radar
     const blips = [
-      { x: 140, z: -80, color: '#22d3ee' },  // Mohit Hub
-      { x: -105, z: -45, color: '#fbbf24' }, // Burj Khalifa
-      { x: -165, z: 75, color: '#38bdf8' },  // Singapore MBS
-      { x: -45, z: -125, color: '#f472b6' }, // Paris Eiffel Tower
-      { x: 65, z: -85, color: '#a78bfa' },   // Empire State
-      { x: 180, z: -290, color: '#4ade80' }, // Airport
+      { x: 145, z: -46, color: '#22d3ee' },  // Mohit Hub
+      { x: -132, z: -52, color: '#fbbf24' }, // Burj Khalifa
+      { x: -140, z: 125, color: '#38bdf8' }, // Singapore MBS
+      { x: -72, z: -125, color: '#f472b6' }, // Paris Eiffel Tower
+      { x: 72, z: -60, color: '#a78bfa' },   // Empire State
+      { x: 180, z: -335, color: '#4ade80' }, // Airport
     ];
 
     blips.forEach((b) => {
@@ -149,6 +165,28 @@ export const HUD: React.FC<HUDProps> = ({
       ctx.strokeStyle = '#020617';
       ctx.lineWidth = 1.2;
       ctx.stroke();
+    });
+
+    // 4b. Live Emergency Incident Blips on Radar
+    activeIncidents.forEach((inc) => {
+      const ix = (inc.location.x - px) * scale;
+      const iz = (inc.location.z - pz) * scale;
+      const incColor =
+        inc.type === 'FIRE'
+          ? '#ef4444'
+          : inc.type === 'MEDICAL_EMERGENCY'
+          ? '#38bdf8'
+          : '#f59e0b';
+      ctx.strokeStyle = incColor;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(ix, iz, 6.2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = incColor;
+      ctx.beginPath();
+      ctx.arc(ix, iz, 3.2, 0, Math.PI * 2);
+      ctx.fill();
     });
 
     ctx.restore();
@@ -193,7 +231,7 @@ export const HUD: React.FC<HUDProps> = ({
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('N', nx, ny);
-  }, [radarTelemetry]);
+  }, [radarTelemetry, activeIncidents]);
 
   return (
     <div className="absolute inset-0 pointer-events-none z-10 p-4 flex flex-col justify-between">
@@ -362,6 +400,32 @@ export const HUD: React.FC<HUDProps> = ({
               </button>
             </div>
 
+            {onToggleEventsPanel && (
+              <button
+                onClick={onToggleEventsPanel}
+                className={`flex items-center gap-1.5 px-3 py-2 font-['Chakra_Petch'] font-bold rounded-lg text-xs tracking-wider transition-all shadow-lg active:scale-95 ${
+                  isEventsPanelOpen
+                    ? 'bg-red-500/30 text-red-200 border border-red-400/70 shadow-red-950/50'
+                    : 'bg-slate-950/85 hover:bg-slate-900 text-red-300 border border-red-500/40'
+                }`}
+                title="Open Real-Time City Events & Emergency Incident Log"
+              >
+                <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+                <span>EVENTS ({activeIncidents.length})</span>
+              </button>
+            )}
+
+            {onOpenInteriorRoom && (
+              <button
+                onClick={() => onOpenInteriorRoom('mohit-hub')}
+                className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-200 border border-emerald-400/50 font-['Chakra_Petch'] font-bold rounded-lg text-xs tracking-wider transition-all shadow-lg shadow-emerald-950/40 active:scale-95"
+                title="Explore Building Entry Gates & Furnished Interior Rooms"
+              >
+                <DoorOpen className="w-3.5 h-3.5 text-emerald-400" />
+                <span>ROOMS</span>
+              </button>
+            )}
+
             {onOpenDubaiStudio && (
               <button
                 onClick={onOpenDubaiStudio}
@@ -435,6 +499,27 @@ export const HUD: React.FC<HUDProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Center-Bottom: Interactive Building Entry Gate Proximity Banner */}
+          {interactionPrompt && onOpenInteriorRoom && (
+            <button
+              onClick={() => onOpenInteriorRoom(interactionPrompt.buildingType)}
+              className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 bg-slate-950/90 hover:bg-slate-900 border border-emerald-400/60 rounded-lg shadow-2xl backdrop-blur-md transition-all group"
+            >
+              <div className="w-8 h-8 rounded bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-emerald-300 font-mono font-bold text-xs">
+                [E]
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400">
+                  BUILDING ENTRY GATE NEARBY • OPEN SLIDING DOORS
+                </span>
+                <span className="text-xs font-bold text-white group-hover:text-emerald-200">
+                  {interactionPrompt.buildingName} — Click or Press [E] to Enter Interior Rooms
+                </span>
+              </div>
+              <DoorOpen className="w-4 h-4 text-emerald-400 ml-1" />
+            </button>
+          )}
 
           {/* Bottom-Right: GTA V Stylized Street & District Location Callout */}
           <div className="hidden sm:flex flex-col items-end text-right drop-shadow-[0_2px_6px_rgba(0,0,0,0.95)] select-none">

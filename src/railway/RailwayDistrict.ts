@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { BuildingData } from '../city/types';
 import { CityMaterials } from '../assets/materials';
+import { createBuildingEntryGateAndRoom } from '../buildings/BuildingEntryRoom';
 
 export interface RailwayDistrictSystem {
   group: THREE.Group;
@@ -30,7 +31,7 @@ export function createRailwayDistrict(
   const centerZ = -220;
   const trackLength = 400; // spanning X: -200 to +200
 
-  // 1. GRAND CENTRAL TERMINAL DATA
+  // 1. GRAND CENTRAL TERMINAL DATA (West Bank Railway Plaza between X=-180 and X=-100)
   const stationData: BuildingData = {
     id: 'rail-central-terminal',
     name: 'Central Grand Metropolitan Railway Terminal',
@@ -39,8 +40,8 @@ export function createRailwayDistrict(
     category: 'Transit Terminal',
     height: 38,
     floors: 4,
-    position: [0, 0, centerZ + 35],
-    dimensions: [86, 38, 48],
+    position: [-140, 0, centerZ + 32],
+    dimensions: [52, 38, 28],
     powerUsage: '18.4 MW (Heavy Rail Electrification)',
     occupancy: '96% (48,000 Commuters / Hour)',
     networkStatus: 'Inter-City Dispatch Online',
@@ -51,19 +52,19 @@ export function createRailwayDistrict(
 
   // 2. GRAND ARCHED TERMINAL CONCOURSE
   const stationGroup = new THREE.Group();
-  stationGroup.position.set(0, 0, centerZ + 35);
+  stationGroup.position.set(-140, 0, centerZ + 32);
 
   // Concourse Main Hall
-  const hallGeo = new THREE.BoxGeometry(86, 18, 44);
+  const hallGeo = new THREE.BoxGeometry(52, 18, 26);
   const hallMesh = new THREE.Mesh(hallGeo, materials.concrete);
   hallMesh.position.y = 9;
   hallMesh.castShadow = true;
   stationGroup.add(hallMesh);
 
   // Glass Front Atrium & Entrance
-  const atriumGeo = new THREE.BoxGeometry(78, 14, 4);
+  const atriumGeo = new THREE.BoxGeometry(46, 14, 4);
   const atrium = new THREE.Mesh(atriumGeo, materials.glassDark);
-  atrium.position.set(0, 7, 22.1);
+  atrium.position.set(0, 7, 13.1);
   stationGroup.add(atrium);
 
   // Illuminated Terminal Architectural Sign
@@ -73,7 +74,7 @@ export function createRailwayDistrict(
   const sCtx = signCanvas.getContext('2d')!;
   sCtx.fillStyle = '#0f172a';
   sCtx.fillRect(0, 0, 1024, 192);
-  sCtx.strokeStyle = '#475569';
+  sCtx.strokeStyle = '#475669';
   sCtx.lineWidth = 6;
   sCtx.strokeRect(6, 6, 1012, 180);
   sCtx.font = 'bold 50px "Plus Jakarta Sans", sans-serif';
@@ -86,36 +87,51 @@ export function createRailwayDistrict(
 
   const signTex = new THREE.CanvasTexture(signCanvas);
   const signMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(36, 6.5),
+    new THREE.PlaneGeometry(32, 6.0),
     new THREE.MeshBasicMaterial({ map: signTex, side: THREE.DoubleSide })
   );
-  signMesh.position.set(0, 21, 22.3);
+  signMesh.position.set(0, 21, 13.3);
   stationGroup.add(signMesh);
 
   // Arched Roof Canopy Over Platforms (Architectural Glass and Steel)
-  const canopyWidth = 86;
-  const canopyRadius = 45;
+  const canopyWidth = 52;
+  const canopyRadius = 26;
   const archGeo = new THREE.CylinderGeometry(canopyRadius, canopyRadius, canopyWidth, 24, 1, true, 0, Math.PI);
   archGeo.rotateZ(Math.PI / 2);
   archGeo.rotateY(Math.PI / 2);
   const archMesh = new THREE.Mesh(archGeo, materials.glassDark);
-  archMesh.position.set(0, 0, -22);
+  archMesh.position.set(0, 0, -16);
   stationGroup.add(archMesh);
 
   // Arched Structural Steel Truss Ribs
-  for (let x = -38; x <= 38; x += 19) {
+  for (let x = -24; x <= 24; x += 12) {
     const ribGeo = new THREE.TorusGeometry(canopyRadius, 0.45, 6, 24, Math.PI);
     ribGeo.rotateY(Math.PI / 2);
     const rib = new THREE.Mesh(ribGeo, materials.metalLight);
-    rib.position.set(x, 0, -22);
+    rib.position.set(x, 0, -16);
     stationGroup.add(rib);
   }
+
+  const stationEntryGate = createBuildingEntryGateAndRoom(
+    {
+      title: 'GRAND CENTRAL TERMINAL',
+      subtitle: 'MAIN STATION GATE • TICKETING & DEPARTURE HALL',
+      theme: 'transit',
+      roomWidth: 16.0,
+      roomHeight: 5.2,
+      roomDepth: 8.5,
+      buildingData: stationData,
+    },
+    interactiveMeshes
+  );
+  stationEntryGate.position.set(0, 0, 14.5);
+  stationGroup.add(stationEntryGate);
 
   hallMesh.userData = { buildingData: stationData };
   interactiveMeshes.push(hallMesh);
   group.add(stationGroup);
 
-  // 3. RAILWAY CONTROL TOWER
+  // 3. RAILWAY CONTROL TOWER (East Bank Railway Sector)
   const towerData: BuildingData = {
     id: 'rail-control-tower',
     name: 'Railway & Air Traffic Control Spire',
@@ -124,7 +140,7 @@ export function createRailwayDistrict(
     category: 'Control Tower',
     height: 62,
     floors: 14,
-    position: [-65, 0, centerZ + 15],
+    position: [140, 0, centerZ + 32],
     dimensions: [16, 62, 16],
     powerUsage: '6.4 MW (Radar & Quantum Signal Core)',
     occupancy: '99% Automated / 60 Signal Officers',
@@ -135,7 +151,7 @@ export function createRailwayDistrict(
   buildingsData.push(towerData);
 
   const towerGroup = new THREE.Group();
-  towerGroup.position.set(-65, 0, centerZ + 15);
+  towerGroup.position.set(140, 0, centerZ + 32);
 
   // Tower Shaft
   const towerShaft = new THREE.Mesh(
@@ -280,17 +296,15 @@ export function createRailwayDistrict(
     group.add(messengerWire);
   });
 
-  // 5. RAISED PASSENGER PLATFORMS
-  // Platform A (between Track 1 and 2, tz: centerZ + 10)
-  // Platform B (between Track 3 and 4, tz: centerZ - 10)
-  const platformLength = 140;
+  // 5. RAISED PASSENGER PLATFORMS (Aligned with West Bank Terminal at X=-140)
+  const platformLength = 56;
   const platformWidth = 5;
   const platformHeight = 1.3;
   const platGeo = new THREE.BoxGeometry(platformLength, platformHeight, platformWidth);
 
   [-10, 10].forEach((offsetZ, pIdx) => {
     const platGroup = new THREE.Group();
-    platGroup.position.set(0, platformHeight / 2, centerZ + offsetZ);
+    platGroup.position.set(-140, platformHeight / 2, centerZ + offsetZ);
 
     const platMesh = new THREE.Mesh(platGeo, materials.sidewalk);
     platMesh.receiveShadow = true;
@@ -314,7 +328,7 @@ export function createRailwayDistrict(
     platGroup.add(roof);
 
     // Canopy Support Pillars
-    for (let px = -60; px <= 60; px += 24) {
+    for (let px = -24; px <= 24; px += 16) {
       const col = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 5, 8), materials.metalLight);
       col.position.set(px, 2.5, 0);
       platGroup.add(col);
@@ -340,8 +354,8 @@ export function createRailwayDistrict(
     group.add(platGroup);
   });
 
-  // 6. OVERHEAD PEDESTRIAN BRIDGES SPANNING THE TRACKS
-  [-35, 35].forEach((bx) => {
+  // 6. OVERHEAD PEDESTRIAN BRIDGES SPANNING THE TRACKS AT THE TERMINAL
+  [-160, -120].forEach((bx) => {
     const bridgeSpan = 38;
     const pBridgeGroup = new THREE.Group();
     pBridgeGroup.position.set(bx, 6.8, centerZ);

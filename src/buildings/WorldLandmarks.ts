@@ -180,7 +180,7 @@ export function createWorldLandmarks(
   // 1. SINGAPORE: MARINA BAY SANDS (Triple Slanted-Leg Towers & SkyPark Hull)
   // =========================================================================
   const mbsGroup = new THREE.Group();
-  mbsGroup.position.set(-165, 0, 75); // Waterfront Bay sector
+  mbsGroup.position.set(-140, 0, 125); // West Mid Bayfront Block (between X=-180 and X=-100, Z=90 and Z=160)
 
   const mbsData: BuildingData = {
     id: 'singapore-marina-bay-sands',
@@ -190,8 +190,8 @@ export function createWorldLandmarks(
     category: 'Skyscraper',
     height: 125,
     floors: 57,
-    position: [-165, 0, 75],
-    dimensions: [92, 125, 34],
+    position: [-140, 0, 125],
+    dimensions: [52, 125, 24],
     powerUsage: '22.8 MW (High Efficiency Tri-Generation)',
     occupancy: '98% (2,561 Luxury Hotel Rooms & Suites)',
     networkStatus: 'Smart Bay IoT Mesh 100%',
@@ -209,9 +209,9 @@ export function createWorldLandmarks(
 
   // A. Three Dual-Leg Converging Hotel Towers (Tower 1, Tower 2, Tower 3)
   const towerHeight = 105;
-  const towerWidth = 17;
-  const towerDepth = 13;
-  const towerSpacing = 28;
+  const towerWidth = 12;
+  const towerDepth = 11;
+  const towerSpacing = 16;
 
   const mbsTowerMeshes: THREE.Mesh[] = [];
 
@@ -279,8 +279,8 @@ export function createWorldLandmarks(
   mbsGroup.add(galleriaBase);
 
   // B. The Sands SkyPark Ship Hull & Cantilever
-  const skyparkLength = towerSpacing * 2 + towerWidth + 38;
-  const skyparkWidth = 22;
+  const skyparkLength = towerSpacing * 2 + towerWidth + 10;
+  const skyparkWidth = 16;
   const skyparkH = 5.2;
 
   // Curved Boat Hull Underbelly
@@ -346,7 +346,7 @@ export function createWorldLandmarks(
   mbsGroup.add(pool);
 
   // SkyPark Palm Trees along deck
-  for (let px = -36; px <= 36; px += 9) {
+  for (let px = -22; px <= 22; px += 9) {
     const palmTrunk = new THREE.Mesh(
       new THREE.CylinderGeometry(0.2, 0.35, 4.5, 8),
       woodTrunkMat
@@ -374,7 +374,7 @@ export function createWorldLandmarks(
   // 2. SINGAPORE: GARDENS BY THE BAY (Supertree Grove & Aerial Skyway)
   // =========================================================================
   const gbGroup = new THREE.Group();
-  gbGroup.position.set(-205, 0, 110);
+  gbGroup.position.set(-210, 0, 125); // West Outer Botanical Block (between X=-240 and X=-180, Z=90 and Z=160)
 
   const gbData: BuildingData = {
     id: 'singapore-gardens-by-the-bay',
@@ -384,8 +384,8 @@ export function createWorldLandmarks(
     category: 'Research Pod',
     height: 52,
     floors: 16,
-    position: [-205, 0, 110],
-    dimensions: [75, 52, 75],
+    position: [-210, 0, 125],
+    dimensions: [34, 52, 36],
     powerUsage: 'Solar Canopy Generative (+4.2 MW Surplus)',
     occupancy: '95% (16,000 Daily Botanical Visitors)',
     networkStatus: 'Eco-Sensing Environmental Grid Active',
@@ -402,11 +402,11 @@ export function createWorldLandmarks(
   buildingsData.push(gbData);
 
   const supertrees = [
-    { x: 0, z: 0, height: 50, crownRad: 16.5 },     // Central Master Supertree
-    { x: -25, z: -18, height: 38, crownRad: 12.5 }, // West Supertree
-    { x: 26, z: -14, height: 40, crownRad: 13.5 },  // East Supertree
-    { x: -16, z: 26, height: 34, crownRad: 11.5 },  // South-West Supertree
-    { x: 22, z: 24, height: 36, crownRad: 12.0 },   // South-East Supertree
+    { x: 0, z: 0, height: 50, crownRad: 11.5 },      // Central Master Supertree
+    { x: -10, z: -11, height: 38, crownRad: 8.5 },   // West Supertree
+    { x: 10, z: -10, height: 40, crownRad: 9.0 },    // East Supertree
+    { x: -10, z: 11, height: 34, crownRad: 8.0 },    // South-West Supertree
+    { x: 10, z: 11, height: 36, crownRad: 8.5 },     // South-East Supertree
   ];
 
   supertrees.forEach((st, idx) => {
@@ -480,12 +480,12 @@ export function createWorldLandmarks(
 
   // Curved Elevated OCBC Skyway Suspension Bridge connecting the Supertrees
   const skywayDeck = new THREE.Mesh(
-    new THREE.TorusGeometry(24, 0.9, 6, 36, Math.PI * 1.15),
+    new THREE.TorusGeometry(11.5, 0.75, 6, 36, Math.PI * 1.15),
     mbsDeckMat
   );
   skywayDeck.rotation.x = Math.PI / 2;
   skywayDeck.rotation.z = -0.3;
-  skywayDeck.position.set(0, 22, 4);
+  skywayDeck.position.set(0, 22, 1);
   gbGroup.add(skywayDeck);
 
   group.add(gbGroup);
@@ -499,7 +499,7 @@ export function createWorldLandmarks(
   // 3. PARIS: EIFFEL TOWER (Tour Eiffel - 165m Wrought-Iron Lattice Masterpiece)
   // =========================================================================
   const eiffelGroup = new THREE.Group();
-  eiffelGroup.position.set(-45, 0, -125); // Champ de Mars cultural sector
+  eiffelGroup.position.set(-72, 0, -125); // Champ de Mars Block (cleanly between X=-100 and X=-45, Z=-160 and Z=-90)
 
   const eiffelData: BuildingData = {
     id: 'paris-eiffel-tower',
@@ -509,8 +509,8 @@ export function createWorldLandmarks(
     category: 'Landmark',
     height: 165,
     floors: 3,
-    position: [-45, 0, -125],
-    dimensions: [56, 165, 56],
+    position: [-72, 0, -125],
+    dimensions: [30, 165, 30],
     powerUsage: '6.8 MW (Golden Illumination & Hydraulic Lifts)',
     occupancy: '94% (25,000 Global Visitors Daily)',
     networkStatus: 'National Broadcast & Telemetry Mast Online',
@@ -527,7 +527,7 @@ export function createWorldLandmarks(
   buildingsData.push(eiffelData);
 
   // A. Four Masonry Stone Foundations & Splayed Lattice Pylon Legs (0 to 36m)
-  const baseSpan = 21;
+  const baseSpan = 12.5;
   const legH = 36;
 
   [
@@ -538,31 +538,31 @@ export function createWorldLandmarks(
   ].forEach(([sx, sz]) => {
     // Inclined Masonry Foundation Pier
     const masonry = new THREE.Mesh(
-      new THREE.BoxGeometry(6.5, 4.5, 6.5),
+      new THREE.BoxGeometry(5.2, 4.5, 5.2),
       parisStoneMat
     );
     masonry.position.set(sx * baseSpan, 2.25, sz * baseSpan);
     eiffelGroup.add(masonry);
 
-    // Splayed Lattice Box-Girder Pylon angling inward from +/-21m to +/-12m
-    const legGeo = new THREE.CylinderGeometry(2.6, 4.4, legH, 4);
+    // Splayed Lattice Box-Girder Pylon angling inward
+    const legGeo = new THREE.CylinderGeometry(2.2, 3.6, legH, 4);
     const leg = new THREE.Mesh(legGeo, parisIronMat);
-    leg.position.set(sx * 16.5, legH / 2 + 2, sz * 16.5);
-    leg.rotation.z = sx * 0.24;
-    leg.rotation.x = -sz * 0.24;
+    leg.position.set(sx * 10.2, legH / 2 + 2, sz * 10.2);
+    leg.rotation.z = sx * 0.18;
+    leg.rotation.x = -sz * 0.18;
     leg.castShadow = true;
     eiffelGroup.add(leg);
   });
 
   // B. Four Monumental Vertical Semicircular Base Arches on North, South, East, West Faces
   [
-    { x: 0, z: 18.5, rotY: 0 },
-    { x: 0, z: -18.5, rotY: 0 },
-    { x: 18.5, z: 0, rotY: Math.PI / 2 },
-    { x: -18.5, z: 0, rotY: Math.PI / 2 },
+    { x: 0, z: 11.5, rotY: 0 },
+    { x: 0, z: -11.5, rotY: 0 },
+    { x: 11.5, z: 0, rotY: Math.PI / 2 },
+    { x: -11.5, z: 0, rotY: Math.PI / 2 },
   ].forEach((cfg) => {
     const arch = new THREE.Mesh(
-      new THREE.TorusGeometry(13.5, 1.05, 8, 32, Math.PI),
+      new THREE.TorusGeometry(9.2, 0.85, 8, 32, Math.PI),
       parisIronMat
     );
     arch.position.set(cfg.x, 4, cfg.z);
@@ -571,19 +571,19 @@ export function createWorldLandmarks(
   });
 
   // C. Level 1 Double-Deck Observation Pavilion & Perimeter Gallery (Height 36m)
-  const plat1Base = new THREE.Mesh(new THREE.BoxGeometry(31, 2.4, 31), parisIronMat);
+  const plat1Base = new THREE.Mesh(new THREE.BoxGeometry(23, 2.4, 23), parisIronMat);
   plat1Base.position.y = legH;
   plat1Base.castShadow = true;
   eiffelGroup.add(plat1Base);
 
   const plat1Pavilion = new THREE.Mesh(
-    new THREE.BoxGeometry(27, 3.2, 27),
+    new THREE.BoxGeometry(20, 3.2, 20),
     parisGoldTrimMat
   );
   plat1Pavilion.position.y = legH + 2.6;
   eiffelGroup.add(plat1Pavilion);
 
-  const plat1Top = new THREE.Mesh(new THREE.BoxGeometry(29.5, 1.4, 29.5), parisIronMat);
+  const plat1Top = new THREE.Mesh(new THREE.BoxGeometry(22, 1.4, 22), parisIronMat);
   plat1Top.position.y = legH + 4.6;
   eiffelGroup.add(plat1Top);
 
@@ -704,7 +704,7 @@ export function createWorldLandmarks(
   // 4. PARIS: ARC DE TRIOMPHE (Place Charles de Gaulle Neoclassical Monument)
   // =========================================================================
   const arcGroup = new THREE.Group();
-  arcGroup.position.set(-85, 0, -165); // Grand Avenue Plaza
+  arcGroup.position.set(-72, 0, -188); // Place Charles de Gaulle Block (between X=-100 and X=-45, Z=-220 and Z=-160)
 
   const arcData: BuildingData = {
     id: 'paris-arc-de-triomphe',
@@ -714,13 +714,13 @@ export function createWorldLandmarks(
     category: 'Landmark',
     height: 50,
     floors: 4,
-    position: [-85, 0, -165],
-    dimensions: [45, 50, 22],
+    position: [-72, 0, -188],
+    dimensions: [28, 50, 16],
     powerUsage: '1.8 MW Civic Monument & Eternal Flame',
     occupancy: '92% (14,000 Visitors)',
     networkStatus: 'Civic Mesh Active',
     description:
-      'Iconic neoclassical triumphal arch standing at the center of the 12 radiating Parisian avenues. Features 4 sculpted Lutetian limestone piers with high-relief groups including La Marseillaise, a vaulted Grande Arcade, dentil cornice entablature, and rooftop viewing terrace.',
+      'Iconic neoclassical triumphal arch standing at the center of the radiating Parisian avenues. Features 4 sculpted Lutetian limestone piers with high-relief groups including La Marseillaise, a vaulted Grande Arcade, dentil cornice entablature, and rooftop viewing terrace.',
     features: [
       'Four Sculpted Lutetian Limestone Piers & Pedestals',
       'Intersecting Barrel-Vaulted Grande Arcade & Transverse Arch',
@@ -732,19 +732,19 @@ export function createWorldLandmarks(
   buildingsData.push(arcData);
 
   // Four Corner Masonry Pillars creating Both Main Arch and Transverse Archways
-  const pierW = 6.2;
+  const pierW = 5.0;
   const pierH = 31;
-  const pierD = 8.2;
+  const pierD = 6.2;
 
   [
-    [-13.5, -5.2],
-    [13.5, -5.2],
-    [-13.5, 5.2],
-    [13.5, 5.2],
+    [-9.5, -4.2],
+    [9.5, -4.2],
+    [-9.5, 4.2],
+    [9.5, 4.2],
   ].forEach(([px, pz]) => {
     // Moulded Base Plinth
     const plinth = new THREE.Mesh(
-      new THREE.BoxGeometry(pierW + 1.4, 4.5, pierD + 1.4),
+      new THREE.BoxGeometry(pierW + 1.2, 4.5, pierD + 1.2),
       parisStoneMat
     );
     plinth.position.set(px, 2.25, pz);
@@ -771,16 +771,16 @@ export function createWorldLandmarks(
 
   // Semicircular Barrel Vault Coffered Arch Crown
   const archVault = new THREE.Mesh(
-    new THREE.TorusGeometry(9.2, 1.4, 8, 24, Math.PI),
+    new THREE.TorusGeometry(6.8, 1.2, 8, 24, Math.PI),
     parisStoneMat
   );
   archVault.position.set(0, 21.5, 0);
-  archVault.scale.set(1, 1, 7.8);
+  archVault.scale.set(1, 1, 5.8);
   arcGroup.add(archVault);
 
   // Upper Entablature & Frieze Block above Arch
   const archRoof = new THREE.Mesh(
-    new THREE.BoxGeometry(41.5, 11, 20.5),
+    new THREE.BoxGeometry(27.5, 11, 15.5),
     parisStoneMat
   );
   archRoof.position.set(0, pierH + 5.5, 0);
@@ -789,22 +789,22 @@ export function createWorldLandmarks(
 
   // Projecting Neoclassical Dentil Cornice Ledge
   const mainCornice = new THREE.Mesh(
-    new THREE.BoxGeometry(43.8, 1.8, 22.8),
+    new THREE.BoxGeometry(29.2, 1.8, 17.2),
     parisStoneMat
   );
   mainCornice.position.set(0, pierH + 11.2, 0);
   arcGroup.add(mainCornice);
 
-  // Attic Story with 30 Inscribed Gilded Shields
+  // Attic Story with Inscribed Gilded Shields
   const attic = new THREE.Mesh(
-    new THREE.BoxGeometry(40.5, 6.2, 19.5),
+    new THREE.BoxGeometry(26.5, 6.2, 14.5),
     parisStoneMat
   );
   attic.position.set(0, pierH + 15.0, 0);
   arcGroup.add(attic);
 
-  for (let sx = -17; sx <= 17; sx += 3.4) {
-    [-9.9, 9.9].forEach((sz) => {
+  for (let sx = -11; sx <= 11; sx += 3.6) {
+    [-7.4, 7.4].forEach((sz) => {
       const shield = new THREE.Mesh(
         new THREE.CylinderGeometry(0.65, 0.65, 0.25, 12),
         parisGoldTrimMat
@@ -817,7 +817,7 @@ export function createWorldLandmarks(
 
   // Eternal Flame Bronze Brazier beneath the Vault
   const flameRing = new THREE.Mesh(
-    new THREE.CylinderGeometry(2.2, 2.6, 0.4, 16),
+    new THREE.CylinderGeometry(2.0, 2.4, 0.4, 16),
     parisGoldTrimMat
   );
   flameRing.position.set(0, 0.2, 0);
@@ -831,7 +831,7 @@ export function createWorldLandmarks(
   // 5. AMERICA: EMPIRE STATE BUILDING (Art Deco Skyscraper - 240m)
   // =========================================================================
   const esbGroup = new THREE.Group();
-  esbGroup.position.set(65, 0, -85); // 5th Avenue American Corridor
+  esbGroup.position.set(72, 0, -125); // 5th Avenue Block (cleanly between X=45 and X=100, Z=-160 and Z=-90)
 
   const esbData: BuildingData = {
     id: 'america-empire-state-building',
@@ -841,8 +841,8 @@ export function createWorldLandmarks(
     category: 'Skyscraper',
     height: 240,
     floors: 102,
-    position: [65, 0, -85],
-    dimensions: [38, 240, 32],
+    position: [72, 0, -125],
+    dimensions: [28, 240, 24],
     powerUsage: '18.6 MW (Empire State Retrofit Energy Star)',
     occupancy: '97% (21,000 Corporate Tenants & Visitors)',
     networkStatus: 'Tier-1 Optical Hub 100%',
@@ -860,7 +860,7 @@ export function createWorldLandmarks(
 
   // A. 5-Story Fifth Avenue Limestone Podium & Monumental Brass Entrance Portal
   const esbBase = new THREE.Mesh(
-    new THREE.BoxGeometry(38, 16, 30),
+    new THREE.BoxGeometry(28, 16, 24),
     artDecoLimestoneMat
   );
   esbBase.position.y = 8;
@@ -869,10 +869,10 @@ export function createWorldLandmarks(
   esbGroup.add(esbBase);
 
   const entrancePortal = new THREE.Mesh(
-    new THREE.BoxGeometry(8.5, 11, 1.4),
+    new THREE.BoxGeometry(7.5, 11, 1.4),
     artDecoSteelMat
   );
-  entrancePortal.position.set(0, 5.5, 15.2);
+  entrancePortal.position.set(0, 5.5, 12.2);
   esbGroup.add(entrancePortal);
 
   // B. Seven Stepped Art Deco Setback Tiers with 3D Stainless Steel Mullion Fins (Floors 6 - 86)
@@ -973,7 +973,7 @@ export function createWorldLandmarks(
   // 6. AMERICA: ONE WORLD TRADE CENTER (Freedom Tower - 215m Antiprism Monolith)
   // =========================================================================
   const wtcGroup = new THREE.Group();
-  wtcGroup.position.set(115, 0, -45); // Lower Manhattan Core
+  wtcGroup.position.set(72, 0, -46); // Lower Manhattan Block (cleanly between X=45 and X=100, Z=-90 and Z=0)
 
   const wtcData: BuildingData = {
     id: 'america-one-world-trade-center',
@@ -983,8 +983,8 @@ export function createWorldLandmarks(
     category: 'Skyscraper',
     height: 215,
     floors: 104,
-    position: [115, 0, -45],
-    dimensions: [32, 215, 32],
+    position: [72, 0, -46],
+    dimensions: [26, 215, 26],
     powerUsage: '24.2 MW (LEED Gold High-Performance)',
     occupancy: '96% (26,000 Global Executives)',
     networkStatus: 'Global Financial Backbone 100%',
@@ -1002,7 +1002,7 @@ export function createWorldLandmarks(
 
   // A. Fortified Cubic Podium Base with Vertical Stainless-Steel Louver Fins
   const wtcBase = new THREE.Mesh(
-    new THREE.BoxGeometry(27, 28, 27),
+    new THREE.BoxGeometry(24, 28, 24),
     materials.concrete
   );
   wtcBase.position.y = 14;
