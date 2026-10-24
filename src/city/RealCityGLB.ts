@@ -3,6 +3,8 @@
  */
 import * as THREE from 'three';
 import { glbLoaderInstance } from '../assets/GLBLoader';
+import { CityPhysicsEngine } from './modules/CityPhysicsEngine';
+import { ShowcaseCarPhysics } from './ShowcaseCarPhysics';
 
 const MODELS = [
   { file: 'office-tower.glb', positions: [[-105, 0, -95], [-145, 0, -140]] },
@@ -12,11 +14,19 @@ const MODELS = [
   { file: 'residential-home-b.glb', positions: [[-125, 0, 175], [-150, 0, 185], [-168, 0, 165]] },
 ] as const;
 
-export function addRealCityGLBModels(scene: THREE.Scene): () => void {
+export function addRealCityGLBModels(scene: THREE.Scene, collisions: CityPhysicsEngine): () => void {
   const group = new THREE.Group();
   group.name = 'optional_real_city_glb';
   scene.add(group);
   let disposed = false;
+  let carPhysics: ShowcaseCarPhysics | null = null;
+  let carFrame = 0;
+  const carClock = new THREE.Clock();
+  function tickCar() {
+    if (disposed) return;
+    carFrame = requestAnimationFrame(tickCar);
+    carPhysics?.update(carClock.getDelta());
+  }
   const controllers = new Set<AbortController>();
 
   for (const item of MODELS) {
@@ -104,10 +114,13 @@ export function addRealCityGLBModels(scene: THREE.Scene): () => void {
       const factor = 4.5 / footprint;
       const center = bounds.getCenter(new THREE.Vector3());
       car.scale.setScalar(factor);
-      car.position.set(18 - center.x * factor, -bounds.min.y * factor, 18 - center.z * factor);
+      car.position.set(55 - center.x * factor, -bounds.min.y * factor, 18 - center.z * factor);
       car.name = 'Zenvo TSR-S parked showcase';
-      car.userData.drivable = false;
+      car.userData.drivable = true;
       group.add(car);
+      carPhysics = new ShowcaseCarPhysics(car, collisions);
+      carClock.start();
+      tickCar();
     })
     .catch((error) => {
       if (!disposed && (error as Error).name !== 'AbortError') {
@@ -117,6 +130,8 @@ export function addRealCityGLBModels(scene: THREE.Scene): () => void {
 
   return () => {
     disposed = true;
+    cancelAnimationFrame(carFrame);
+    carPhysics?.dispose();
     controllers.forEach((controller) => controller.abort());
     scene.remove(group);
     // Geometries/materials are shared with the GLB loader cache.
