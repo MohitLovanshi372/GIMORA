@@ -27,6 +27,8 @@ export default function App() {
   const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
   const [activeDistrict, setActiveDistrict] = useState<NavDistrictId | null>(null);
   const [webGlSupported, setWebGlSupported] = useState(true);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [showGameHelp, setShowGameHelp] = useState(false);
 
   // Modals & Panels State
   const [isControlCenterOpen, setIsControlCenterOpen] = useState(false);
@@ -459,6 +461,21 @@ export default function App() {
     <main className="relative w-screen h-screen overflow-hidden bg-slate-950 font-['Plus_Jakarta_Sans']">
       {/* 3D WebGL Canvas Viewport */}
       <div ref={containerRef} className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" />
+
+      {!gameStarted && (
+        <section className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/90 text-white p-6">
+          <div className="max-w-2xl w-full rounded-3xl border border-white/20 bg-slate-900/95 p-8 shadow-2xl">
+            <div className="text-sm tracking-[0.35em] text-amber-400 mb-3">OPEN WORLD • EARLY ACCESS</div>
+            <h1 className="text-5xl font-black tracking-tight mb-3">GIMORA</h1>
+            <p className="text-xl text-slate-300 mb-4">URBAN UNDERWORLD</p>
+            <p className="text-sm text-slate-400 mb-6">Explore the city, discover districts and try the experimental vehicle physics. This is a work-in-progress playable prototype, not a finished gangster campaign.</p>
+            <button className="w-full rounded-xl bg-amber-400 text-slate-950 font-bold py-4 hover:bg-amber-300" onClick={() => setGameStarted(true)}>START GAME</button>
+            <button className="w-full mt-3 rounded-xl border border-white/20 py-3 hover:bg-white/10" onClick={() => setShowGameHelp(v => !v)}>CONTROLS &amp; INFO</button>
+            {showGameHelp && <div className="mt-4 rounded-xl bg-black/30 p-4 text-sm text-slate-300">Use existing city controls to explore. Imported Zenvo showcase: I accelerate, K reverse, J / L steer, Space brakes. GLB vehicles only appear once their files are present under public/assets.</div>}
+          </div>
+        </section>
+      )}
+      {gameStarted && <div className="absolute left-1/2 top-4 -translate-x-1/2 z-40 pointer-events-none rounded-lg bg-black/60 px-4 py-2 text-xs tracking-widest text-white">GIMORA • URBAN UNDERWORLD — PROTOTYPE</div>}
 
       {/* Clean HUD Overlay */}
       <HUD
