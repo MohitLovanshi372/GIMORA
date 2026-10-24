@@ -82,6 +82,39 @@ export function addRealCityGLBModels(scene: THREE.Scene): () => void {
       }
     });
 
+
+  // User supplied sports car. Static parked model until vehicle controller
+  // integration is implemented; do not represent this as drivable.
+  const carController = new AbortController();
+  controllers.add(carController);
+  const carUrl = '/assets/vehicles/zenvo-tsr-s.glb';
+  fetch(carUrl, { method: 'HEAD', signal: carController.signal })
+    .then((response) => {
+      if (!response.ok || disposed || (response.headers.get('content-type') || '').includes('text/html')) return null;
+      return glbLoaderInstance.load(carUrl);
+    })
+    .then((asset) => {
+      if (!asset || disposed) return;
+      const car = asset.scene.clone(true);
+      const bounds = new THREE.Box3().setFromObject(car);
+      if (bounds.isEmpty()) return;
+      const size = bounds.getSize(new THREE.Vector3());
+      // Normalize variable authoring units to a roughly 4.5m vehicle.
+      const footprint = Math.max(size.x, size.z, 0.001);
+      const factor = 4.5 / footprint;
+      const center = bounds.getCenter(new THREE.Vector3());
+      car.scale.setScalar(factor);
+      car.position.set(18 - center.x * factor, -bounds.min.y * factor, 18 - center.z * factor);
+      car.name = 'Zenvo TSR-S parked showcase';
+      car.userData.drivable = false;
+      group.add(car);
+    })
+    .catch((error) => {
+      if (!disposed && (error as Error).name !== 'AbortError') {
+        console.warn('[RealCityGLB] Sports car model not loaded:', error);
+      }
+    });
+
   return () => {
     disposed = true;
     controllers.forEach((controller) => controller.abort());
