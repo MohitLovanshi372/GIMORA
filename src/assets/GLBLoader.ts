@@ -83,7 +83,12 @@ export class CustomGLBLoader {
       );
     });
 
+    // A failed request must not permanently poison the cache. This also
+    // allows models uploaded later to load successfully without refreshing.
     this.cache.set(url, loadPromise);
+    loadPromise.catch(() => {
+      if (this.cache.get(url) === loadPromise) this.cache.delete(url);
+    });
     return loadPromise;
   }
 
