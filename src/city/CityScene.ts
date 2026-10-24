@@ -289,7 +289,6 @@ export class CityScene {
     this.roadsSystem = createRoadsAndDetails(this.scene, this.materials);
     this.railwayDistrict = createRailwayDistrict(this.scene, this.materials);
     this.buildingsManager = createBuildingsManager(this.scene, this.materials);
-    this.cleanupRealCityGLB = addRealCityGLBModels(this.scene);
     this.districtManager = createDistrictManager(this.scene, this.materials);
     this.trafficManager = new TrafficManager(this.scene);
     this.agentManager = new AgentManager(this.scene, this.trafficManager);
@@ -311,6 +310,7 @@ export class CityScene {
     this.physicsEngine.registerBuildingsList(this.riverDistrict.buildingsData);
     this.physicsEngine.registerBuildingsList(this.airportDistrict.buildingsData);
     this.physicsEngine.initStaticCityBlockColliders(this.buildingsManager.allBuildingsData);
+    this.cleanupRealCityGLB = addRealCityGLBModels(this.scene, this.physicsEngine);
 
     this.cameraController.setPhysicsEngine(this.physicsEngine);
     this.trafficManager.setPhysicsEngine(this.physicsEngine);
