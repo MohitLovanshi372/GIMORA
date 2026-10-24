@@ -27,6 +27,7 @@ import { WorldChunkManager } from './modules/WorldChunkManager';
 import { PlayerSystem, InteractionPrompt } from './modules/PlayerSystem';
 import { CityPhysicsEngine } from './modules/CityPhysicsEngine';
 import { AssetManager } from '../assets/AssetManager';
+import { addRealCityGLBModels } from './RealCityGLB';
 import { missionManager } from '../simulation/MissionManager';
 import { InteriorBuildingType } from '../ui/BuildingInteriorModal';
 import { WeatherType } from './types';
@@ -89,6 +90,7 @@ export class CityScene {
   public futureSystemsRegistry!: FutureSystemsRegistry;
 
   private allInteractiveObjects: THREE.Object3D[] = [];
+  private cleanupRealCityGLB: (() => void) | null = null;
   private callbacks: CitySceneCallbacks;
 
   // Highlight Box Helper for selected building
@@ -287,6 +289,7 @@ export class CityScene {
     this.roadsSystem = createRoadsAndDetails(this.scene, this.materials);
     this.railwayDistrict = createRailwayDistrict(this.scene, this.materials);
     this.buildingsManager = createBuildingsManager(this.scene, this.materials);
+    this.cleanupRealCityGLB = addRealCityGLBModels(this.scene);
     this.districtManager = createDistrictManager(this.scene, this.materials);
     this.trafficManager = new TrafficManager(this.scene);
     this.agentManager = new AgentManager(this.scene, this.trafficManager);
@@ -836,6 +839,8 @@ export class CityScene {
     this.roadsSystem.dispose();
     this.railwayDistrict.dispose();
     this.buildingsManager.dispose();
+    this.cleanupRealCityGLB?.();
+    this.cleanupRealCityGLB = null;
     this.districtManager.dispose();
     this.airportDistrict.dispose();
     this.weatherManager.dispose();
