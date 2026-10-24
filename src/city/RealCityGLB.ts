@@ -49,6 +49,39 @@ export function addRealCityGLBModels(scene: THREE.Scene): () => void {
       });
   }
 
+
+  // Optional user-provided full city model. Keep it as one district so the
+  // original playable roads and collision system are not silently replaced.
+  const controller = new AbortController();
+  controllers.add(controller);
+  const url = '/assets/buildings/city-upload.glb';
+  fetch(url, { method: 'HEAD', signal: controller.signal })
+    .then((response) => {
+      if (!response.ok || disposed || (response.headers.get('content-type') || '').includes('text/html')) return null;
+      return glbLoaderInstance.load(url);
+    })
+    .then((asset) => {
+      if (!asset || disposed) return;
+      const model = asset.scene.clone(true);
+      const bounds = new THREE.Box3().setFromObject(model);
+      if (bounds.isEmpty()) return;
+      const size = bounds.getSize(new THREE.Vector3());
+      // Fit the full imported city into a 280-unit-wide showcase district.
+      const footprint = Math.max(size.x, size.z, 1);
+      const scale = 280 / footprint;
+      model.scale.setScalar(scale);
+      const center = bounds.getCenter(new THREE.Vector3());
+      model.position.set(420 - center.x * scale, -bounds.min.y * scale, 420 - center.z * scale);
+      model.name = 'Imported City GLB District';
+      model.userData.realCityGLB = true;
+      group.add(model);
+    })
+    .catch((error) => {
+      if (!disposed && (error as Error).name !== 'AbortError') {
+        console.warn('[RealCityGLB] City model not loaded:', error);
+      }
+    });
+
   return () => {
     disposed = true;
     controllers.forEach((controller) => controller.abort());
