@@ -35,13 +35,15 @@ export class AssetManagerClass {
     try {
       const template = await loadPromise;
       this.cache.set(assetPath, template);
+      this.failedAssets.delete(assetPath);
       this.loadingPromises.delete(assetPath);
       return this.cloneAsset(template);
     } catch (err) {
       console.warn(`[AssetManager] Asset ${assetPath} failed to load, invoking procedural fallback:`, err);
       this.failedAssets.add(assetPath);
       const fallback = this.getFallback(assetPath);
-      this.cache.set(assetPath, fallback);
+      // Do not cache a missing-asset placeholder: a later uploaded GLB
+      // should replace it on the next load attempt.
       this.loadingPromises.delete(assetPath);
       return this.cloneAsset(fallback);
     }
@@ -72,9 +74,10 @@ export class AssetManagerClass {
       }
 
       return root;
-    } catch {
-      // If network load fails (e.g. 404 in preview environment), return procedural fallback
-      return this.getFallback(assetPath);
+    } catch (error) {
+      // Propagate load failure to load(), which supplies a temporary fallback
+      // without poisoning the model cache.
+      throw error;
     }
   }
 
