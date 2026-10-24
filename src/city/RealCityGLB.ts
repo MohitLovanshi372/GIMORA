@@ -8,6 +8,8 @@ const MODELS = [
   { file: 'office-tower.glb', positions: [[-105, 0, -95], [-145, 0, -140]] },
   { file: 'apartment-block.glb', positions: [[112, 0, 125], [145, 0, 145]] },
   { file: 'shop-row.glb', positions: [[-90, 0, 150], [92, 0, -145]] },
+  { file: 'residential-home.glb', positions: [[128, 0, 165], [145, 0, 182], [165, 0, 160]] },
+  { file: 'residential-home-b.glb', positions: [[-125, 0, 175], [-150, 0, 185], [-168, 0, 165]] },
 ] as const;
 
 export function addRealCityGLBModels(scene: THREE.Scene): () => void {
